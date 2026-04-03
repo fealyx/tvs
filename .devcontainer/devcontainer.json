@@ -34,8 +34,11 @@
                 "GitHub.vscode-pull-request-github"
             ],
             "settings": {
-                // Use bash as the terminal default so npm/rush commands work without prefixing
-                "terminal.integrated.defaultProfile.linux": "bash",
+                "chat.tools.terminal.terminalProfile.linux": {
+                  "path": "/usr/bin/pwsh"
+                },
+                // Use PowerShell as the terminal default
+                "terminal.integrated.defaultProfile.linux": "pwsh",
                 "terminal.integrated.profiles.linux": {
                     "bash": {
                         "path": "/bin/bash",
@@ -53,6 +56,9 @@
                 // Ensure Unix line endings for shell scripts inside the container
                 "[shellscript]": {
                     "files.eol": "\n"
+                },
+                "powershell.powerShellAdditionalExePaths": {
+                  "PowerShell 7 (x64)": "/usr/bin/pwsh"
                 }
             }
         }
