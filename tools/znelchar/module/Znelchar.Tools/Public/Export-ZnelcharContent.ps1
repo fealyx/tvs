@@ -37,7 +37,7 @@ Extracts character and texture data from a .znelchar file.
     if (-not $OutputDir) {
         $OutputDir = Join-Path ([System.IO.Path]::GetDirectoryName($resolvedInputPath)) ($inputRootName + '.extracted')
     }
-    $OutputDir = [System.IO.Path]::GetFullPath($OutputDir)
+    $OutputDir = Resolve-UserPath -Path $OutputDir
 
     if ((Test-Path $OutputDir) -and -not $Force) {
         throw "Output directory already exists. Use -Force to overwrite: $OutputDir"

@@ -21,7 +21,7 @@ Runs extract, pack, and verify in one command.
         $WorkDir = Join-Path $toolRoot ("out/roundtrip-" + $baseName)
     }
 
-    $resolvedWorkDir = [System.IO.Path]::GetFullPath($WorkDir)
+    $resolvedWorkDir = Resolve-UserPath -Path $WorkDir
     $extractDir = Join-Path $resolvedWorkDir 'extract'
     $packedPath = Join-Path $resolvedWorkDir 'repacked.znelchar'
     $manifestPath = Join-Path $extractDir 'manifest.json'
@@ -62,7 +62,7 @@ Runs extract, pack, and verify in one command.
         inputFile = $resolvedInputPath
         workDir = $resolvedWorkDir
         packedFile = $packedPath
-        diffReport = if ([string]::IsNullOrWhiteSpace($DiffReportPath)) { $null } else { [System.IO.Path]::GetFullPath($DiffReportPath) }
+        diffReport = if ([string]::IsNullOrWhiteSpace($DiffReportPath)) { $null } else { Resolve-UserPath -Path $DiffReportPath }
         metadataOnly = [bool]$MetadataOnly
         keepWorkDir = [bool]$KeepWorkDir
     }

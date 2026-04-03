@@ -42,7 +42,7 @@ Builds a .znelchar file from extracted artifacts.
 
     $resolvedCharacterJsonPath = (Resolve-Path $effectiveCharacterJsonPath).Path
     $resolvedTexturesDir = (Resolve-Path $effectiveTexturesDir).Path
-    $resolvedOutputPath = [System.IO.Path]::GetFullPath($OutputPath)
+    $resolvedOutputPath = Resolve-UserPath -Path $OutputPath
 
     if ((Test-Path $resolvedOutputPath) -and -not $Force) {
         throw "Output file already exists. Use -Force to overwrite: $resolvedOutputPath"

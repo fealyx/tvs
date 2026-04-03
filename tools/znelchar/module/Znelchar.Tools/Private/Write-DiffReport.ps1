@@ -4,7 +4,7 @@ function Write-DiffReport {
         [Parameter(Mandatory = $true)]$Report
     )
 
-    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    $fullPath = Resolve-UserPath -Path $Path
     $dir = [System.IO.Path]::GetDirectoryName($fullPath)
     if (-not [string]::IsNullOrWhiteSpace($dir)) {
         New-Item -ItemType Directory -Force -Path $dir | Out-Null

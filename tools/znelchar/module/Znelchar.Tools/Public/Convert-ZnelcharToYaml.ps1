@@ -15,7 +15,7 @@ Dumps a .znelchar file to a YAML representation without texture payloads.
         $base = [System.IO.Path]::GetFileNameWithoutExtension($resolvedInputPath)
         $OutputPath = Join-Path ([System.IO.Path]::GetDirectoryName($resolvedInputPath)) ($base + '.yaml')
     }
-    $resolvedOutputPath = [System.IO.Path]::GetFullPath($OutputPath)
+    $resolvedOutputPath = Resolve-UserPath -Path $OutputPath
 
     if (-not $PSCmdlet.ShouldProcess($resolvedOutputPath, 'Write YAML dump')) {
         return
