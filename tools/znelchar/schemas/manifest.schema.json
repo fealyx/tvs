@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fealyx.github.io/tvs/schemas/znelchar/manifest.schema.json",
+  "title": "znelchar extraction manifest",
+  "description": "Metadata for extracted znelchar artifacts, produced by Export-ZnelcharContent",
+  "type": "object",
+  "required": [
+    "sourceFile",
+    "extractedAtUtc",
+    "metadataOnly",
+    "characterFile",
+    "texturesFolder",
+    "textureCount",
+    "textures"
+  ],
+  "properties": {
+    "sourceFile": {
+      "type": "string",
+      "description": "Absolute path to the source .znelchar file"
+    },
+    "extractedAtUtc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of extraction in UTC ISO 8601 format"
+    },
+    "metadataOnly": {
+      "type": "boolean",
+      "description": "If true, only metadata was extracted; texture and character data may be absent"
+    },
+    "characterFile": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Relative path to extracted character.json (null if metadataOnly=true)"
+    },
+    "customIcon": {
+      "type": "object",
+      "description": "Optional custom icon metadata if customIconData field was present in _characterData",
+      "required": [
+        "outputFile",
+        "base64Length",
+        "estimatedDecodedBytes",
+        "sha256",
+        "mimeType"
+      ],
+      "properties": {
+        "outputFile": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Filename of the extracted icon (e.g., customIcon.png)"
+        },
+        "base64Length": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Length of the base64-encoded icon data in the original znelchar file"
+        },
+        "estimatedDecodedBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Estimated decoded size of the icon file in bytes"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{64}$",
+          "description": "SHA256 hash of the decoded icon file"
+        },
+        "mimeType": {
+          "type": "string",
+          "enum": [
+            "image/png",
+            "image/jpeg",
+            "image/gif",
+            "image/webp",
+            "image/bmp"
+          ],
+          "description": "Detected MIME type of the icon image"
+        }
+      }
+    },
+    "texturesFolder": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Relative path to the directory containing texture files"
+    },
+    "textureCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of texture entries extracted"
+    },
+    "textures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "textureName",
+          "outputFile",
+          "base64Length",
+          "estimatedDecodedBytes",
+          "sha256"
+        ],
+        "properties": {
+          "textureName": {
+            "type": "string",
+            "description": "Name of the texture from the znelchar file"
+          },
+          "outputFile": {
+            "type": "string",
+            "description": "Filename of the extracted texture (may differ from textureName if duplicate names exist)"
+          },
+          "base64Length": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Length of the base64-encoded texture data in the original znelchar file"
+          },
+          "estimatedDecodedBytes": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Estimated decoded size of the texture file in bytes"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[A-F0-9]{64}$",
+            "description": "SHA256 hash of the decoded texture file"
+          }
+        }
+      },
+      "description": "Metadata for each extracted texture"
+    }
+  },
+  "additionalProperties": true
+}

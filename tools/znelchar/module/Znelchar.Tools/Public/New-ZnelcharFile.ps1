@@ -55,6 +55,32 @@ Builds a .znelchar file from extracted artifacts.
 
     Write-Stage -Prefix 'pack' -Message "Loading character data from $resolvedCharacterJsonPath"
     $character = (Get-Content -Raw -Path $resolvedCharacterJsonPath | ConvertFrom-Json -AsHashtable -Depth 100)
+
+    $resolvedCustomIconPath = $null
+    if ($null -ne $manifest -and $manifest.ContainsKey('customIcon') -and $null -ne $manifest['customIcon']) {
+        $manifestCustomIcon = $manifest['customIcon']
+        if ($manifestCustomIcon -is [hashtable] -and $manifestCustomIcon.ContainsKey('outputFile') -and -not [string]::IsNullOrWhiteSpace([string]$manifestCustomIcon['outputFile'])) {
+            $candidateIconPath = Join-Path $manifestDirectory ([string]$manifestCustomIcon['outputFile'])
+            $resolvedCustomIconPath = Resolve-PathOrNull -Path $candidateIconPath
+            if (-not $resolvedCustomIconPath) {
+                throw "Manifest customIcon file was not found: $candidateIconPath"
+            }
+        }
+    }
+
+    if (-not $resolvedCustomIconPath -and -not $character.ContainsKey('customIconData')) {
+        $characterDir = [System.IO.Path]::GetDirectoryName($resolvedCharacterJsonPath)
+        $customIconCandidate = Get-ChildItem -File -Path $characterDir -Filter 'customIcon.*' -ErrorAction SilentlyContinue | Sort-Object Name | Select-Object -First 1
+        if ($null -ne $customIconCandidate) {
+            $resolvedCustomIconPath = $customIconCandidate.FullName
+        }
+    }
+
+    if ($resolvedCustomIconPath) {
+        $customIconBytes = [System.IO.File]::ReadAllBytes($resolvedCustomIconPath)
+        $character['customIconData'] = [System.Convert]::ToBase64String($customIconBytes)
+    }
+
     $character = Convert-CharacterForPacking -Character $character
     $characterCompactJson = $character | ConvertTo-Json -Compress -Depth 100
 

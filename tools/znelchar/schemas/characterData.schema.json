@@ -39,6 +39,11 @@
     "skinData": {
       "type": "object",
       "additionalProperties": true
+    },
+    "customIconData": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "description": "Optional base64-encoded icon image data (PNG, JPG, GIF, WebP, or BMP). When extracted, this field is removed from character.json and written to a separate customIcon.<ext> file, then restored during packing."
     }
   },
   "additionalProperties": true

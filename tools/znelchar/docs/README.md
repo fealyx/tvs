@@ -20,13 +20,28 @@ PowerShell-first tooling for `.znelchar` files.
 
 ## Notes
 
+### File Structure & Extraction
 - `.znelchar` outer JSON uses `_characterData` (escaped JSON string) and optional `_textureDatas`.
 - Initial schema is intentionally permissive to avoid rejecting unknown keys in real-world files.
+- **Custom Icon Handling**: If `_characterData` contains a `customIconData` field (base64-encoded image), extraction will:
+  1. Write it to a separate `customIcon.<ext>` file with format auto-detected from file headers (PNG/JPG/GIF/WebP/BMP)
+  2. Remove `customIconData` from the extracted `character.json`
+  3. Store icon metadata (hash, size, format, MIME type) in `manifest.json`
+  - During packing, the icon is automatically re-embedded into `_characterData` if the manifest contains icon metadata
+### Verification
 - `verify` performs semantic comparison of character payload and texture content hashes (not byte-for-byte text comparison).
+- `customIconData` is compared by SHA256 hash of the decoded icon bytes.
 - `verify -CiSummary` emits a one-line CI summary plus exit code for pipeline logs.
 - `verify` can emit a machine-readable diff report JSON via `-DiffReportPath`.
-- `verify:roundtrip` runs extract -> pack -> verify in one command.
+- `verify:roundtrip` runs extract -> pack -> verify in one command, ensuring icon data survives round-trip.
 - `verify:roundtrip:ci` forwards CI summary output from verify.
+### Extraction Artifacts
+- `extract` produces:
+  - `character.json`: Unescaped, fully expanded character data (with `customIconData` removed if present)
+  - `customIcon.<ext>`: Icon image if `customIconData` was extracted
+  - `textures/`: Folder with decoded texture files
+  - `manifest.json`: Metadata for all extracted artifacts (source file, timestamps, hashes, and icon/texture inventory)
+- `manifest.json` uses the schema at `schemas/manifest.schema.json`
 - `inspect -MetadataOnly` skips nested `_characterData`/`opinionDataString` parsing for large files.
 - `extract -MetadataOnly` skips nested `_characterData` parse and texture decoding; it writes a metadata manifest only.
 - `pack` now validates manifest integrity with stronger guardrails for duplicate names, missing texture files, and mismatched manifest metadata.

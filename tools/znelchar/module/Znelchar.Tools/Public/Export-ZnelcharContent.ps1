@@ -58,9 +58,38 @@ Extracts character and texture data from a .znelchar file.
     }
 
     $characterPath = $null
+    $customIconPath = $null
+    $manifestCustomIcon = $null
     if (-not $MetadataOnly) {
         $character = ($outer['_characterData'] | ConvertFrom-Json -AsHashtable -Depth 100)
         $character = Expand-NestedCharacterData -Character $character -WarnOnFailure
+
+        if ($character.ContainsKey('customIconData') -and $character['customIconData'] -is [string] -and -not [string]::IsNullOrWhiteSpace([string]$character['customIconData'])) {
+            $customIconBase64 = [string]$character['customIconData']
+            $normalizedCustomIconBase64 = ($customIconBase64 -replace '\s', '')
+            try {
+                $customIconBytes = [System.Convert]::FromBase64String($normalizedCustomIconBase64)
+                $customIconFormat = Get-ImageFormatInfoFromBytes -Bytes $customIconBytes
+                $customIconFileName = 'customIcon' + $customIconFormat.extension
+                $customIconPath = Join-Path $OutputDir $customIconFileName
+
+                [System.IO.File]::WriteAllBytes($customIconPath, $customIconBytes)
+                $customIconSha256 = (Get-FileHash -Algorithm SHA256 -Path $customIconPath).Hash
+                $null = $character.Remove('customIconData')
+
+                $manifestCustomIcon = [ordered]@{
+                    outputFile = $customIconFileName
+                    base64Length = [int64]$customIconBase64.Length
+                    estimatedDecodedBytes = [int64]$customIconBytes.Length
+                    sha256 = $customIconSha256
+                    mimeType = $customIconFormat.mimeType
+                }
+            }
+            catch {
+                Write-Warning "Failed to extract character.customIconData; keeping original field in character.json. $($_.Exception.Message)"
+            }
+        }
+
         Write-Stage -Prefix 'extract' -Message 'Writing character.json'
         $characterPath = Join-Path $OutputDir 'character.json'
         Write-Utf8NoBomFile -Path $characterPath -Content ($character | ConvertTo-Json -Depth 100)
@@ -117,6 +146,7 @@ Extracts character and texture data from a .znelchar file.
         extractedAtUtc = [DateTime]::UtcNow.ToString('o')
         metadataOnly = [bool]$MetadataOnly
         characterFile = if ($MetadataOnly) { $null } else { 'character.json' }
+        customIcon = $manifestCustomIcon
         texturesFolder = 'textures'
         textureCount = $manifestTextures.Count
         textures = $manifestTextures
@@ -130,6 +160,7 @@ Extracts character and texture data from a .znelchar file.
     return [ordered]@{
         outputDir = $OutputDir
         characterFile = $characterPath
+        customIconFile = $customIconPath
         manifestFile = $manifestPath
         textureCount = $manifestTextures.Count
         metadataOnly = [bool]$MetadataOnly
