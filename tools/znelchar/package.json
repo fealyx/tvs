@@ -1,0 +1,22 @@
+{
+  "name": "@tvs/znelchar-tools",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Tools and schemas for working with .znelchar files",
+  "scripts": {
+    "build": "npm run build:dist",
+    "rebuild": "npm run build:dist",
+    "inspect": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/inspect.ps1",
+    "extract": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/extract.ps1",
+    "pack": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/pack.ps1",
+    "dump-yaml": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/dump-yaml.ps1",
+    "verify": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/verify-znelchar.ps1",
+    "verify:ci": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/verify-znelchar.ps1 -CiSummary",
+    "verify:report": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/verify-znelchar.ps1 -DiffReportPath ./out/verify-diff.json",
+    "verify:roundtrip": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/roundtrip-verify.ps1",
+    "verify:roundtrip:ci": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/roundtrip-verify.ps1 -CiSummary",
+    "build:dist": "npm run build:dist:module && npm run build:dist:portable",
+    "build:dist:portable": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./build/package.ps1 -CreatePortable -CreateModule:'$false' -DownloadPortableRuntime",
+    "build:dist:module": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./build/package.ps1 -CreateModule -CreatePortable:'$false'"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fealty.github.io/tvs/schemas/znelchar/znelchar.schema.json",
+  "title": "znelchar",
+  "type": "object",
+  "required": [
+    "_characterData"
+  ],
+  "properties": {
+    "_characterData": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Escaped JSON string containing the character payload"
+    },
+    "_textureDatas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "_textureName",
+          "_textureData"
+        ],
+        "properties": {
+          "_textureName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "_textureData": {
+            "type": "string",
+            "minLength": 1,
+            "contentEncoding": "base64"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

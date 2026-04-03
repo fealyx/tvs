@@ -1,0 +1,40 @@
+name: CI
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '22.20.0'
+
+      - name: Cache Rush and pnpm state
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: |
+            common/temp/pnpm-store
+            common/temp/pnpm-local
+            common/temp/install-run
+            common/temp/build-cache
+          key: rush-${{ runner.os }}-${{ hashFiles('rush.json', 'common/config/rush/pnpm-lock.yaml', 'common/config/rush/build-cache.json') }}
+          restore-keys: |
+            rush-${{ runner.os }}-
+
+      - name: Verify Change Logs
+        run: node common/scripts/install-run-rush.js change --verify
+
+      - name: Rush Install
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Rush Build
+        run: node common/scripts/install-run-rush.js build --verbose

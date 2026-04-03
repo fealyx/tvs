@@ -1,0 +1,69 @@
+{
+  "project_overview": {
+    "goal": "",
+    "current_status": "",
+    "definition_of_done": ""
+  },
+  "decisions": [
+    {
+      "decision": "",
+      "rationale": "",
+      "tradeoffs": "",
+      "applies_to": ["path/or/module"]
+    }
+  ],
+  "work_completed": [
+    {
+      "summary": "",
+      "files_touched": ["path/file"],
+      "notable_symbols": ["SymbolName"],
+      "behavioral_impact": ""
+    }
+  ],
+  "open_work": [
+    {
+      "priority": "high|medium|low",
+      "task": "",
+      "recommended_next_step": "",
+      "blocking_dependencies": ""
+    }
+  ],
+  "known_issues_and_risks": [
+    {
+      "issue": "",
+      "severity": "high|medium|low",
+      "how_to_reproduce": "",
+      "likely_cause": "",
+      "mitigation": ""
+    }
+  ],
+  "validation": {
+    "commands_run": ["exact command"],
+    "test_results": "",
+    "lint_typecheck_status": "",
+    "manual_checks": ["check and result"]
+  },
+  "environment_notes": {
+    "toolchain_versions": ["node/pnpm/rush/etc"],
+    "env_vars_required": ["VAR_NAME"],
+    "devcontainer_differences": ""
+  },
+  "next_session_bootstrap": {
+    "first_3_actions": [
+      "action 1",
+      "action 2",
+      "action 3"
+    ],
+    "quick_win_task": ""
+  },
+  "appendix": {
+    "important_commands": ["command"],
+    "important_paths": ["path"],
+    "glossary": [
+      {
+        "term": "",
+        "meaning": ""
+      }
+    ]
+  }
+}

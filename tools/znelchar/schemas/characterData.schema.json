@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fealty.github.io/tvs/schemas/znelchar/characterData.schema.json",
+  "title": "znelchar characterData",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "isSynth": {
+      "type": "boolean"
+    },
+    "blendshapes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "accessories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "skinData": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
