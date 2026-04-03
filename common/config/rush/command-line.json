@@ -11,6 +11,14 @@
    * "rush my-global-command --help".
    */
   "commands": [
+    {
+      "commandKind": "global",
+      "name": "build:pages",
+      "summary": "Build GitHub Pages site with 11ty and collect tool documentation",
+      "description": "Builds the community documentation site using 11ty static site generator, automatically collects tool docs from tools/*/docs folders, and generates the final site at content/_site/",
+      "safeForSimultaneousRushProcesses": false,
+      "shellCommand": "node common/scripts/build-pages.js"
+    }
     // {
     //   /**
     //    * (Required) Determines the type of custom command.

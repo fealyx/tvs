@@ -27,6 +27,33 @@ jobs:
       - name: Collect schemas
         run: node common/scripts/collect-schemas.js
 
+      - name: Collect tool documentation
+        run: |
+          # Copy tool docs into content site
+          mkdir -p content/src/tools/znelchar/docs
+          cp -r tools/znelchar/docs/* content/src/tools/znelchar/docs/ 2>/dev/null || true
+          
+          # Add any additional tools following the same pattern
+          for tool_dir in tools/*/docs; do
+            if [ -d "$tool_dir" ]; then
+              tool_name=$(basename $(dirname "$tool_dir"))
+              mkdir -p "content/src/tools/$tool_name"
+              cp -r "$tool_dir" "content/src/tools/$tool_name/" 2>/dev/null || true
+            fi
+          done
+
+      - name: Build 11ty site
+        run: |
+          cd content
+          npm ci
+          npm run build
+
+      - name: Combine artifacts for Pages
+        run: |
+          # Copy 11ty generated site to .pages
+          cp -r content/_site/* .pages/ 2>/dev/null || true
+          # Schemas are already in .pages from collect-schemas.js
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
         with:

@@ -1,0 +1,8 @@
+node_modules
+.git
+.gitignore
+README.md
+CONTRIBUTING.md
+_site
+.DS_Store
+*.swp

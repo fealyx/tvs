@@ -1,0 +1,18 @@
+{
+  "name": "tvs-community-docs",
+  "version": "1.0.0",
+  "description": "Community documentation and guides for game modding",
+  "scripts": {
+    "dev": "eleventy --input src --output _site --serve",
+    "build": "eleventy --input src --output _site",
+    "watch": "eleventy --input src --output _site --watch",
+    "test:links": "linkinator _site --skip node_modules"
+  },
+  "dependencies": {
+    "@11ty/eleventy": "^3.0.0",
+    "luxon": "^3.4.1"
+  },
+  "devDependencies": {
+    "linkinator": "^5.0.2"
+  }
+}

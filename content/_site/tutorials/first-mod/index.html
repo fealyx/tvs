@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tutorial: Your First Mod | Modding Community</title>
+  <meta name="description" content="A comprehensive knowledge base for game modding, tutorials, discoveries, and tools">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+</head>
+<body>
+  <nav class="navbar">
+  <div class="navbar-container">
+    <a href="/" class="navbar-brand">Modding Community</a>
+    <ul class="navbar-menu">
+      <li><a href="/">Home</a></li>
+      <li><a href="/guides/">Guides</a></li>
+      <li><a href="/tutorials/">Tutorials</a></li>
+      <li><a href="/discoveries/">Discoveries</a></li>
+      <li><a href="/tools/">Tools</a></li>
+      <li><a href="/community/">Community</a></li>
+    </ul>
+  </div>
+</nav>
+
+  
+  <main class="container">
+    <div class="page-wrapper">
+      <article class="content">
+        
+          <h1>Tutorial: Your First Mod</h1>
+          
+            <p class="metadata">
+              <time datetime="2026-04-03T00:00:00.000Z">April 3, 2026</time>
+              <span class="author">by Community</span>
+            </p>
+          
+        
+        
+        <h1>Tutorial: Your First Mod</h1>
+<p>In this tutorial, we'll create a simple character mod from start to finish.</p>
+<h2>Step 1: Extract Assets</h2>
+<p>First, extract the base character:</p>
+<pre><code class="language-bash">npm run extract -- -InputPath ./game/character.znelchar -OutputDir ./my-first-mod
+</code></pre>
+<p>This creates:</p>
+<ul>
+<li><code>character.json</code> - Character data</li>
+<li><code>textures/</code> - Texture files</li>
+<li><code>customIcon.png</code> - Character icon</li>
+<li><code>manifest.json</code> - Metadata</li>
+</ul>
+<h2>Step 2: Edit Character Data</h2>
+<p>Open <code>character.json</code> and modify character properties:</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;My Custom Character&quot;,
+  &quot;colors&quot;: {
+    &quot;primary&quot;: &quot;#FF5733&quot;,
+    &quot;secondary&quot;: &quot;#33FF57&quot;
+  }
+}
+</code></pre>
+<h2>Step 3: Modify Textures</h2>
+<p>Edit texture files in the <code>textures/</code> folder using your favorite image editor.</p>
+<h2>Step 4: Validate Your Changes</h2>
+<p>Run verification to check for issues:</p>
+<pre><code class="language-bash">npm run verify -- -LeftPath ./game/character.znelchar -RightPath ./my-first-mod
+</code></pre>
+<h2>Step 5: Pack Your Mod</h2>
+<p>Pack everything back into a distributable file:</p>
+<pre><code class="language-bash">npm run pack -- -ManifestPath ./my-first-mod/manifest.json -OutputPath ./my-mod.znelchar
+</code></pre>
+<h2>Step 6: Test</h2>
+<p>Test your mod in-game and iterate!</p>
+<hr>
+<p>Congratulations on your first mod! 🎉</p>
+<p>For more advanced techniques, check out the <a href="/guides/character-modding/">Character Modding Guide</a>.</p>
+
+
+      </article>
+      
+      <aside class="sidebar">
+  <div class="sidebar-card">
+    <h3>Quick Links</h3>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/guides/">All Guides</a></li>
+      <li><a href="/tutorials/">Tutorials</a></li>
+      <li><a href="/tools/">Tools</a></li>
+    </ul>
+  </div>
+</aside>
+
+    </div>
+  </main>
+  
+  <footer class="footer">
+  <div class="footer-container">
+    <p>&copy; 2026 Game Modding Community. Licensed under CC BY-SA 4.0.</p>
+    <p><a href="https://github.com/fealyx/tvs">View on GitHub</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
