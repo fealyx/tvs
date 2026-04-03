@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://fealty.github.io/tvs/schemas/znelchar/opinionDataString.schema.json",
+  "$id": "https://fealyx.github.io/tvs/schemas/znelchar/opinionDataString.schema.json",
   "title": "znelchar opinionDataString",
   "type": "object",
   "properties": {

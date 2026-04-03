@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://fealty.github.io/tvs/schemas/znelchar/znelchar.schema.json",
+  "$id": "https://fealyx.github.io/tvs/schemas/znelchar/znelchar.schema.json",
   "title": "znelchar",
   "type": "object",
   "required": [
