@@ -1,0 +1,56 @@
+name: Release Artifacts
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '22.20.0'
+
+      - name: Cache Rush and pnpm state
+        uses: actions/cache@v3
+        with:
+          path: |
+            common/temp/pnpm-store
+            common/temp/pnpm-local
+            common/temp/install-run
+            common/temp/build-cache
+          key: release-rush-${{ runner.os }}-${{ hashFiles('rush.json', 'common/config/rush/pnpm-lock.yaml', 'common/config/rush/build-cache.json') }}
+          restore-keys: |
+            release-rush-${{ runner.os }}-
+            rush-${{ runner.os }}-
+
+      - name: Rush Install
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Build artifacts via Rush
+        run: node common/scripts/install-run-rush.js build --verbose --to @tvs/znelchar-tools
+
+      - name: Prepare release files
+        run: |
+          set -e
+          mkdir -p release-artifacts
+          cp tools/znelchar/dist/znelchar-module-*.zip release-artifacts/
+          cp tools/znelchar/dist/znelchar-portable-*.zip release-artifacts/
+          (cd release-artifacts && sha256sum *.zip > SHA256SUMS.txt)
+          ls -la release-artifacts
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            release-artifacts/znelchar-module-*.zip
+            release-artifacts/znelchar-portable-*.zip
+            release-artifacts/SHA256SUMS.txt

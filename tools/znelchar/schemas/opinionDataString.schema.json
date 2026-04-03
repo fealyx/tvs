@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fealty.github.io/tvs/schemas/znelchar/opinionDataString.schema.json",
+  "title": "znelchar opinionDataString",
+  "type": "object",
+  "properties": {
+    "_difficulty": {
+      "type": "number"
+    },
+    "_opinions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "_name": {
+            "type": "integer"
+          },
+          "_preference": {
+            "type": "integer"
+          },
+          "_opinionMultiplier": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "_name",
+          "_preference",
+          "_opinionMultiplier"
+        ],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": [
+    "_difficulty",
+    "_opinions"
+  ],
+  "additionalProperties": true
+}

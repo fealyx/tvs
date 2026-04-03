@@ -1,0 +1,62 @@
+// For format details, see https://aka.ms/devcontainer.json.
+{
+    "name": "TVS Monorepo",
+
+    // Ubuntu 24.04 LTS — clean, well-supported base for devcontainer features
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+    "features": {
+        // Node 22.x — matches rush.json nodeSupportedVersionRange ">=22.20.0 <23.0.0"
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "22",
+            "nvmVersion": "none"
+        },
+        // PowerShell 7 — used by all znelchar tooling scripts
+        "ghcr.io/devcontainers/features/powershell:1": {
+            "version": "latest"
+        }
+    },
+
+    // Install Rush globally at the pinned version from rush.json, then do initial install
+    "postCreateCommand": "npm install -g @microsoft/rush@5.162.0 && rush install",
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.powershell",
+                "redhat.vscode-yaml",
+                "editorconfig.editorconfig",
+                "github.vscode-github-actions",
+                "RushStack.rushstack",
+                "adamraichu.zip-viewer",
+                "eamodio.gitlens",
+                "EditorConfig.EditorConfig"
+            ],
+            "settings": {
+                // Use bash as the terminal default so npm/rush commands work without prefixing
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "terminal.integrated.profiles.linux": {
+                    "bash": {
+                        "path": "/bin/bash",
+                        "icon": "terminal-bash"
+                    },
+                    "pwsh": {
+                        "path": "/usr/bin/pwsh",
+                        "icon": "terminal-powershell"
+                    }
+                },
+                // File associations
+                "files.associations": {
+                    "*.znelchar": "json"
+                },
+                // Ensure Unix line endings for shell scripts inside the container
+                "[shellscript]": {
+                    "files.eol": "\n"
+                }
+            }
+        }
+    },
+
+    // Run as the default vscode non-root user
+    "remoteUser": "vscode"
+}
