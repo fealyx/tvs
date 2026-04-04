@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <TVSGameDir>C:\Program Files (x86)\Steam\steamapps\common\The Villain Simulator</TVSGameDir>
+
+    <!-- Optional overrides if your install layout differs from the default. -->
+    <!-- <TVSManagedDir>$(TVSGameDir)\The Villain Simulator_Data\Managed</TVSManagedDir> -->
+    <!-- <TVSPublicizedDir>$(TVSGameDir)\.tvs-publicized</TVSPublicizedDir> -->
+  </PropertyGroup>
+</Project>

@@ -126,3 +126,15 @@ dist-storybook/
 
 # Project temp files
 temp/
+
+# .NET build artifacts
+**/bin/
+**/obj/
+.vs/
+*.user
+*.suo
+*.nupkg
+TestResults/
+
+# Local mod workspace configuration
+mods/GameDir.props

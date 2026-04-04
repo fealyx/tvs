@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>TVS.SampleMod</AssemblyName>
+    <RootNamespace>TVS.SampleMod</RootNamespace>
+    <Description>Starter BepInEx plugin for The Villain Simulator.</Description>
+    <Version>0.1.0</Version>
+    <GUID>io.tvs.samplemod</GUID>
+    <Product>TVS Sample Mod</Product>
+    <EnableAssemblyPublicizer>true</EnableAssemblyPublicizer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Core" />
+    <PackageReference Include="BepInEx.PluginInfoProps" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TVS.Core\TVS.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\Assembly-CSharp.dll')">
+    <Reference Update="Assembly-CSharp">
+      <Publicize>true</Publicize>
+    </Reference>
+  </ItemGroup>
+</Project>

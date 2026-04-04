@@ -1,0 +1,37 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)GameDir.props" Condition="Exists('$(MSBuildThisFileDirectory)GameDir.props')" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Deterministic>true</Deterministic>
+    <DebugType>embedded</DebugType>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <EnableAssemblyPublicizer>false</EnableAssemblyPublicizer>
+    <TVSManagedDir Condition="'$(TVSManagedDir)' == '' and '$(TVSGameDir)' != ''">$(TVSGameDir)\The Villain Simulator_Data\Managed</TVSManagedDir>
+    <TVSPublicizedDir Condition="'$(TVSPublicizedDir)' == '' and '$(TVSGameDir)' != ''">$(TVSGameDir)\.tvs-publicized</TVSPublicizedDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Analyzers" PrivateAssets="all" />
+    <PackageReference Include="UnityEngine.Modules" IncludeAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(EnableAssemblyPublicizer)' == 'true'">
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\Assembly-CSharp.dll')">
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(TVSManagedDir)\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="WarnIfTVSManagedDirMissing" BeforeTargets="PrepareForBuild" Condition="'$(TVSManagedDir)' == '' or !Exists('$(TVSManagedDir)')">
+    <Warning Text="TVS game references are not configured. Copy GameDir.props.example to GameDir.props and set TVSGameDir to your game install path." />
+  </Target>
+</Project>

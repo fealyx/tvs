@@ -1,0 +1,11 @@
+{
+  "name": "@tvs/mods",
+  "version": "0.0.0",
+  "private": true,
+  "description": "BepInEx mod development workspace for The Villain Simulator",
+  "scripts": {
+    "build": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/build.ps1",
+    "rebuild": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/build.ps1 -Rebuild",
+    "clean": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/build.ps1 -Clean"
+  }
+}

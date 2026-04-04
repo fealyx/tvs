@@ -443,6 +443,14 @@
     {
       "packageName": "@tvs/znelchar-tools",
       "projectFolder": "tools/znelchar"
+    },
+    {
+      "packageName": "@tvs/znelchar-gui",
+      "projectFolder": "tools/znelchar-gui"
+    },
+    {
+      "packageName": "@tvs/mods",
+      "projectFolder": "mods"
     }
   ]
 }
