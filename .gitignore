@@ -127,6 +127,10 @@ dist-storybook/
 # Project temp files
 temp/
 
+# TVS Modding environment and local game refs (never commit)
+.env
+mods/.local/
+
 # .NET build artifacts
 **/bin/
 **/obj/

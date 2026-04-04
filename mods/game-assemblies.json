@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "description": "Curated list of TVS game assemblies to copy for mod development",
+  "managedAssemblies": [
+    {
+      "name": "Assembly-CSharp.dll",
+      "required": true,
+      "description": "Main game code and types"
+    }
+  ],
+  "notes": [
+    "Start with Assembly-CSharp as the baseline for most mods.",
+    "Add additional assemblies here as mod requirements dictate.",
+    "The setup script will warn if required assemblies are missing after copy.",
+    "Optional assemblies are skipped silently if not found in the game folder."
+  ]
+}

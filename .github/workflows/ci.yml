@@ -38,3 +38,21 @@ jobs:
 
       - name: Rush Build
         run: node common/scripts/install-run-rush.js build --verbose
+
+  mods-dotnet:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: actions/setup-dotnet@8c9c9eb64c7ec2efea2a57f8b3c41bcaccab1c88 # v5.0.0
+        with:
+          dotnet-version: |
+            8.0.x
+
+      - name: Restore mods solution
+        run: dotnet restore mods/Mods.sln
+
+      - name: Build mods solution
+        run: dotnet build mods/Mods.sln --configuration Release --no-restore

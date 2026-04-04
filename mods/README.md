@@ -13,8 +13,16 @@ This directory is the .NET mod development workspace for The Villain Simulator.
 ## First-time setup
 
 1. Install a recent .NET SDK that supports building `netstandard2.1` projects.
-2. Copy `GameDir.props.example` to `GameDir.props`.
-3. Update `TVSGameDir` to your local game install path.
+2. Run the modding environment setup script:
+   ```powershell
+   pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/setup-modding-env.ps1
+   ```
+   This script will:
+   - Auto-detect your TVS game install path (or prompt you for it)
+   - Copy required game assemblies to `mods/.local/game-refs/managed/`
+   - Generate `.env` file in the repo root with `TVS_GAME_DIR` and `TVS_PLAYER_DATA_DIR`
+   - Generate `GameDir.props` pointing to the local assembly cache
+3. (Optional) Review the generated `.env` and `mods/GameDir.props` files
 
 ## Build
 
@@ -23,7 +31,17 @@ This directory is the .NET mod development workspace for The Villain Simulator.
 
 Both commands build `Mods.sln` through the workspace wrapper script.
 
-## Publicized assemblies
+## Assembly management
+
+### Local cache and game references
+
+Game assemblies are copied to `mods/.local/game-refs/managed/` during setup.
+This keeps your repo independent of game install location and prevents build conflicts.
+The local cache is gitignored and regenerated if needed.
+
+To add new assemblies to the copy manifest, edit `game-assemblies.json` and re-run the setup script.
+
+### Publicized assemblies
 
 `TVS.Core` is configured to publicize `Assembly-CSharp.dll` if it is available.
 That is the default starting point because it usually contains most game code.
