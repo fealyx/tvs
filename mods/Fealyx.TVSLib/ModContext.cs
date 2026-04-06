@@ -1,4 +1,4 @@
-﻿namespace TVS.Core;
+﻿namespace Fealyx.TVSLib;
 
 public static class ModContext
 {

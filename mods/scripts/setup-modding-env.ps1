@@ -155,13 +155,18 @@ function Copy-GameAssemblies {
 }
 
 function New-GameDirProps {
-    param([string]$ManagedDir)
+    param(
+        [string]$GameDir,
+        [string]$ManagedDir
+    )
     
     $content = @"
 <Project>
   <PropertyGroup>
-    <TVSGameDir></TVSGameDir>
+            <TVSGameDir>$GameDir</TVSGameDir>
     <TVSManagedDir>$ManagedDir</TVSManagedDir>
+            <TVSPluginDeployDir>$GameDir\BepInEx\plugins</TVSPluginDeployDir>
+            <TVSAutoDeployOnBuild>true</TVSAutoDeployOnBuild>
     <!-- <TVSPublicizedDir></TVSPublicizedDir> -->
   </PropertyGroup>
 </Project>
@@ -222,7 +227,7 @@ Copy-GameAssemblies -SourceDir $managedDir -Assemblies $manifest.managedAssembli
 
 # 4. Generate GameDir.props pointing to local cache
 Write-Host "`nGenerating MSBuild configuration..."
-New-GameDirProps -ManagedDir $localCacheDir
+New-GameDirProps -GameDir $gamePath -ManagedDir $localCacheDir
 
 # 5. Generate .env file
 Write-Host "Generating environment file..."

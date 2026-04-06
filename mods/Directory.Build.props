@@ -1,18 +1,21 @@
 <Project>
-  <Import Project="$(MSBuildThisFileDirectory)GameDir.props" Condition="Exists('$(MSBuildThisFileDirectory)GameDir.props')" />
+  <Import Project="$(MSBuildThisFileDirectory)\GameDir.props" Condition="Exists('$(MSBuildThisFileDirectory)\GameDir.props')" />
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- <ImplicitUsings>enable</ImplicitUsings> -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Deterministic>true</Deterministic>
     <DebugType>embedded</DebugType>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <TVSIsPlugin>false</TVSIsPlugin>
+    <TVSAutoDeployOnBuild>false</TVSAutoDeployOnBuild>
     <EnableAssemblyPublicizer>false</EnableAssemblyPublicizer>
-    <TVSManagedDir Condition="'$(TVSManagedDir)' == '' and '$(TVSGameDir)' != ''">$(TVSGameDir)\The Villain Simulator_Data\Managed</TVSManagedDir>
+    <TVSManagedDir Condition="'$(TVSManagedDir)' == '' and '$(TVSGameDir)' != ''">$(TVSGameDir)\TheVillainSimulator_Data\Managed</TVSManagedDir>
     <TVSPublicizedDir Condition="'$(TVSPublicizedDir)' == '' and '$(TVSGameDir)' != ''">$(TVSGameDir)\.tvs-publicized</TVSPublicizedDir>
+    <TVSPluginDeployDir Condition="'$(TVSPluginDeployDir)' == '' and '$(TVSGameDir)' != ''">$(TVSGameDir)\BepInEx\plugins</TVSPluginDeployDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +27,10 @@
     <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" PrivateAssets="all" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+  </ItemGroup>
+
   <ItemGroup Condition="Exists('$(TVSManagedDir)\Assembly-CSharp.dll')">
     <Reference Include="Assembly-CSharp">
       <HintPath>$(TVSManagedDir)\Assembly-CSharp.dll</HintPath>
@@ -31,7 +38,221 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\Assembly-CSharp-firstpass.dll')">
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>$(TVSManagedDir)\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\Animancer.dll')">
+    <Reference Include="Animancer">
+      <HintPath>$(TVSManagedDir)\Animancer.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\Animancer.FSM.dll')">
+    <Reference Include="Animancer.FSM">
+      <HintPath>$(TVSManagedDir)\Animancer.FSM.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\Cinemachine.dll')">
+    <Reference Include="Cinemachine">
+      <HintPath>$(TVSManagedDir)\Cinemachine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\ClassLibrary1.dll')">
+    <Reference Include="ClassLibrary1">
+      <HintPath>$(TVSManagedDir)\ClassLibrary1.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\DOTween.dll')">
+    <Reference Include="DOTween">
+      <HintPath>$(TVSManagedDir)\DOTween.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\Febucci.TextAnimator.Runtime.dll')">
+    <Reference Include="Febucci.TextAnimator.Runtime">
+      <HintPath>$(TVSManagedDir)\Febucci.TextAnimator.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\Lattice.Runtime.dll')">
+    <Reference Include="Lattice.Runtime">
+      <HintPath>$(TVSManagedDir)\Lattice.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\LeanCommon.dll')">
+    <Reference Include="LeanCommon">
+      <HintPath>$(TVSManagedDir)\LeanCommon.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\LeanLocalization.dll')">
+    <Reference Include="LeanLocalization">
+      <HintPath>$(TVSManagedDir)\LeanLocalization.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\LeTai.TranslucentImage.dll')">
+    <Reference Include="LeTai.TranslucentImage">
+      <HintPath>$(TVSManagedDir)\LeTai.TranslucentImage.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\LoadingScreen.Misc.dll')">
+    <Reference Include="LoadingScreen.Misc">
+      <HintPath>$(TVSManagedDir)\LoadingScreen.Misc.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\LovesenseForUnity.dll')">
+    <Reference Include="LovesenseForUnity">
+      <HintPath>$(TVSManagedDir)\LovesenseForUnity.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\LovesenseRemote.dll')">
+    <Reference Include="LovesenseRemote">
+      <HintPath>$(TVSManagedDir)\LovesenseRemote.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\MagicaClothV2.dll')">
+    <Reference Include="MagicaClothV2">
+      <HintPath>$(TVSManagedDir)\MagicaClothV2.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\MeshExtension.dll')">
+    <Reference Include="MeshExtension">
+      <HintPath>$(TVSManagedDir)\MeshExtension.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\MK.Glow.dll')">
+    <Reference Include="MK.Glow">
+      <HintPath>$(TVSManagedDir)\MK.Glow.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\NaughtyAttributes.Core.dll')">
+    <Reference Include="NaughtyAttributes.Core">
+      <HintPath>$(TVSManagedDir)\NaughtyAttributes.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\Newtonsoft.Json.dll')">
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(TVSManagedDir)\Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\PaintIn3D.dll')">
+    <Reference Include="PaintIn3D">
+      <HintPath>$(TVSManagedDir)\PaintIn3D.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\RootMotion.dll')">
+    <Reference Include="RootMotion">
+      <HintPath>$(TVSManagedDir)\RootMotion.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\SimpleFileBrowser.dll')">
+    <Reference Include="SimpleFileBrowser">
+      <HintPath>$(TVSManagedDir)\SimpleFileBrowser.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\SmoothGridLayout.dll')">
+    <Reference Include="SmoothGridLayout">
+      <HintPath>$(TVSManagedDir)\SmoothGridLayout.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\SteamVR_Actions.dll')">
+    <Reference Include="SteamVR_Actions">
+      <HintPath>$(TVSManagedDir)\SteamVR_Actions.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\SteamVR.dll')">
+    <Reference Include="SteamVR">
+      <HintPath>$(TVSManagedDir)\SteamVR.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\StompyRobot.SRDebugger.dll')">
+    <Reference Include="StompyRobot.SRDebugger">
+      <HintPath>$(TVSManagedDir)\StompyRobot.SRDebugger.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\StompyRobot.SRF.dll')">
+    <Reference Include="StompyRobot.SRF">
+      <HintPath>$(TVSManagedDir)\StompyRobot.SRF.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\UnityEngine.AssetBundleModule.dll')">
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>$(TVSManagedDir)\UnityEngine.AssetBundleModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\UnityEngine.UI.dll')">
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(TVSManagedDir)\UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+
   <Target Name="WarnIfTVSManagedDirMissing" BeforeTargets="PrepareForBuild" Condition="'$(TVSManagedDir)' == '' or !Exists('$(TVSManagedDir)')">
     <Warning Text="TVS game references are not configured. Copy GameDir.props.example to GameDir.props and set TVSGameDir to your game install path." />
+  </Target>
+
+  <Target Name="WarnIfAutoDeployConfiguredWithoutTarget" BeforeTargets="Build" Condition="'$(TVSIsPlugin)' == 'true' and '$(TVSAutoDeployOnBuild)' == 'true' and '$(TVSPluginDeployDir)' == ''">
+    <Warning Text="TVS auto-deploy is enabled but TVSPluginDeployDir is empty. Set TVSGameDir or TVSPluginDeployDir in mods/GameDir.props." />
+  </Target>
+
+  <Target Name="AutoDeployPlugin" AfterTargets="Build" Condition="'$(TVSIsPlugin)' == 'true' and '$(TVSAutoDeployOnBuild)' == 'true' and Exists('$(TargetPath)') and '$(TVSPluginDeployDir)' != ''">
+    <MakeDir Directories="$(TVSPluginDeployDir)" Condition="!Exists('$(TVSPluginDeployDir)')" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(TVSPluginDeployDir)" SkipUnchangedFiles="true" />
+    <Message Text="Auto-deployed $(TargetFileName) to $(TVSPluginDeployDir)" Importance="high" />
   </Target>
 </Project>

@@ -31,6 +31,19 @@ This directory is the .NET mod development workspace for The Villain Simulator.
 
 Both commands build `Mods.sln` through the workspace wrapper script.
 
+If `TVSAutoDeployOnBuild` is true in `mods/GameDir.props`, plugin projects are copied
+to `BepInEx/plugins` automatically after each successful build.
+
+## Mod manager
+
+Use the mod manager script for install/deploy workflows:
+
+- `npm run mod:install:bepinex` installs BepInEx 5 to your `TVS_GAME_DIR`
+- `npm run mod:install:dev` installs default development helper mods from manifest
+- `npm run mod:deploy` deploys all built plugin projects to `BepInEx/plugins`
+
+The script source is `mods/scripts/mod-manager.ps1`.
+
 ## Assembly management
 
 ### Local cache and game references

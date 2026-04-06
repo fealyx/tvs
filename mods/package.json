@@ -6,6 +6,9 @@
   "scripts": {
     "build": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/build.ps1",
     "rebuild": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/build.ps1 -Rebuild",
-    "clean": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/build.ps1 -Clean"
+    "clean": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/build.ps1 -Clean",
+    "mod:deploy": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/mod-manager.ps1 -Action deploy-all",
+    "mod:install:bepinex": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/mod-manager.ps1 -Action install-bepinex",
+    "mod:install:dev": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/mod-manager.ps1 -Action install-dev-mods"
   }
 }

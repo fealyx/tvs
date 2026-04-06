@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "description": "Optional baseline mods helpful for development",
+  "mods": [
+    {
+      "name": "BepInEx.ConfigurationManager",
+      "url": "https://github.com/BepInEx/BepInEx.ConfigurationManager/releases/download/v18.4.1/BepInEx.ConfigurationManager_BepInEx5_v18.4.1.zip"
+    }
+  ]
+}

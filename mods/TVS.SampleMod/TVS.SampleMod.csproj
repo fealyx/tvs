@@ -1,12 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>TVS.SampleMod</AssemblyName>
-    <RootNamespace>TVS.SampleMod</RootNamespace>
-    <Description>Starter BepInEx plugin for The Villain Simulator.</Description>
-    <Version>0.1.0</Version>
-    <GUID>io.tvs.samplemod</GUID>
-    <Product>TVS Sample Mod</Product>
+    <Description>Modding exploration sandbox.</Description>
     <EnableAssemblyPublicizer>true</EnableAssemblyPublicizer>
+    <GUID>fealyx.tvs.samplemod</GUID>
+    <Product>TVS Sample Mod</Product>
+    <RootNamespace>TVS.SampleMod</RootNamespace>
+    <TVSIsPlugin>true</TVSIsPlugin>
+    <Version>0.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,13 +15,29 @@
     <PackageReference Include="BepInEx.PluginInfoProps" />
   </ItemGroup>
 
+  <!--
   <ItemGroup>
     <ProjectReference Include="..\TVS.Core\TVS.Core.csproj" />
   </ItemGroup>
+  -->
 
   <ItemGroup Condition="Exists('$(TVSManagedDir)\Assembly-CSharp.dll')">
     <Reference Update="Assembly-CSharp">
       <Publicize>true</Publicize>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Fealyx.TVS.Oiia">
+      <HintPath>assets\Fealyx.TVS.Oiia.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="assets\oiiacat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>assets\oiiacat</Link>
+    </None>
   </ItemGroup>
 </Project>

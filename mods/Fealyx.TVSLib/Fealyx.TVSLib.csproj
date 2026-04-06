@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Fealyx.TVSLib</AssemblyName>
+    <Description>Shared library for The Villain Simulator BepInEx mods.</Description>
+    <EnableAssemblyPublicizer>true</EnableAssemblyPublicizer>
+    <GUID>fealyx.tvslib</GUID>
+    <Product>TVS Lib</Product>
+    <RootNamespace>Fealyx.TVSLib</RootNamespace>
+    <TVSIsPlugin>true</TVSIsPlugin>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Exclude documentation files from compilation -->
+    <Compile Remove="docs\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Core" />
+    <PackageReference Include="BepInEx.PluginInfoProps" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\Assembly-CSharp.dll')">
+    <Reference Update="Assembly-CSharp">
+      <Publicize>true</Publicize>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Scenes\MainScene\" />
+  </ItemGroup>
+</Project>

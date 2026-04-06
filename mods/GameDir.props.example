@@ -5,5 +5,8 @@
     <!-- Optional overrides if your install layout differs from the default. -->
     <!-- <TVSManagedDir>$(TVSGameDir)\The Villain Simulator_Data\Managed</TVSManagedDir> -->
     <!-- <TVSPublicizedDir>$(TVSGameDir)\.tvs-publicized</TVSPublicizedDir> -->
+
+    <!-- Automatically deploy plugins to the game's BepInEx plugins directory on build. -->
+    <!-- <TVSAutoDeployOnBuild>true</TVSAutoDeployOnBuild> -->
   </PropertyGroup>
 </Project>
