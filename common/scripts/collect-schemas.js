@@ -5,7 +5,7 @@ const path = require('path');
 
 const repoRoot = path.resolve(__dirname, '..', '..');
 const outputRoot = path.resolve(repoRoot, '.pages');
-const canonicalBaseUrl = 'https://fealty.github.io/tvs';
+const canonicalBaseUrl = 'https://fealyx.github.io/tvs';
 
 function walk(dir, out = []) {
   if (!fs.existsSync(dir)) {
