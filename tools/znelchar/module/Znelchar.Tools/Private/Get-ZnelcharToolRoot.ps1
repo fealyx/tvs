@@ -10,5 +10,14 @@ function Get-ZnelcharToolRoot {
         return $devRoot
     }
 
+    # Fallback: use schemas/ as an alternative structural marker when scripts/ is absent
+    if (Test-Path -LiteralPath (Join-Path $moduleRoot 'schemas')) {
+        return $moduleRoot
+    }
+
+    if (Test-Path -LiteralPath (Join-Path $devRoot 'schemas')) {
+        return $devRoot
+    }
+
     throw 'Could not resolve znelchar tool root.'
 }

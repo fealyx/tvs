@@ -106,11 +106,54 @@ function Download-PortableRuntimeZip {
     return $target
 }
 
-function Write-PortableLaunchers {
+function Write-PerToolLaunchers {
     param([Parameter(Mandatory = $true)][string]$PortableRoot)
 
-    $cmdLauncher = @'
+    $tools = [ordered]@{
+        'inspect'          = 'inspect.ps1'
+        'extract'          = 'extract.ps1'
+        'pack'             = 'pack.ps1'
+        'dump-yaml'        = 'dump-yaml.ps1'
+        'verify'           = 'verify-znelchar.ps1'
+        'verify-roundtrip' = 'roundtrip-verify.ps1'
+    }
+
+    foreach ($entry in $tools.GetEnumerator()) {
+        $verb   = $entry.Key
+        $script = $entry.Value
+
+        $cmdContent = @"
 @echo off
+setlocal enabledelayedexpansion
+set SCRIPT_DIR=%~dp0
+set PWSH_EXE=%SCRIPT_DIR%runtime\pwsh.exe
+if exist "%PWSH_EXE%" (
+  "%PWSH_EXE%" -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%scripts\$script" %*
+) else (
+  pwsh -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%scripts\$script" %*
+)
+exit /b %ERRORLEVEL%
+"@
+
+        $shContent = @"
+#!/usr/bin/env bash
+set -euo pipefail
+SCRIPT_DIR="`$(cd "`$(dirname "`${BASH_SOURCE[0]}")" && pwd)"
+if [[ -x "`$SCRIPT_DIR/runtime/pwsh" ]]; then
+  "`$SCRIPT_DIR/runtime/pwsh" -NoProfile -File "`$SCRIPT_DIR/scripts/$script" "`$@"
+else
+  pwsh -NoProfile -File "`$SCRIPT_DIR/scripts/$script" "`$@"
+fi
+"@
+
+        [System.IO.File]::WriteAllText((Join-Path $PortableRoot "$verb.cmd"), $cmdContent, [System.Text.UTF8Encoding]::new($false))
+        [System.IO.File]::WriteAllText((Join-Path $PortableRoot "$verb.sh"), $shContent, [System.Text.UTF8Encoding]::new($false))
+    }
+
+    # Legacy compatibility shims — deprecated in favour of the per-tool launchers above.
+    $legacyCmdContent = @'
+@echo off
+echo [znelchar] run-znelchar.cmd is deprecated. Use per-tool launchers (e.g., inspect.cmd, extract.cmd) instead. 1>&2
 setlocal enabledelayedexpansion
 set SCRIPT_DIR=%~dp0
 set PWSH_EXE=%SCRIPT_DIR%runtime\pwsh.exe
@@ -122,9 +165,10 @@ if exist "%PWSH_EXE%" (
 exit /b %ERRORLEVEL%
 '@
 
-    $shLauncher = @'
+    $legacyShContent = @'
 #!/usr/bin/env bash
 set -euo pipefail
+echo '[znelchar] run-znelchar.sh is deprecated. Use per-tool launchers (e.g., inspect.sh, extract.sh) instead.' >&2
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ -x "$SCRIPT_DIR/runtime/pwsh" ]]; then
   "$SCRIPT_DIR/runtime/pwsh" -NoProfile -File "$SCRIPT_DIR/scripts/invoke-tool.ps1" "$@"
@@ -133,8 +177,8 @@ else
 fi
 '@
 
-    [System.IO.File]::WriteAllText((Join-Path $PortableRoot 'run-znelchar.cmd'), $cmdLauncher, [System.Text.UTF8Encoding]::new($false))
-    [System.IO.File]::WriteAllText((Join-Path $PortableRoot 'run-znelchar.sh'), $shLauncher, [System.Text.UTF8Encoding]::new($false))
+    [System.IO.File]::WriteAllText((Join-Path $PortableRoot 'run-znelchar.cmd'), $legacyCmdContent, [System.Text.UTF8Encoding]::new($false))
+    [System.IO.File]::WriteAllText((Join-Path $PortableRoot 'run-znelchar.sh'), $legacyShContent, [System.Text.UTF8Encoding]::new($false))
 }
 
 $repoRoot = Get-RepoRoot
@@ -183,7 +227,7 @@ if ($CreatePortable) {
 
         Copy-SharedAssets -RepoRoot $repoRoot -DestinationRoot $portableRoot
         Copy-Item -LiteralPath (Join-Path $repoRoot 'module') -Destination (Join-Path $portableRoot 'module') -Recurse -Force
-        Write-PortableLaunchers -PortableRoot $portableRoot
+        Write-PerToolLaunchers -PortableRoot $portableRoot
 
         $runtimeDestination = Join-Path $portableRoot 'runtime'
         $runtimeZipToUse = $null

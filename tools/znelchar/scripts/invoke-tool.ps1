@@ -11,6 +11,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+Write-Warning 'invoke-tool.ps1 is deprecated. Use per-tool wrappers directly (e.g., inspect.ps1, extract.ps1).'
 $scriptRoot = Split-Path -Parent $PSCommandPath
 $scriptName = switch ($Tool) {
     'inspect' { 'inspect.ps1' }
