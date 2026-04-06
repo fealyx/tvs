@@ -2,7 +2,13 @@
 param(
     [string]$OutputRoot = "$PSScriptRoot/../dist",
     [switch]$CreateModule = $true,
+    [switch]$CreateCore = $true,
     [switch]$CreatePortable = $true,
+    [switch]$CreateReleaseManifest = $true,
+    [switch]$WriteChecksums = $true,
+    [string]$ReleaseChannel = 'stable',
+    [string]$ReleaseRepositoryOwner,
+    [string]$ReleaseRepositoryName,
     [switch]$Clean,
     [string]$PortableRuntimeZipPath,
     [switch]$DownloadPortableRuntime,
@@ -116,6 +122,7 @@ function Write-PerToolLaunchers {
         'dump-yaml'        = 'dump-yaml.ps1'
         'verify'           = 'verify-znelchar.ps1'
         'verify-roundtrip' = 'roundtrip-verify.ps1'
+        'update'           = 'update-znelchar.ps1'
     }
 
     foreach ($entry in $tools.GetEnumerator()) {
@@ -181,6 +188,139 @@ fi
     [System.IO.File]::WriteAllText((Join-Path $PortableRoot 'run-znelchar.sh'), $legacyShContent, [System.Text.UTF8Encoding]::new($false))
 }
 
+function Initialize-PortableTree {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepoRoot,
+        [Parameter(Mandatory = $true)][string]$DestinationRoot
+    )
+
+    Copy-SharedAssets -RepoRoot $RepoRoot -DestinationRoot $DestinationRoot
+    Copy-Item -LiteralPath (Join-Path $RepoRoot 'module') -Destination (Join-Path $DestinationRoot 'module') -Recurse -Force
+    Write-PerToolLaunchers -PortableRoot $DestinationRoot
+}
+
+function Get-DistributionArchives {
+    param([Parameter(Mandatory = $true)][string]$OutputRoot)
+
+    return @(Get-ChildItem -LiteralPath $OutputRoot -File -Filter 'znelchar-*.zip' | Sort-Object Name)
+}
+
+function Get-ArtifactVariant {
+    param([Parameter(Mandatory = $true)][string]$FileName)
+
+    if ($FileName -like 'znelchar-module-*') { return 'module' }
+    if ($FileName -like 'znelchar-core-*') { return 'core' }
+    if ($FileName -like 'znelchar-portable-*') { return 'portable' }
+    return $null
+}
+
+function Test-ArchiveHasBundledRuntime {
+    param([Parameter(Mandatory = $true)][string]$ArchivePath)
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $zip = [System.IO.Compression.ZipFile]::OpenRead($ArchivePath)
+    try {
+        foreach ($entry in $zip.Entries) {
+            if ($entry.FullName -eq 'znelchar-tools/runtime/pwsh' -or $entry.FullName -eq 'znelchar-tools/runtime/pwsh.exe') {
+                return $true
+            }
+        }
+        return $false
+    }
+    finally {
+        $zip.Dispose()
+    }
+}
+
+function Write-ChecksumsFile {
+    param(
+        [Parameter(Mandatory = $true)][System.IO.FileInfo[]]$Archives,
+        [Parameter(Mandatory = $true)][string]$OutputRoot
+    )
+
+    $checksumPath = Join-Path $OutputRoot 'SHA256SUMS.txt'
+    $lines = foreach ($archive in $Archives) {
+        $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $archive.FullName).Hash.ToLowerInvariant()
+        "$hash  $($archive.Name)"
+    }
+    [System.IO.File]::WriteAllLines($checksumPath, $lines, [System.Text.UTF8Encoding]::new($false))
+    return $checksumPath
+}
+
+function Write-ReleaseManifest {
+    param(
+        [Parameter(Mandatory = $true)][System.IO.FileInfo[]]$Archives,
+        [Parameter(Mandatory = $true)][string]$OutputRoot,
+        [Parameter(Mandatory = $true)][string]$Version,
+        [Parameter(Mandatory = $true)][string]$Channel,
+        [string]$RepositoryOwner,
+        [string]$RepositoryName
+    )
+
+    $releaseTag = "v$Version"
+    $canBuildUrls = -not [string]::IsNullOrWhiteSpace($RepositoryOwner) -and -not [string]::IsNullOrWhiteSpace($RepositoryName)
+
+    $artifacts = @()
+    foreach ($archive in $Archives) {
+        $variant = Get-ArtifactVariant -FileName $archive.Name
+        if ($null -eq $variant) {
+            continue
+        }
+
+        $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $archive.FullName).Hash.ToLowerInvariant()
+        $runtimeBundled = $false
+        if ($variant -eq 'portable') {
+            $runtimeBundled = Test-ArchiveHasBundledRuntime -ArchivePath $archive.FullName
+        }
+
+        $downloadUrl = $null
+        if ($canBuildUrls) {
+            $downloadUrl = "https://github.com/$RepositoryOwner/$RepositoryName/releases/download/$releaseTag/$($archive.Name)"
+        }
+
+        $artifacts += [ordered]@{
+            variant = $variant
+            fileName = $archive.Name
+            sha256 = $hash
+            sizeBytes = $archive.Length
+            runtimeBundled = $runtimeBundled
+            runtimeVersion = $null
+            runtimeRid = $null
+            downloadUrl = $downloadUrl
+        }
+    }
+
+    $manifest = [ordered]@{
+        schemaVersion = 1
+        toolName = 'znelchar'
+        toolVersion = $Version
+        releaseTag = $releaseTag
+        channel = $Channel
+        generatedAtUtc = [DateTime]::UtcNow.ToString('o')
+        artifacts = $artifacts
+    }
+
+    $manifestPath = Join-Path $OutputRoot 'znelchar-release-manifest.json'
+    $manifestJson = $manifest | ConvertTo-Json -Depth 10
+    [System.IO.File]::WriteAllText($manifestPath, $manifestJson, [System.Text.UTF8Encoding]::new($false))
+    return $manifestPath
+}
+
+function Test-ReleaseManifestSchema {
+    param(
+        [Parameter(Mandatory = $true)][string]$ManifestPath,
+        [Parameter(Mandatory = $true)][string]$RepoRoot
+    )
+
+    $schemaPath = Join-Path $RepoRoot 'schemas/releaseManifest.schema.json'
+    if (-not (Test-Path -LiteralPath $schemaPath)) {
+        return
+    }
+
+    $manifestJson = Get-Content -Raw -LiteralPath $ManifestPath
+    $null = $manifestJson | Test-Json -SchemaFile $schemaPath -ErrorAction Stop
+}
+
 $repoRoot = Get-RepoRoot
 $resolvedOutputRoot = [System.IO.Path]::GetFullPath($OutputRoot)
 $version = Get-ToolVersion -RepoRoot $repoRoot
@@ -216,6 +356,26 @@ if ($CreateModule) {
     }
 }
 
+if ($CreateCore) {
+    $coreStageRoot = Join-Path $resolvedOutputRoot 'core-stage'
+    $coreRoot = Join-Path $coreStageRoot 'znelchar-tools'
+
+    if ($PSCmdlet.ShouldProcess($coreRoot, 'Build core distribution')) {
+        Write-Stage 'Building core distribution'
+        Reset-Directory -Path $coreStageRoot
+        New-Item -ItemType Directory -Path $coreRoot -Force | Out-Null
+
+        Initialize-PortableTree -RepoRoot $repoRoot -DestinationRoot $coreRoot
+
+        $coreZip = Join-Path $resolvedOutputRoot ("znelchar-core-$version.zip")
+        if (Test-Path -LiteralPath $coreZip) {
+            Remove-Item -LiteralPath $coreZip -Force
+        }
+        Compress-Archive -Path (Join-Path $coreStageRoot '*') -DestinationPath $coreZip -CompressionLevel Optimal
+        $artifacts += $coreZip
+    }
+}
+
 if ($CreatePortable) {
     $portableStageRoot = Join-Path $resolvedOutputRoot 'portable-stage'
     $portableRoot = Join-Path $portableStageRoot 'znelchar-tools'
@@ -225,9 +385,7 @@ if ($CreatePortable) {
         Reset-Directory -Path $portableStageRoot
         New-Item -ItemType Directory -Path $portableRoot -Force | Out-Null
 
-        Copy-SharedAssets -RepoRoot $repoRoot -DestinationRoot $portableRoot
-        Copy-Item -LiteralPath (Join-Path $repoRoot 'module') -Destination (Join-Path $portableRoot 'module') -Recurse -Force
-        Write-PerToolLaunchers -PortableRoot $portableRoot
+        Initialize-PortableTree -RepoRoot $repoRoot -DestinationRoot $portableRoot
 
         $runtimeDestination = Join-Path $portableRoot 'runtime'
         $runtimeZipToUse = $null
@@ -256,9 +414,26 @@ if ($CreatePortable) {
     }
 }
 
+$archives = Get-DistributionArchives -OutputRoot $resolvedOutputRoot
+$checksumsPath = $null
+$manifestPath = $null
+
+if ($WriteChecksums -and $archives.Count -gt 0) {
+    Write-Stage 'Writing SHA256SUMS.txt'
+    $checksumsPath = Write-ChecksumsFile -Archives $archives -OutputRoot $resolvedOutputRoot
+}
+
+if ($CreateReleaseManifest -and $archives.Count -gt 0) {
+    Write-Stage 'Writing release manifest'
+    $manifestPath = Write-ReleaseManifest -Archives $archives -OutputRoot $resolvedOutputRoot -Version $version -Channel $ReleaseChannel -RepositoryOwner $ReleaseRepositoryOwner -RepositoryName $ReleaseRepositoryName
+    Test-ReleaseManifestSchema -ManifestPath $manifestPath -RepoRoot $repoRoot
+}
+
 Write-Stage 'Build complete'
 [ordered]@{
     outputRoot = $resolvedOutputRoot
     version = $version
     artifacts = $artifacts
+    checksumsFile = $checksumsPath
+    releaseManifestFile = $manifestPath
 } | ConvertTo-Json -Depth 10

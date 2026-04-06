@@ -13,7 +13,8 @@
         'New-ZnelcharFile',
         'Convert-ZnelcharToYaml',
         'Test-ZnelcharFile',
-        'Test-ZnelcharRoundtrip'
+        'Test-ZnelcharRoundtrip',
+        'Update-ZnelcharTools'
     )
     CmdletsToExport = @()
     AliasesToExport = @()

@@ -43,7 +43,9 @@ jobs:
           set -e
           mkdir -p release-artifacts
           cp tools/znelchar/dist/znelchar-module-*.zip release-artifacts/
+          cp tools/znelchar/dist/znelchar-core-*.zip release-artifacts/
           cp tools/znelchar/dist/znelchar-portable-*.zip release-artifacts/
+          cp tools/znelchar/dist/znelchar-release-manifest.json release-artifacts/
           (cd release-artifacts && sha256sum *.zip > SHA256SUMS.txt)
           ls -la release-artifacts
 
@@ -52,5 +54,7 @@ jobs:
         with:
           files: |
             release-artifacts/znelchar-module-*.zip
+            release-artifacts/znelchar-core-*.zip
             release-artifacts/znelchar-portable-*.zip
+            release-artifacts/znelchar-release-manifest.json
             release-artifacts/SHA256SUMS.txt

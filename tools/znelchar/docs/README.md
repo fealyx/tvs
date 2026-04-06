@@ -16,6 +16,11 @@ PowerShell-first tooling for `.znelchar` files.
 - `npm run verify:report -- -LeftPath ../../temp/Foxy.znelchar -RightPath ./out/Foxy.repacked.znelchar`
 - `npm run verify:roundtrip -- -InputPath ../../temp/Foxy.znelchar -WorkDir ./out/roundtrip-foxy -Force`
 - `npm run verify:roundtrip:ci -- -InputPath ../../temp/Foxy.znelchar -WorkDir ./out/roundtrip-foxy -Force`
+- `npm run update:check -- -Variant core -ManifestPath ./dist/znelchar-release-manifest.json`
+- `npm run update:install -- -Variant core -ManifestPath ./dist/znelchar-release-manifest.json -AssetDirectory ./dist -InstallPath ./dist/update-install-core -Force`
+- `npm run update:verify -- -Variant core -ManifestPath ./dist/znelchar-release-manifest.json -InstallPath ./dist/update-install-core`
+- `npm run update:selftest`
+- `npm run update:selftest:matrix`
 - `npm run build:dist`
 
 ## Notes
@@ -46,8 +51,12 @@ PowerShell-first tooling for `.znelchar` files.
 - `extract -MetadataOnly` skips nested `_characterData` parse and texture decoding; it writes a metadata manifest only.
 - `pack` now validates manifest integrity with stronger guardrails for duplicate names, missing texture files, and mismatched manifest metadata.
 - PowerShell module sources are under `module/Znelchar.Tools`.
-- `build/package.ps1` produces two distributables: module zip and portable zip.
+- `build/package.ps1` produces three distributables: module zip, core zip (no bundled runtime), and portable zip.
 - portable packaging supports embedding a portable PowerShell runtime via `-PortableRuntimeZipPath` or `-DownloadPortableRuntime`.
+- packaging also emits `dist/znelchar-release-manifest.json` and `dist/SHA256SUMS.txt` for release automation and updater workflows.
+- `update:selftest` validates updater success and failure paths (rollback and checksum mismatch) for a single variant.
+- `update:selftest:matrix` runs the same updater hardening checks across `core`, `module`, and `portable` variants.
+- CI uses `update:selftest:matrix` for release/update coverage.
 - See `docs/DISTRIBUTION.md` for packaging and module-install details.
 - `dump-yaml` uses `ConvertTo-Yaml` when available. Install module if needed:
   - `Install-Module powershell-yaml -Scope CurrentUser`

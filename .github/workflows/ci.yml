@@ -39,6 +39,9 @@ jobs:
       - name: Rush Build
         run: node common/scripts/install-run-rush.js build --verbose
 
+      - name: Znelchar Update Self-Test Matrix
+        run: npm --prefix tools/znelchar run update:selftest:matrix
+
   mods-dotnet:
     runs-on: ubuntu-latest
     env:

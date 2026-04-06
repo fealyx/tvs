@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('inspect', 'extract', 'pack', 'dump-yaml', 'verify', 'verify-roundtrip')]
+    [ValidateSet('inspect', 'extract', 'pack', 'dump-yaml', 'verify', 'verify-roundtrip', 'update')]
     [string]$Tool,
 
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -20,6 +20,7 @@ $scriptName = switch ($Tool) {
     'dump-yaml' { 'dump-yaml.ps1' }
     'verify' { 'verify-znelchar.ps1' }
     'verify-roundtrip' { 'roundtrip-verify.ps1' }
+    'update' { 'update-znelchar.ps1' }
     default { throw "Unsupported tool: $Tool" }
 }
 

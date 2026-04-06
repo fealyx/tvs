@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.tvs.local/znelchar/releaseManifest.schema.json",
+  "title": "znelchar release manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "toolName",
+    "toolVersion",
+    "releaseTag",
+    "channel",
+    "generatedAtUtc",
+    "artifacts"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "toolName": {
+      "type": "string",
+      "const": "znelchar"
+    },
+    "toolVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "releaseTag": {
+      "type": "string",
+      "pattern": "^v.+"
+    },
+    "channel": {
+      "type": "string",
+      "enum": ["stable", "prerelease", "nightly"]
+    },
+    "generatedAtUtc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "variant",
+          "fileName",
+          "sha256",
+          "sizeBytes",
+          "runtimeBundled",
+          "runtimeVersion",
+          "runtimeRid",
+          "downloadUrl"
+        ],
+        "properties": {
+          "variant": {
+            "type": "string",
+            "enum": ["module", "core", "portable"]
+          },
+          "fileName": {
+            "type": "string",
+            "pattern": "^znelchar-(module|core|portable)-.+\\.zip$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "runtimeBundled": {
+            "type": "boolean"
+          },
+          "runtimeVersion": {
+            "type": ["string", "null"]
+          },
+          "runtimeRid": {
+            "type": ["string", "null"]
+          },
+          "downloadUrl": {
+            "type": ["string", "null"],
+            "format": "uri"
+          }
+        }
+      }
+    }
+  }
+}

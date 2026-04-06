@@ -15,8 +15,14 @@
     "verify:report": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/verify-znelchar.ps1 -DiffReportPath ./out/verify-diff.json",
     "verify:roundtrip": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/roundtrip-verify.ps1",
     "verify:roundtrip:ci": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/roundtrip-verify.ps1 -CiSummary",
-    "build:dist": "npm run build:dist:module && npm run build:dist:portable",
-    "build:dist:portable": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./build/package.ps1 -CreatePortable -CreateModule:'$false' -DownloadPortableRuntime",
-    "build:dist:module": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./build/package.ps1 -CreateModule -CreatePortable:'$false'"
+    "update:check": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/update-znelchar.ps1 -Operation check",
+    "update:install": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/update-znelchar.ps1 -Operation install",
+    "update:verify": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/update-znelchar.ps1 -Operation verify",
+    "update:selftest": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/update-selftest.ps1",
+    "update:selftest:matrix": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/update-selftest.ps1 -Variants core,module,portable",
+    "build:dist": "npm run build:dist:module && npm run build:dist:core && npm run build:dist:portable",
+    "build:dist:core": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./build/package.ps1 -CreateCore -CreateModule:'$false' -CreatePortable:'$false'",
+    "build:dist:portable": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./build/package.ps1 -CreatePortable -CreateModule:'$false' -CreateCore:'$false' -DownloadPortableRuntime",
+    "build:dist:module": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./build/package.ps1 -CreateModule -CreateCore:'$false' -CreatePortable:'$false'"
   }
 }
