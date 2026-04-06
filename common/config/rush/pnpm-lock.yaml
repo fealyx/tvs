@@ -13,5 +13,3 @@ importers:
   ../../mods: {}
 
   ../../tools/znelchar: {}
-
-  ../../tools/znelchar-gui: {}
