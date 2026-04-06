@@ -1,11 +1,12 @@
 {
   "name": "@tvs/znelchar-tools",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Tools and schemas for working with .znelchar files",
   "scripts": {
     "build": "npm run build:dist",
     "rebuild": "npm run build:dist",
+    "build:dist:release": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./build/package.ps1 -Clean -DownloadPortableRuntime",
     "inspect": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/inspect.ps1",
     "extract": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/extract.ps1",
     "pack": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/pack.ps1",

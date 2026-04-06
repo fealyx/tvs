@@ -205,6 +205,17 @@ function Get-DistributionArchives {
     return @(Get-ChildItem -LiteralPath $OutputRoot -File -Filter 'znelchar-*.zip' | Sort-Object Name)
 }
 
+function Get-CurrentVersionDistributionArchives {
+    param(
+        [Parameter(Mandatory = $true)][string]$OutputRoot,
+        [Parameter(Mandatory = $true)][string]$Version
+    )
+
+    $allArchives = Get-DistributionArchives -OutputRoot $OutputRoot
+    $versionSuffix = "-$Version.zip"
+    return @($allArchives | Where-Object { $_.Name.EndsWith($versionSuffix, [System.StringComparison]::OrdinalIgnoreCase) } | Sort-Object Name)
+}
+
 function Get-ArtifactVariant {
     param([Parameter(Mandatory = $true)][string]$FileName)
 
@@ -325,6 +336,17 @@ $repoRoot = Get-RepoRoot
 $resolvedOutputRoot = [System.IO.Path]::GetFullPath($OutputRoot)
 $version = Get-ToolVersion -RepoRoot $repoRoot
 
+$isCiBuild = ($env:CI -eq 'true')
+$ciBuildMarker = Join-Path $resolvedOutputRoot '.ci-build-initialized'
+
+if ($isCiBuild -and -not $Clean -and -not (Test-Path -LiteralPath $ciBuildMarker)) {
+    if (Test-Path -LiteralPath $resolvedOutputRoot) {
+        if ($PSCmdlet.ShouldProcess($resolvedOutputRoot, 'Clean output root for CI build')) {
+            Remove-Item -LiteralPath $resolvedOutputRoot -Recurse -Force
+        }
+    }
+}
+
 if ($Clean -and (Test-Path -LiteralPath $resolvedOutputRoot)) {
     if ($PSCmdlet.ShouldProcess($resolvedOutputRoot, 'Clean output root')) {
         Remove-Item -LiteralPath $resolvedOutputRoot -Recurse -Force
@@ -332,6 +354,10 @@ if ($Clean -and (Test-Path -LiteralPath $resolvedOutputRoot)) {
 }
 
 New-Item -ItemType Directory -Path $resolvedOutputRoot -Force | Out-Null
+
+if ($isCiBuild -and -not (Test-Path -LiteralPath $ciBuildMarker)) {
+    [System.IO.File]::WriteAllText($ciBuildMarker, [DateTime]::UtcNow.ToString('o'), [System.Text.UTF8Encoding]::new($false))
+}
 
 $artifacts = @()
 
@@ -414,7 +440,7 @@ if ($CreatePortable) {
     }
 }
 
-$archives = Get-DistributionArchives -OutputRoot $resolvedOutputRoot
+$archives = @(Get-CurrentVersionDistributionArchives -OutputRoot $resolvedOutputRoot -Version $version)
 $checksumsPath = $null
 $manifestPath = $null
 
