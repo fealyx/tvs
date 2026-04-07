@@ -37,7 +37,7 @@ public class Plugin : BaseUnityPlugin
     {
         Instance = this;
 
-        Logger.LogInfo($"Loaded {MyPluginInfo.PLUGIN_NAME} for {ModContext.GameName} (Unity {ModContext.UnityVersion}).");
+        Logger.LogInfo($"Loaded {MyPluginInfo.PLUGIN_NAME}");
 
         LoadAssetBundle();
 

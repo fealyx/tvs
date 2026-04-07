@@ -5,7 +5,28 @@
     {
       "name": "Assembly-CSharp.dll",
       "required": true,
-      "description": "Main game code and types"
+      "description": "Main game code and types",
+      "usedBy": [
+        "Fealyx.TVSLib",
+        "TVS.SampleMod"
+      ]
+    },
+    {
+      "name": "UnityEngine.AssetBundleModule.dll",
+      "required": true,
+      "description": "Unity types related to AssetBundle handling; commonly needed for mods that load their own assets",
+      "usedBy": [
+        "Fealyx.TVSLib",
+        "TVS.SampleMod"
+      ]
+    },
+    {
+      "name": "UnityEngine.UI.dll",
+      "required": true,
+      "description": "Unity UI types; may be needed for mods that interact with the game's UI",
+      "usedBy": [
+        "TVS.SampleMod"
+      ]
     }
   ],
   "notes": [

@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI: true
-      TVS_BUILD_DATA_MANIFEST: 0.45
+      TVS_BUILD_DATA_MANIFEST: 0.45.1
       TVS_BUILD_DATA_TOKEN: ${{ secrets.TVS_BUILD_DATA_TOKEN }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
