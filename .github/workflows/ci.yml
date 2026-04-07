@@ -42,7 +42,16 @@ jobs:
         run: node common/scripts/install-run-rush.js build --verbose --to-except @tvs/mods
 
       - name: Znelchar Update Self-Test Matrix
-        run: npm --prefix tools/znelchar run update:selftest:matrix
+        # Rush build should generate dist outputs, but when outputs are missing
+        # (for example due to cache edge cases) self-test needs a fallback build.
+        shell: pwsh
+        run: >-
+          if (-not (Test-Path -LiteralPath './tools/znelchar/dist/znelchar-release-manifest.json')) {
+            Write-Host 'znelchar release manifest missing after Rush build; running explicit dist build.'
+            npm --prefix tools/znelchar run build:dist
+          }
+
+          npm --prefix tools/znelchar run update:selftest:matrix
 
   mods-dotnet:
     runs-on: ubuntu-latest
