@@ -13,7 +13,7 @@ $modsDir = Join-Path $repoRoot 'mods'
 $solutionPath = Join-Path $modsDir 'Mods.sln'
 $nugetConfigPath = Join-Path $modsDir 'nuget.config'
 $validatorScript = Join-Path $PSScriptRoot 'validate-mod-assets.ps1'
-$resolvedOutputRoot = [System.IO.Path]::GetFullPath((Join-Path $modsDir $OutputRoot))
+$resolvedOutputRoot = [System.IO.Path]::GetFullPath($OutputRoot)
 
 function Get-RelativePathFrom {
     param(
