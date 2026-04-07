@@ -9,6 +9,8 @@ PowerShell-first tooling for `.znelchar` files.
 - `npm run extract -- -InputPath ../../temp/Foxy.znelchar -OutputDir ./out/Foxy`
 - `npm run extract -- -InputPath ../../temp/Foxy.znelchar -OutputDir ./out/Foxy-meta -MetadataOnly`
 - `npm run pack -- -CharacterJsonPath ./out/Foxy/character.json -TexturesDir ./out/Foxy/textures -OutputPath ./out/Foxy.repacked.znelchar`
+- `npm run swap:image -- -InputPath ../../temp/Foxy.znelchar -ImagePath ./out/new-icon.png -Target icon -BackupOriginalFile`
+- `npm run swap:image -- -InputPath ../../temp/Uravity.znelchar -ImagePath ./out/new-texture.png -Target texture -TextureName 'Juno_Torso_D.png' -OutputPath ./out/Uravity.swapped.znelchar`
 - `npm run dump-yaml -- -InputPath ../../temp/Foxy.znelchar -OutputPath ./out/Foxy.yaml`
 - `npm run verify -- -LeftPath ../../temp/Foxy.znelchar -RightPath ./out/Foxy.repacked.znelchar`
 - `npm run verify:ci -- -LeftPath ../../temp/Foxy.znelchar -RightPath ./out/Foxy.repacked.znelchar`

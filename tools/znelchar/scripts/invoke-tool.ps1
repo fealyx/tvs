@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('inspect', 'extract', 'pack', 'dump-yaml', 'verify', 'verify-roundtrip', 'update')]
+    [ValidateSet('inspect', 'extract', 'pack', 'swap-image', 'dump-yaml', 'verify', 'verify-roundtrip', 'update')]
     [string]$Tool,
 
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -17,6 +17,7 @@ $scriptName = switch ($Tool) {
     'inspect' { 'inspect.ps1' }
     'extract' { 'extract.ps1' }
     'pack' { 'pack.ps1' }
+    'swap-image' { 'swap-image.ps1' }
     'dump-yaml' { 'dump-yaml.ps1' }
     'verify' { 'verify-znelchar.ps1' }
     'verify-roundtrip' { 'roundtrip-verify.ps1' }

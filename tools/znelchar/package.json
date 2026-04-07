@@ -10,6 +10,7 @@
     "inspect": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/inspect.ps1",
     "extract": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/extract.ps1",
     "pack": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/pack.ps1",
+    "swap:image": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/swap-image.ps1",
     "dump-yaml": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/dump-yaml.ps1",
     "verify": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/verify-znelchar.ps1",
     "verify:ci": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/verify-znelchar.ps1 -CiSummary",
