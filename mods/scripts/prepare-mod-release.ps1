@@ -1,6 +1,9 @@
 param(
     [string]$Configuration = 'Release',
     [string]$OutputRoot = './release-artifacts/mods',
+    # Include PDB debug symbols in release archives. Omitted by default: PDBs expose
+    # build-machine source paths and are not useful to end users in Release distributions.
+    [switch]$IncludePdbs,
     [switch]$SkipBuild,
     [switch]$SkipValidation
 )
@@ -8,23 +11,14 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $modsDir = Join-Path $repoRoot 'mods'
 $solutionPath = Join-Path $modsDir 'Mods.sln'
 $nugetConfigPath = Join-Path $modsDir 'nuget.config'
 $validatorScript = Join-Path $PSScriptRoot 'validate-mod-assets.ps1'
 $resolvedOutputRoot = [System.IO.Path]::GetFullPath($OutputRoot)
-
-function Get-RelativePathFrom {
-    param(
-        [string]$BasePath,
-        [string]$TargetPath
-    )
-
-    $resolvedBasePath = (Resolve-Path -Path $BasePath).Path
-    $resolvedTargetPath = (Resolve-Path -Path $TargetPath).Path
-    return [System.IO.Path]::GetRelativePath($resolvedBasePath, $resolvedTargetPath)
-}
 
 function Assert-SafeStagePath {
     param(
@@ -59,6 +53,18 @@ function Get-SolutionProjectPaths {
     return $paths
 }
 
+function Get-CsprojProperty {
+    param(
+        [xml]$ProjectXml,
+        [string]$PropertyName
+    )
+
+    return $ProjectXml.Project.PropertyGroup |
+        ForEach-Object { $_.$PropertyName } |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+        Select-Object -First 1
+}
+
 if (-not $SkipValidation) {
     & $validatorScript -All | Out-Null
 }
@@ -88,85 +94,129 @@ foreach ($projectPath in Get-SolutionProjectPaths) {
     [xml]$projectXml = Get-Content -LiteralPath $projectFullPath
 
     $projectFileName = [System.IO.Path]::GetFileNameWithoutExtension($projectFullPath)
-    $assemblyName = $projectXml.Project.PropertyGroup.AssemblyName | Select-Object -First 1
+
+    $assemblyName = Get-CsprojProperty -ProjectXml $projectXml -PropertyName 'AssemblyName'
     if ([string]::IsNullOrWhiteSpace($assemblyName)) {
         $assemblyName = $projectFileName
     }
 
-    $projectDir = Split-Path -Parent $projectFullPath
-    $projectReleaseDir = Join-Path $resolvedOutputRoot $assemblyName
-    New-Item -ItemType Directory -Path $projectReleaseDir -Force | Out-Null
+    # Plugin GUID drives the BepInEx directory name inside the zip so the user can drop
+    # the zip contents directly into the game folder and BepInEx discovers the plugin.
+    $pluginGuid = Get-CsprojProperty -ProjectXml $projectXml -PropertyName 'GUID'
+    if ([string]::IsNullOrWhiteSpace($pluginGuid)) {
+        $pluginGuid = $assemblyName
+    }
 
+    $version = Get-CsprojProperty -ProjectXml $projectXml -PropertyName 'Version'
+    if ([string]::IsNullOrWhiteSpace($version)) {
+        $version = '0.0.0'
+    }
+
+    $projectDir = Split-Path -Parent $projectFullPath
     $binaryOutputDir = Join-Path $projectDir 'bin' $Configuration
+
     $dllPath = Join-Path $binaryOutputDir "$assemblyName.dll"
     if (-not (Test-Path -LiteralPath $dllPath)) {
         throw "Expected build output missing: $dllPath"
     }
 
-    Copy-Item -LiteralPath $dllPath -Destination $projectReleaseDir -Force
+    $zipFileName = "$assemblyName-$version.zip"
+    $zipPath = Join-Path $resolvedOutputRoot $zipFileName
 
-    $pdbPath = Join-Path $binaryOutputDir "$assemblyName.pdb"
-    if (Test-Path -LiteralPath $pdbPath) {
-        Copy-Item -LiteralPath $pdbPath -Destination $projectReleaseDir -Force
-    }
+    # Staging directory: BepInEx/plugins/{GUID}/ inside a temp root so ZipFile.CreateFromDirectory
+    # produces a zip where BepInEx/ sits at the archive root.
+    $stagingDir = Join-Path ([System.IO.Path]::GetTempPath()) "tvs-mod-stage-$([System.Guid]::NewGuid())"
+    try {
+        $pluginSubDir = Join-Path $stagingDir 'BepInEx' 'plugins' $pluginGuid
+        New-Item -ItemType Directory -Path $pluginSubDir -Force | Out-Null
 
-    $projectManifestPath = Join-Path $projectDir 'assets' 'assets.manifest.json'
-    if (Test-Path -LiteralPath $projectManifestPath) {
-        $manifest = Get-Content -Raw -LiteralPath $projectManifestPath | ConvertFrom-Json -AsHashtable -Depth 40
-        $manifestDir = Split-Path -Parent $projectManifestPath
+        # Main plugin assembly
+        Copy-Item -LiteralPath $dllPath -Destination $pluginSubDir -Force
 
-        foreach ($asset in @($manifest.assets)) {
-            $sourcePath = Join-Path $manifestDir $asset.path
-            if (-not (Test-Path -LiteralPath $sourcePath)) {
-                if ([bool]$asset.required) {
-                    throw "Required asset declared in manifest is missing: $sourcePath"
+        # PDB for the dotnet-built assembly — omitted from Release by default.
+        # Pass -IncludePdbs to include them (useful for debug/RC builds).
+        if ($IncludePdbs) {
+            $pdbPath = Join-Path $binaryOutputDir "$assemblyName.pdb"
+            if (Test-Path -LiteralPath $pdbPath) {
+                Copy-Item -LiteralPath $pdbPath -Destination $pluginSubDir -Force
+            }
+        }
+
+        # Assets declared in assets.manifest.json
+        $projectManifestPath = Join-Path $projectDir 'assets' 'assets.manifest.json'
+        if (Test-Path -LiteralPath $projectManifestPath) {
+            $manifest = Get-Content -Raw -LiteralPath $projectManifestPath | ConvertFrom-Json -AsHashtable -Depth 40
+            $manifestDir = Split-Path -Parent $projectManifestPath
+
+            foreach ($asset in @($manifest.assets)) {
+                $assetFileName = [System.IO.Path]::GetFileName([string]$asset.path)
+
+                # PDB assets (e.g. Unity-built debug symbols) are excluded from Release
+                # distributions unless -IncludePdbs is requested.
+                if (-not $IncludePdbs -and $assetFileName.EndsWith('.pdb', [System.StringComparison]::OrdinalIgnoreCase)) {
+                    continue
                 }
 
-                continue
-            }
+                $sourcePath = Join-Path $manifestDir $asset.path
+                if (-not (Test-Path -LiteralPath $sourcePath)) {
+                    if ([bool]$asset.required) {
+                        throw "Required asset declared in manifest is missing: $sourcePath"
+                    }
 
-            $targetRelative = if ($asset.ContainsKey('releasePath') -and -not [string]::IsNullOrWhiteSpace([string]$asset.releasePath)) {
-                [string]$asset.releasePath
-            }
-            else {
-                Join-Path 'assets' ([System.IO.Path]::GetFileName([string]$asset.path))
-            }
+                    continue
+                }
 
-            $destinationPath = Assert-SafeStagePath -StageRoot $projectReleaseDir -RelativePath $targetRelative
-            $destinationDirectory = Split-Path -Parent $destinationPath
-            New-Item -ItemType Directory -Path $destinationDirectory -Force | Out-Null
-            Copy-Item -LiteralPath $sourcePath -Destination $destinationPath -Force
+                # releasePath is relative to the plugin GUID dir (BepInEx/plugins/{GUID}/)
+                # so that asset load paths in Plugin.cs (Paths.PluginPath + GUID + relative)
+                # resolve correctly after the archive is extracted into the game folder.
+                $targetRelative = if ($asset.ContainsKey('releasePath') -and -not [string]::IsNullOrWhiteSpace([string]$asset.releasePath)) {
+                    [string]$asset.releasePath
+                }
+                else {
+                    $assetFileName
+                }
+
+                $destinationPath = Assert-SafeStagePath -StageRoot $pluginSubDir -RelativePath $targetRelative
+                $destinationDirectory = Split-Path -Parent $destinationPath
+                New-Item -ItemType Directory -Path $destinationDirectory -Force | Out-Null
+                Copy-Item -LiteralPath $sourcePath -Destination $destinationPath -Force
+            }
+        }
+
+        # Zip the staging root. CreateFromDirectory includes the immediate children of
+        # $stagingDir, so BepInEx/ appears at the zip root rather than a staging temp name.
+        [System.IO.Compression.ZipFile]::CreateFromDirectory($stagingDir, $zipPath)
+    }
+    finally {
+        if (Test-Path -LiteralPath $stagingDir) {
+            Remove-Item -LiteralPath $stagingDir -Recurse -Force
         }
     }
 
-    $stagedFiles = @(Get-ChildItem -LiteralPath $projectReleaseDir -File -Recurse)
-    $checksumLines = @()
-    foreach ($stagedFile in $stagedFiles) {
-        if ($stagedFile.Name -eq 'SHA256SUMS.txt') {
-            continue
-        }
-
-        $relativeFilePath = Get-RelativePathFrom -BasePath $projectReleaseDir -TargetPath $stagedFile.FullName
-        $hash = (Get-FileHash -LiteralPath $stagedFile.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
-        $checksumLines += "$hash *$($relativeFilePath.Replace('\\', '/'))"
-    }
-
-    Set-Content -LiteralPath (Join-Path $projectReleaseDir 'SHA256SUMS.txt') -Value ($checksumLines -join [Environment]::NewLine) -Encoding ascii
+    $zipHash = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    Write-Host "  $zipFileName  [$zipHash]"
 
     $releaseSummary += [ordered]@{
         project = $assemblyName
-        releasePath = $projectReleaseDir
-        fileCount = (Get-ChildItem -LiteralPath $projectReleaseDir -File -Recurse).Count
+        guid    = $pluginGuid
+        version = $version
+        zipFile = $zipFileName
+        sha256  = $zipHash
     }
 }
+
+# SHA256 sums cover the zip archives that users download, not individual files inside them.
+$checksumLines = @($releaseSummary | ForEach-Object { "$($_.sha256) *$($_.zipFile)" })
+Set-Content -LiteralPath (Join-Path $resolvedOutputRoot 'SHA256SUMS.txt') -Value ($checksumLines -join [Environment]::NewLine) -Encoding ascii
 
 $summaryPath = Join-Path $resolvedOutputRoot 'mods-release-manifest.json'
 $summaryContent = [ordered]@{
     generatedAtUtc = [DateTime]::UtcNow.ToString('o')
-    configuration = $Configuration
-    projects = $releaseSummary
+    configuration  = $Configuration
+    projects       = @($releaseSummary)
 }
 $summaryContent | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $summaryPath -Encoding utf8
 
+Write-Host ''
 Write-Host "Prepared mods release assets at $resolvedOutputRoot"
-Get-ChildItem -LiteralPath $resolvedOutputRoot -Recurse | Select-Object FullName | Format-Table -AutoSize | Out-String | Write-Host
+Get-ChildItem -LiteralPath $resolvedOutputRoot | Select-Object Name | Format-Table -AutoSize | Out-String | Write-Host
