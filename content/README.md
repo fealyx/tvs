@@ -62,6 +62,17 @@ npm run build
 ```
 Generates the final `_site/` folder ready for deployment.
 
+### Full Site Build (CI-equivalent)
+
+To replicate the complete CI build including tool documentation collection from `tools/*/docs/`:
+```bash
+# From the repo root — collects tool docs and builds the 11ty site
+rush build:pages
+
+# Collect schemas separately if needed (writes to .pages/schemas/)
+node common/scripts/collect-schemas.js
+```
+
 ## Content Categories
 
 - **Guides**: Long-form guides covering specific topics
@@ -99,11 +110,11 @@ Tool documentation is automatically collected from `tools/*/docs/` folders durin
 
 The site is automatically built and published to GitHub Pages whenever changes are pushed to `main`:
 
-1. GitHub Actions runs `.github/workflows/build-pages.yml`
+1. GitHub Actions runs `.github/workflows/pages.yml`
 2. Builds 11ty site + collects tool docs
 3. Deploys `_site/` to GitHub Pages
 
-For more details, see the workflow file: `.github/workflows/build-pages.yml`
+For more details, see the workflow file: `.github/workflows/pages.yml`
 
 ## Questions or Issues?
 

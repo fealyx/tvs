@@ -18,10 +18,12 @@ console.log('[build:pages] Starting GitHub Pages build...\n');
 console.log('[build:pages] Collecting tool documentation...');
 const publicToolsDir = path.join(contentDir, 'src', 'tools');
 
-// Ensure tools directory exists
-if (!fs.existsSync(publicToolsDir)) {
-  fs.mkdirSync(publicToolsDir, { recursive: true });
+// Clear stale tool docs before re-populating so removed or renamed tools
+// don't persist across builds (matches the clean-build approach in collect-schemas.js).
+if (fs.existsSync(publicToolsDir)) {
+  fs.rmSync(publicToolsDir, { recursive: true, force: true });
 }
+fs.mkdirSync(publicToolsDir, { recursive: true });
 
 // Iterate through all tools
 if (fs.existsSync(toolsDir)) {

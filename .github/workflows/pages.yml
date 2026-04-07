@@ -1,9 +1,22 @@
-name: Pages Schemas
+name: Pages
 
 on:
   push:
     branches: ["main"]
+    # Only run when content that affects the generated site changes.
+    # This avoids a Pages deployment on every push — for example, a mods or
+    # znelchar-only commit would otherwise trigger a no-op redeploy.
+    # Add paths here whenever a new input to the site build is introduced.
+    paths:
+      - "content/**"
+      - "tools/**/docs/**"
+      - "common/scripts/build-pages.js"
+      - "common/scripts/collect-schemas.js"
+      - "rush.json"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
+    # Manual dispatch always runs regardless of path filter — use this for
+    # forced re-deployments after infrastructure or schema changes.
 
 permissions:
   contents: read
@@ -25,34 +38,21 @@ jobs:
           node-version: '22.20.0'
 
       - name: Collect schemas
+        # Discovers schemas from all Rush projects via rush.json, validates each
+        # schema's $id against the canonical base URL, and writes organized output
+        # to .pages/schemas/. Clears and recreates .pages/ for a clean build.
         run: node common/scripts/collect-schemas.js
 
-      - name: Collect tool documentation
-        run: |
-          # Copy tool docs into content site
-          mkdir -p content/src/tools/znelchar/docs
-          cp -r tools/znelchar/docs/* content/src/tools/znelchar/docs/ 2>/dev/null || true
-          
-          # Add any additional tools following the same pattern
-          for tool_dir in tools/*/docs; do
-            if [ -d "$tool_dir" ]; then
-              tool_name=$(basename $(dirname "$tool_dir"))
-              mkdir -p "content/src/tools/$tool_name"
-              cp -r "$tool_dir" "content/src/tools/$tool_name/" 2>/dev/null || true
-            fi
-          done
-
-      - name: Build 11ty site
-        run: |
-          cd content
-          npm ci
-          npm run build
+      - name: Build pages site
+        # Uses the Rush build:pages global command so local and CI builds follow
+        # the same path. Collects tool documentation from tools/*/docs/ and builds
+        # the 11ty site to content/_site/.
+        run: node common/scripts/install-run-rush.js build:pages
 
       - name: Combine artifacts for Pages
         run: |
-          # Copy 11ty generated site to .pages
+          # Layer 11ty generated site on top of .pages/ (schemas already written above)
           cp -r content/_site/* .pages/ 2>/dev/null || true
-          # Schemas are already in .pages from collect-schemas.js
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
