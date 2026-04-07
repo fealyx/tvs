@@ -325,7 +325,7 @@
    * separated by hyphens or slashes, where a word may contain lowercase ASCII letters, digits,
    * ".", and "@" characters.
    */
-  // "allowedProjectTags": [ "tools", "frontend-team", "1.0.0-release" ],
+  "allowedProjectTags": [ "tools", "mods" ],
 
   /**
    * (Required) This is the inventory of projects to be managed by Rush.
@@ -442,7 +442,8 @@
     // }
     {
       "packageName": "@tvs/znelchar-tools",
-      "projectFolder": "tools/znelchar"
+      "projectFolder": "tools/znelchar",
+      "tags": [ "tools" ]
     },
     // {
     //   "packageName": "@tvs/znelchar-gui",
@@ -450,7 +451,8 @@
     // },
     {
       "packageName": "@tvs/mods",
-      "projectFolder": "mods"
+      "projectFolder": "mods",
+      "tags": [ "mods" ]
     }
   ]
 }

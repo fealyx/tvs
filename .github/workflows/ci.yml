@@ -62,10 +62,30 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '22.20.0'
+
       - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
         with:
           dotnet-version: |
             8.0.x
+
+      - name: Cache Rush and pnpm state (mods)
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: |
+            common/temp/pnpm-store
+            common/temp/pnpm-local
+            common/temp/install-run
+            common/temp/build-cache
+          key: rush-mods-${{ runner.os }}-${{ hashFiles('rush.json', 'common/config/rush/pnpm-lock.yaml', 'common/config/rush/build-cache.json') }}
+          restore-keys: |
+            rush-mods-${{ runner.os }}-
+            rush-${{ runner.os }}-
+
+      - name: Rush Install
+        run: node common/scripts/install-run-rush.js install
 
       - name: Fetch private TVS managed refs
         if: env.TVS_BUILD_DATA_TOKEN != ''
@@ -78,6 +98,15 @@ jobs:
         if: env.TVS_BUILD_DATA_TOKEN == ''
         run: echo "TVS_BUILD_DATA_TOKEN is not configured; mods CI will use the no-game-refs fallback build path."
 
+      - name: Set TVS build-data cache key env
+        shell: bash
+        run: |
+          if [ -n "$TVS_BUILD_DATA_TOKEN" ]; then
+            echo "TVS_BUILD_DATA_AVAILABLE=1" >> "$GITHUB_ENV"
+          else
+            echo "TVS_BUILD_DATA_AVAILABLE=" >> "$GITHUB_ENV"
+          fi
+
       - name: Validate mods asset manifests
         shell: pwsh
         run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/scripts/validate-mod-assets.ps1 -All -CiSummary
@@ -88,4 +117,4 @@ jobs:
         run: dotnet restore mods/Mods.sln --configfile mods/nuget.config --force-evaluate
 
       - name: Build mods solution
-        run: dotnet build mods/Mods.sln --configuration Release --no-restore
+        run: node common/scripts/install-run-rush.js build --verbose --to @tvs/mods

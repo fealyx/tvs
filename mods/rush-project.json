@@ -3,7 +3,13 @@
   "operationSettings": [
     {
       "operationName": "_phase:build",
-      "outputFolderNames": []
+      "outputFolderNames": [
+        "TVS.SampleMod/bin",
+        "Fealyx.TVSLib/bin"
+      ],
+      "dependsOnEnvVars": [
+        "TVS_BUILD_DATA_AVAILABLE"
+      ]
     }
   ]
 }
