@@ -1,0 +1,88 @@
+{
+  "$schema": "./template-pack.schema.json",
+  "schemaVersion": 1,
+  "id": "mod-only.basic",
+  "name": "Mod-only basic scaffold",
+  "description": "Creates a standalone mod project scaffold with optional Thunderstore metadata and CI workflow.",
+  "version": "0.1.0",
+  "baseProfile": "mod-only",
+  "compatibleAddOns": [
+    "thunderstore",
+    "ci-profile"
+  ],
+  "parameters": [
+    {
+      "key": "ModName",
+      "type": "string",
+      "description": "Human-friendly mod name.",
+      "required": true,
+      "pattern": "^[A-Za-z][A-Za-z0-9 ._-]{1,63}$"
+    },
+    {
+      "key": "AssemblyName",
+      "type": "string",
+      "description": "Assembly/project name.",
+      "required": true,
+      "pattern": "^[A-Za-z][A-Za-z0-9_.-]{1,63}$"
+    },
+    {
+      "key": "PluginGuid",
+      "type": "string",
+      "description": "BepInEx plugin GUID.",
+      "required": true,
+      "pattern": "^[A-Za-z0-9_.-]+$"
+    },
+    {
+      "key": "EnableThunderstore",
+      "type": "boolean",
+      "description": "Include Thunderstore package metadata files.",
+      "default": false
+    }
+  ],
+  "directories": [
+    {
+      "path": "src"
+    },
+    {
+      "path": "assets"
+    }
+  ],
+  "templates": [
+    {
+      "source": "content/README.md.tpl",
+      "target": "README.md",
+      "mode": "template"
+    },
+    {
+      "source": "content/Plugin.cs.tpl",
+      "target": "src/{{AssemblyName}}/Plugin.cs",
+      "mode": "template"
+    },
+    {
+      "source": "content/assets.manifest.json.tpl",
+      "target": "assets/assets.manifest.json",
+      "mode": "template"
+    },
+    {
+      "source": "content/thunderstore/manifest.json.tpl",
+      "target": "manifest.json",
+      "mode": "template",
+      "when": "EnableThunderstore == true"
+    }
+  ],
+  "postActions": [
+    {
+      "name": "Initialize gitignore",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "if (-not (Test-Path .gitignore)) { 'bin`nobj`nrelease-artifacts' | Set-Content .gitignore -Encoding ascii }"
+      ]
+    }
+  ],
+  "metadata": {
+    "initiative": "mod-dev-bootstrap",
+    "owner": "tvs"
+  }
+}
