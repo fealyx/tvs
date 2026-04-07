@@ -1,0 +1,45 @@
+{
+  "$schema": "../../schemas/assets.manifest.schema.json",
+  "schemaVersion": 1,
+  "project": {
+    "name": "TVS.SampleMod",
+    "version": "0.1.0",
+    "root": "mods/TVS.SampleMod"
+  },
+  "producer": {
+    "tool": "Unity AssetBundle build pipeline",
+    "unityVersion": "2022.3.9f1",
+    "sourceProject": "Fealyx.TVS.Oiia",
+    "builtAtUtc": "2026-04-07T00:00:00Z"
+  },
+  "assets": [
+    {
+      "type": "bundle",
+      "path": "oiiacat",
+      "required": true,
+      "sha256": "421af870eebe140900800db043f97927994e2324ba9b808e975b79e94df7ea29",
+      "releasePath": "assets/oiiacat",
+      "description": "Unity asset bundle consumed at runtime by TVS.SampleMod"
+    },
+    {
+      "type": "assembly",
+      "path": "Fealyx.TVS.Oiia.dll",
+      "required": true,
+      "sha256": "d6decff305fa110ea5f060ad1dc2b0718137bac86e57329c41920ade8eb998bd",
+      "releasePath": "assets/Fealyx.TVS.Oiia.dll",
+      "description": "Support assembly referenced by TVS.SampleMod"
+    },
+    {
+      "type": "assembly",
+      "path": "Fealyx.TVS.Oiia.pdb",
+      "required": false,
+      "sha256": "59ac1f5358dd8583da9a18ea202122333e18157a6c3e0d1796b6382159727911",
+      "releasePath": "assets/Fealyx.TVS.Oiia.pdb",
+      "description": "Debug symbols for Fealyx.TVS.Oiia"
+    }
+  ],
+  "notes": [
+    "Keep this manifest in sync with assets copied by TVS.SampleMod.csproj.",
+    "Do not include proprietary game-owned assets in this project."
+  ]
+}

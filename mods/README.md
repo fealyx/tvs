@@ -58,6 +58,32 @@ The local cache is gitignored and regenerated if needed.
 
 To add new assemblies to the copy manifest, edit `game-assemblies.json` and re-run the setup script.
 
+### Project asset manifests
+
+Projects with runtime assets should declare them in `assets/assets.manifest.json`.
+The first implementation lives at `mods/TVS.SampleMod/assets/assets.manifest.json` and supports any mix of:
+
+- asset bundles
+- loose runtime files
+- extra assembly dependencies
+
+Manifest files are validated by `mods/scripts/validate-mod-assets.ps1`.
+
+Validation checks include:
+
+1. JSON schema conformance against `mods/schemas/assets.manifest.schema.json`
+2. required file existence
+3. optional SHA-256 hash verification
+4. release-path safety checks to prevent path traversal
+
+Run locally:
+
+```powershell
+npm run validate:assets
+```
+
+CI also runs this validation before restoring and building `Mods.sln`.
+
 ### Private CI build-data flow
 
 GitHub Actions can also populate `mods/.local/game-refs/managed/` from the private `fealyx/tvs-build-data` repository.

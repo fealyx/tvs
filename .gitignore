@@ -142,6 +142,7 @@ TestResults/
 
 # Local mod workspace configuration
 mods/GameDir.props
+mods/release-artifacts/
 
 # Private CI Build data
 /tvs-build-data/

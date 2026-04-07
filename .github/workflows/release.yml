@@ -8,7 +8,8 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  release-znelchar:
+    if: startsWith(github.event.release.tag_name, 'znelchar/')
     runs-on: ubuntu-latest
     env:
       CI: true
@@ -35,19 +36,39 @@ jobs:
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
 
-      - name: Build artifacts via Rush
-        run: node common/scripts/install-run-rush.js build --verbose --to @tvs/znelchar-tools
+      - name: Build znelchar distributions
+        run: npm --prefix tools/znelchar run build:dist
 
       - name: Prepare release files
-        run: |
-          set -e
-          mkdir -p release-artifacts
-          cp tools/znelchar/dist/znelchar-module-*.zip release-artifacts/
-          cp tools/znelchar/dist/znelchar-core-*.zip release-artifacts/
-          cp tools/znelchar/dist/znelchar-portable-*.zip release-artifacts/
-          cp tools/znelchar/dist/znelchar-release-manifest.json release-artifacts/
-          (cd release-artifacts && sha256sum *.zip > SHA256SUMS.txt)
-          ls -la release-artifacts
+        shell: pwsh
+        run: >-
+          $manifestPath = './tools/znelchar/dist/znelchar-release-manifest.json';
+
+          if (-not (Test-Path -LiteralPath $manifestPath)) {
+            throw "Release manifest not found at $manifestPath";
+          }
+
+          $manifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json -AsHashtable -Depth 40;
+          $releaseDir = './release-artifacts';
+
+          if (Test-Path -LiteralPath $releaseDir) {
+            Remove-Item -LiteralPath $releaseDir -Recurse -Force;
+          }
+
+          New-Item -ItemType Directory -Path $releaseDir -Force | Out-Null;
+
+          foreach ($artifact in $manifest.artifacts) {
+            $sourcePath = Join-Path './tools/znelchar/dist' $artifact.fileName;
+            if (-not (Test-Path -LiteralPath $sourcePath)) {
+              throw "Expected artifact listed in manifest is missing: $sourcePath";
+            }
+
+            Copy-Item -LiteralPath $sourcePath -Destination $releaseDir -Force;
+          }
+
+          Copy-Item -LiteralPath $manifestPath -Destination $releaseDir -Force;
+          Copy-Item -LiteralPath './tools/znelchar/dist/SHA256SUMS.txt' -Destination $releaseDir -Force;
+          Get-ChildItem -LiteralPath $releaseDir | Format-Table -AutoSize | Out-String | Write-Host
 
       - name: Upload release assets
         uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
@@ -58,3 +79,54 @@ jobs:
             release-artifacts/znelchar-portable-*.zip
             release-artifacts/znelchar-release-manifest.json
             release-artifacts/SHA256SUMS.txt
+
+  release-mods:
+    if: startsWith(github.event.release.tag_name, 'mods/')
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+      TVS_BUILD_DATA_MANIFEST: 0.45.1
+      TVS_BUILD_DATA_TOKEN: ${{ secrets.TVS_BUILD_DATA_TOKEN }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+        with:
+          dotnet-version: |
+            8.0.x
+
+      - name: Fetch private TVS managed refs
+        if: env.TVS_BUILD_DATA_TOKEN != ''
+        shell: pwsh
+        run: >-
+          pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/scripts/fetch-tvs-build-data.ps1
+          -Manifest $env:TVS_BUILD_DATA_MANIFEST
+
+      - name: Proceed without private TVS managed refs
+        if: env.TVS_BUILD_DATA_TOKEN == ''
+        run: echo "TVS_BUILD_DATA_TOKEN is not configured; mods release build will use the no-game-refs fallback path."
+
+      - name: Validate mods asset manifests
+        shell: pwsh
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/scripts/validate-mod-assets.ps1 -All -CiSummary
+
+      - name: Prepare mods release files
+        shell: pwsh
+        run: >-
+          pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/scripts/prepare-mod-release.ps1
+          -Configuration Release
+          -OutputRoot ./release-artifacts/mods
+          -SkipValidation
+
+      - name: Upload mods release assets
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
+        with:
+          files: |
+            release-artifacts/mods/**
+
+  release-noop:
+    if: ${{ !startsWith(github.event.release.tag_name, 'znelchar/') && !startsWith(github.event.release.tag_name, 'mods/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: No automated assets for this tag namespace
+        run: echo "No automated release artifact workflow is configured for tag '${{ github.event.release.tag_name }}'."

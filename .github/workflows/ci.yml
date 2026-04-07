@@ -78,6 +78,10 @@ jobs:
         if: env.TVS_BUILD_DATA_TOKEN == ''
         run: echo "TVS_BUILD_DATA_TOKEN is not configured; mods CI will use the no-game-refs fallback build path."
 
+      - name: Validate mods asset manifests
+        shell: pwsh
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/scripts/validate-mod-assets.ps1 -All -CiSummary
+
       - name: Restore mods solution
         # Always use mods/nuget.config explicitly so CI and local restore resolve
         # package source mappings the same way.
