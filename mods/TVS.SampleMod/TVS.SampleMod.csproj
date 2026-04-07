@@ -16,6 +16,10 @@
     <Compile Remove="Plugin.cs" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(HasTVSManagedAssemblies)' == 'true'">
+    <Compile Remove="Plugin.NoGameRefs.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="BepInEx.Core" />
     <PackageReference Include="BepInEx.PluginInfoProps" />
