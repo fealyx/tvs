@@ -70,7 +70,9 @@ jobs:
         run: echo "TVS_BUILD_DATA_TOKEN is not configured; mods CI will use the no-game-refs fallback build path."
 
       - name: Restore mods solution
-        run: dotnet restore mods/Mods.sln
+        # Always use mods/nuget.config explicitly so CI and local restore resolve
+        # package source mappings the same way.
+        run: dotnet restore mods/Mods.sln --configfile mods/nuget.config --force-evaluate
 
       - name: Build mods solution
         run: dotnet build mods/Mods.sln --configuration Release --no-restore
