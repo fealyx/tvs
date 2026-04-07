@@ -37,7 +37,9 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Rush Build
-        run: node common/scripts/install-run-rush.js build --verbose
+        # Mods are built in the dedicated mods-dotnet job because that job handles
+        # private TVS managed-assembly fetching and fallback behavior.
+        run: node common/scripts/install-run-rush.js build --verbose --to-except @tvs/mods
 
       - name: Znelchar Update Self-Test Matrix
         run: npm --prefix tools/znelchar run update:selftest:matrix
@@ -64,7 +66,7 @@ jobs:
           -Manifest $env:TVS_BUILD_DATA_MANIFEST
 
       - name: Proceed without private TVS managed refs
-        if: env.TVS_BUILD_DATA_TOKEN != ''
+        if: env.TVS_BUILD_DATA_TOKEN == ''
         run: echo "TVS_BUILD_DATA_TOKEN is not configured; mods CI will use the no-game-refs fallback build path."
 
       - name: Restore mods solution
