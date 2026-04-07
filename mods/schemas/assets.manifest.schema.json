@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://tvs.local/schemas/assets.manifest.schema.json",
+  "$id": "https://fealyx.github.io/tvs/schemas/mods/assets.manifest.schema.json",
   "title": "Mods Asset Manifest",
   "type": "object",
   "required": [
