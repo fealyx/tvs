@@ -46,13 +46,26 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI: true
+      TVS_BUILD_DATA_MANIFEST: 0.45
+      TVS_BUILD_DATA_TOKEN: ${{ secrets.TVS_BUILD_DATA_TOKEN }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: actions/setup-dotnet@8c9c9eb64c7ec2efea2a57f8b3c41bcaccab1c88 # v5.0.0
+      - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
         with:
           dotnet-version: |
             8.0.x
+
+      - name: Fetch private TVS managed refs
+        if: env.TVS_BUILD_DATA_TOKEN != ''
+        shell: pwsh
+        run: >-
+          pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/scripts/fetch-tvs-build-data.ps1
+          -Manifest $env:TVS_BUILD_DATA_MANIFEST
+
+      - name: Proceed without private TVS managed refs
+        if: env.TVS_BUILD_DATA_TOKEN != ''
+        run: echo "TVS_BUILD_DATA_TOKEN is not configured; mods CI will use the no-game-refs fallback build path."
 
       - name: Restore mods solution
         run: dotnet restore mods/Mods.sln

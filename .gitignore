@@ -142,3 +142,6 @@ TestResults/
 
 # Local mod workspace configuration
 mods/GameDir.props
+
+# Private CI Build data
+/tvs-build-data/

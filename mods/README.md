@@ -31,6 +31,10 @@ This directory is the .NET mod development workspace for The Villain Simulator.
 
 Both commands build `Mods.sln` through the workspace wrapper script.
 
+When private TVS game assemblies are not available, projects that depend only on public packages still build normally.
+`TVS.SampleMod` also includes a fallback compile path for CI / no-game-refs environments so the workspace can stay green without distributing private game DLLs.
+Its full runtime implementation is only compiled when `TVSManagedDir` points at a valid managed assembly cache.
+
 If `TVSAutoDeployOnBuild` is true in `mods/GameDir.props`, plugin projects are copied
 to `BepInEx/plugins` automatically after each successful build.
 
@@ -53,6 +57,21 @@ This keeps your repo independent of game install location and prevents build con
 The local cache is gitignored and regenerated if needed.
 
 To add new assemblies to the copy manifest, edit `game-assemblies.json` and re-run the setup script.
+
+### Private CI build-data flow
+
+GitHub Actions can also populate `mods/.local/game-refs/managed/` from the private `fealyx/tvs-build-data` repository.
+The CI helper is `mods/scripts/fetch-tvs-build-data.ps1`.
+
+It performs four steps:
+
+1. Download a pinned manifest such as `0.45.json` from the private repo.
+2. Resolve the manifest's release tag.
+3. Download the zip plus `.sha256` release assets and verify the checksum.
+4. Extract the bundle to the same local cache path used by `setup-modding-env.ps1`, then generate `mods/GameDir.props` pointing `TVSManagedDir` at that cache.
+
+The workflow uses the `TVS_BUILD_DATA_TOKEN` secret when it is available.
+If the secret is missing, CI still builds with the existing `TVS.SampleMod` no-game-refs fallback path.
 
 ### Publicized assemblies
 
