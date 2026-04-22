@@ -16,6 +16,19 @@ yarn.lock                    merge=binary
 # Handle all files as text by default and enforce LF
 * text=auto eol=lf
 
+# Keep common .NET and Unity text assets explicitly LF across platforms
+*.sln                        text eol=lf
+*.csproj                     text eol=lf
+*.props                      text eol=lf
+*.targets                    text eol=lf
+*.cs                         text eol=lf diff=csharp
+*.csx                        text eol=lf diff=csharp
+*.asmdef                     text eol=lf
+*.meta                       text eol=lf
+*.unity                      text eol=lf
+*.prefab                     text eol=lf
+*.asset                      text eol=lf
+
 # PowerShell scripts — LF in working tree and in repo
 *.ps1                        text eol=lf
 *.psm1                       text eol=lf

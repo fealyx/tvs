@@ -40,11 +40,11 @@ Use namespaced tags so one repository can host multiple release lines.
 
 1. Bump relevant mod project versions.
 2. Build and test mods:
-   - `pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/scripts/validate-mod-assets.ps1 -All`
-   - `dotnet restore mods/Mods.sln --configfile mods/nuget.config --force-evaluate`
-   - `dotnet build mods/Mods.sln --configuration Release --no-restore`
+   - `pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/csharp/scripts/validate-mod-assets.ps1 -All`
+   - `dotnet restore mods/csharp/Mods.sln --configfile mods/csharp/nuget.config --force-evaluate`
+   - `dotnet build mods/csharp/Mods.sln --configuration Release --no-restore`
 3. Prepare project-scoped release assets:
-   - `pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/scripts/prepare-mod-release.ps1 -Configuration Release -OutputRoot ./release-artifacts/mods`
+   - `pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/csharp/scripts/prepare-mod-release.ps1 -Configuration Release -OutputRoot ./release-artifacts/mods`
 4. Create tag `mods/vX.Y.Z` and publish release notes describing included project folders/assets.
 
 Automated `mods/*` release packaging is implemented in `.github/workflows/release.yml`.

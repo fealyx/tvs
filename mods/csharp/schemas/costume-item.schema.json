@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://fealyx.github.io/tvs/schemas/mods/costume-item.schema.json",
+  "title": "Costume Item",
+  "description": "Schema for defining custom costume items in The Villain Simulator mods",
+  "type": "object",
+  "required": ["name", "category", "assetBundle", "prefabPath"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name for the costume item",
+      "minLength": 1,
+      "examples": ["Toulouse Hair", "Pirate Hat"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the costume item",
+      "default": ""
+    },
+    "category": {
+      "type": "string",
+      "description": "Category/slot for this costume item",
+      "enum": ["Hair", "Head", "Underwear-Top", "Underwear-Bottom", "Suits", "Dresses", "Torso", "Shoulders", "Arms", "BottomGear", "Shoes", "Accessories"]
+    },
+    "assetBundle": {
+      "type": "string",
+      "description": "Asset bundle containing the costume item assets (resolved relative to plugin's AssetBundles directory)",
+      "minLength": 1,
+      "examples": ["hair", "accessories"]
+    },
+    "prefabPath": {
+      "type": "string",
+      "description": "Name of the asset within the bundle",
+      "minLength": 1,
+      "examples": ["assets/@hairtest/toulousehair.fbx", "assets/prefabs/pirate-hat.prefab"]
+    },
+    "iconPath": {
+      "type": "string",
+      "description": "Optional icon/preview asset name",
+      "examples": ["assets/@hairtest/icon.png"]
+    },
+    "defaultColor": {
+      "type": "array",
+      "description": "Default color as RGBA array with values 0.0-1.0",
+      "items": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 1.0
+      },
+      "minItems": 4,
+      "maxItems": 4,
+      "default": [ 1, 1, 1, 1 ],
+      "examples": [
+        [ 0, 0, 0, 1 ],
+        [ 1, 0.5, 0.25, 1 ]
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Optional metadata that can be used for custom logic",
+      "additionalProperties": true,
+      "default": {}
+    },
+    "morphs": {
+      "type": "object",
+      "description": "Morph/blendshape definitions. Keys are slider names, values are dictionaries of blendshape names to parameters.",
+      "additionalProperties": {
+        "type": "object",
+        "description": "Blendshapes controlled by this slider. Keys are DNA tags (blendshape names), values are parameters (use {} for defaults).",
+        "additionalProperties": {
+          "$ref": "#/$defs/blendshapeParams"
+        }
+      },
+      "default": {},
+      "examples": [
+        {
+          "Hair Volume": {
+            "HairVolume": {
+              "min": 0.0,
+              "max": 1.0,
+              "multiplier": 1.0,
+              "inverted": false
+            }
+          },
+          "Expand All": {
+            "ExpandAll": {}
+          }
+        }
+      ]
+    },
+    "additionalCostumeData": {
+      "$ref": "#/$defs/additionalData"
+    }
+  },
+  "$defs": {
+    "blendshapeParams": {
+      "type": "object",
+      "description": "Parameters for a blendshape slider tag",
+      "properties": {
+        "min": {
+          "type": "number",
+          "description": "Minimum value for the slider",
+          "default": 0.0
+        },
+        "max": {
+          "type": "number",
+          "description": "Maximum value for the slider",
+          "default": 1.0
+        },
+        "multiplier": {
+          "type": "number",
+          "description": "Multiplier applied to the slider value",
+          "default": 1.0
+        },
+        "inverted": {
+          "type": "boolean",
+          "description": "Whether the slider effect is inverted",
+          "default": false
+        }
+      }
+    },
+    "additionalData": {
+      "type": "object",
+      "description": "Additional costume data for helmet hair blends, character overrides, etc.",
+      "properties": {
+        "_helmetHairBlendName": {
+          "type": "string",
+          "description": "Name of the blendshape to use when wearing a helmet"
+        },
+        "_helmetHairBlendshapeAmount": {
+          "type": "number",
+          "description": "Amount to apply the helmet hair blendshape (0-100)",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 100
+        }
+      }
+    }
+  }
+}

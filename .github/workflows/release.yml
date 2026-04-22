@@ -99,7 +99,7 @@ jobs:
         if: env.TVS_BUILD_DATA_TOKEN != ''
         shell: pwsh
         run: >-
-          pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/scripts/fetch-tvs-build-data.ps1
+          pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/csharp/scripts/fetch-tvs-build-data.ps1
           -Manifest $env:TVS_BUILD_DATA_MANIFEST
 
       - name: Proceed without private TVS managed refs
@@ -108,12 +108,12 @@ jobs:
 
       - name: Validate mods asset manifests
         shell: pwsh
-        run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/scripts/validate-mod-assets.ps1 -All -CiSummary
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/csharp/scripts/validate-mod-assets.ps1 -All -CiSummary
 
       - name: Prepare mods release files
         shell: pwsh
         run: >-
-          pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/scripts/prepare-mod-release.ps1
+          pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/csharp/scripts/prepare-mod-release.ps1
           -Configuration Release
           -OutputRoot ./release-artifacts/mods
           -SkipValidation

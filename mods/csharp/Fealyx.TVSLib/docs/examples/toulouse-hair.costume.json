@@ -1,0 +1,27 @@
+{
+  "$schema": "../../../schemas/costume-definition.schema.json",
+  "name": "Toulouse Hair",
+  "description": "A stylish hair style",
+  "category": "hair",
+  "assetBundle": "hair",
+  "prefabPath": "assets/@hairtest/toulousehair.fbx",
+  "iconPath": "assets/@hairtest/icon.png",
+  "defaultColor": [0, 0, 0, 1],
+  "morphs": {
+    "Hair Volume": {
+      "HairVolume": {
+        "min": 0.0,
+        "max": 1.0,
+        "multiplier": 1.0,
+        "inverted": false
+      }
+    },
+    "Adjust Back": {
+      "AdjustBack": {}
+    }
+  },
+  "additionalCostumeData": {
+    "_helmetHairBlendName": "HideA",
+    "_helmetHairBlendshapeAmount": 100.0
+  }
+}

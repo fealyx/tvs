@@ -39,7 +39,7 @@ jobs:
       - name: Rush Build
         # Mods are built in the dedicated mods-dotnet job because that job handles
         # private TVS managed-assembly fetching and fallback behavior.
-        run: node common/scripts/install-run-rush.js build --verbose --to-except @tvs/mods
+        run: node common/scripts/install-run-rush.js build --verbose --to-except @tvs/mods-csharp
 
       - name: Znelchar Update Self-Test Matrix
         # Rush build should generate dist outputs, but when outputs are missing
@@ -91,7 +91,7 @@ jobs:
         if: env.TVS_BUILD_DATA_TOKEN != ''
         shell: pwsh
         run: >-
-          pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/scripts/fetch-tvs-build-data.ps1
+          pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/csharp/scripts/fetch-tvs-build-data.ps1
           -Manifest $env:TVS_BUILD_DATA_MANIFEST
 
       - name: Proceed without private TVS managed refs
@@ -109,12 +109,12 @@ jobs:
 
       - name: Validate mods asset manifests
         shell: pwsh
-        run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/scripts/validate-mod-assets.ps1 -All -CiSummary
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./mods/csharp/scripts/validate-mod-assets.ps1 -All -CiSummary
 
       - name: Restore mods solution
-        # Always use mods/nuget.config explicitly so CI and local restore resolve
+        # Always use mods/csharp/nuget.config explicitly so CI and local restore resolve
         # package source mappings the same way.
-        run: dotnet restore mods/Mods.sln --configfile mods/nuget.config --force-evaluate
+        run: dotnet restore mods/csharp/Mods.sln --configfile mods/csharp/nuget.config --force-evaluate
 
       - name: Build mods solution
-        run: node common/scripts/install-run-rush.js build --verbose --to @tvs/mods
+        run: node common/scripts/install-run-rush.js build --verbose --to @tvs/mods-csharp

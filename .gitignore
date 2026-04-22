@@ -129,7 +129,7 @@ temp/
 
 # TVS Modding environment and local game refs (never commit)
 .env
-mods/.local/
+mods/csharp/.local/
 
 # .NET build artifacts
 **/bin/
@@ -141,8 +141,12 @@ mods/.local/
 TestResults/
 
 # Local mod workspace configuration
-mods/GameDir.props
-mods/release-artifacts/
+mods/csharp/GameDir.props
+mods/csharp/release-artifacts/
+mods/unity/Builds/
+mods/unity/Library/
+mods/unity/Logs/
+mods/unity/UserSettings/
 release-artifacts/
 
 # Private CI Build data

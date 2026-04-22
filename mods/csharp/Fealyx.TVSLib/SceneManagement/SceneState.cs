@@ -1,0 +1,190 @@
+﻿using System;
+
+using BepInEx.Logging;
+
+using UnityEngine.SceneManagement;
+
+namespace Fealyx.TVSLib.SceneManagement;
+
+/// <summary>
+/// Base class for scene-specific state management.
+/// Inherit from this class to handle scene lifecycle events (enter, exit, update) in a structured way.
+/// </summary>
+public abstract class SceneState : IDisposable
+{
+    /// <summary>
+    /// Logger for this scene state. For plugin states, this is the plugin's logger.
+    /// For framework states, this is a dedicated logger for the state.
+    /// </summary>
+    protected ManualLogSource Logger { get; private set; } = null!;
+
+    /// <summary>
+    /// The name of the Unity scene this state manages (e.g., "MainMenu", "MainScene").
+    /// Can be overridden in derived classes or set via SceneStateAttribute.
+    /// </summary>
+    public virtual string SceneName
+    {
+        get
+        {
+            // Check for attribute first
+            var attr = GetType().GetCustomAttributes(typeof(SceneStateAttribute), false);
+            if (attr.Length > 0 && attr[0] is SceneStateAttribute sceneAttr)
+            {
+                return sceneAttr.SceneName;
+            }
+            throw new InvalidOperationException(
+                $"{GetType().Name} must either override SceneName property or use [SceneState] attribute.");
+        }
+    }
+
+    /// <summary>
+    /// Execution priority. Higher values execute first. Default: 0
+    /// Can be overridden in derived classes or set via SceneStateAttribute.
+    /// </summary>
+    public virtual int Priority
+    {
+        get
+        {
+            var attr = GetType().GetCustomAttributes(typeof(SceneStateAttribute), false);
+            if (attr.Length > 0 && attr[0] is SceneStateAttribute sceneAttr)
+            {
+                return sceneAttr.Priority;
+            }
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// Reference to the owning plugin. Set automatically by the framework.
+    /// Null for framework states that aren't owned by a plugin.
+    /// </summary>
+    protected BaseTVSPlugin? Plugin { get; private set; } = null!;
+
+    /// <summary>
+    /// The scene context for this scene, if one is registered.
+    /// Provides typed access to scene-specific objects and utilities.
+    /// Null if the scene doesn't have a registered context.
+    /// </summary>
+    protected ISceneContext? Context { get; private set; }
+
+    /// <summary>
+    /// The current transition state of this scene state.
+    /// </summary>
+    public SceneStateTransition Transition { get; internal set; } = SceneStateTransition.Exited;
+
+    /// <summary>
+    /// Called when the scene is loaded and becomes active.
+    /// Use this for initialization logic specific to this scene.
+    /// NOTE: Scene hierarchy may not be fully available yet. Use OnAwake() for GameObject access.
+    /// </summary>
+    /// <param name="scene">The Unity scene that was loaded</param>
+    public virtual void OnEnter(Scene scene) { }
+
+    /// <summary>
+    /// Called when the scene's SceneContext is ready - or immediately after OnEnter if there is no context.
+    /// Use this to access framework-supplied scene objects and utilities via the Context property.
+    /// NOTE: Scene hierarchy may not be fully available yet. Use OnAwake() for GameObject access.
+    /// </summary>
+    /// <param name="scene">The Unity scene that was loaded</param>
+    public virtual void OnReady(Scene scene) { }
+
+    /// <summary>
+    /// Called after the scene hierarchy is fully instantiated (Unity's Awake phase).
+    /// This is the earliest point where GameObject.Find() and similar operations are guaranteed to work.
+    /// Use this to find and cache references to scene GameObjects.
+    /// </summary>
+    public virtual void OnAwake() { }
+
+    /// <summary>
+    /// Called after all Awake() calls have completed (Unity's Start phase).
+    /// All GameObjects are initialized and enabled at this point.
+    /// Use this for logic that depends on other scripts being initialized.
+    /// </summary>
+    public virtual void OnStart() { }
+
+    /// <summary>
+    /// Called when leaving this scene.
+    /// Use this for cleanup logic specific to this scene.
+    /// </summary>
+    /// <param name="scene">The Unity scene that is being unloaded</param>
+    public virtual void OnExit(Scene scene) { }
+
+    /// <summary>
+    /// Called every frame while this scene is active and the state is not paused.
+    /// Override this to implement per-frame game logic.
+    /// </summary>
+    public virtual void OnUpdate() { }
+
+    /// <summary>
+    /// Called every physics update while this scene is active and the state is not paused.
+    /// Override this to implement physics-related game logic.
+    /// </summary>
+    public virtual void OnFixedUpdate() { }
+
+    /// <summary>
+    /// Called when the state is paused. Updates will no longer be called until resumed.
+    /// Override this to implement custom pause logic.
+    /// </summary>
+    public virtual void OnPause() { }
+
+    /// <summary>
+    /// Called when the state is resumed from pause. Updates will resume.
+    /// Override this to implement custom resume logic.
+    /// </summary>
+    public virtual void OnResume() { }
+
+    /// <summary>
+    /// Cleanup resources when the state is disposed.
+    /// Called automatically when the owning plugin is disposed.
+    /// </summary>
+    public virtual void Dispose() { }
+
+    /// <summary>
+    /// Sets the owning plugin reference. Called internally by the framework.
+    /// Can be null for framework states.
+    /// </summary>
+    internal void SetPlugin(BaseTVSPlugin? plugin)
+    {
+        Plugin = plugin;
+    }
+
+    /// <summary>
+    /// Sets the scene context. Called internally by the framework.
+    /// </summary>
+    internal void SetContext(ISceneContext? context)
+    {
+        Context = context;
+    }
+
+    /// <summary>
+    /// Sets the logger for this state. Called internally by the framework.
+    /// </summary>
+    internal void SetLogger(ManualLogSource logger)
+    {
+        Logger = logger;
+    }
+
+    /// <summary>
+    /// Pauses this state, preventing OnUpdate and OnFixedUpdate from being called.
+    /// </summary>
+    public void Pause()
+    {
+        if (Transition == SceneStateTransition.Active)
+        {
+            Transition = SceneStateTransition.Paused;
+            OnPause();
+        }
+    }
+
+    /// <summary>
+    /// Resumes this state from pause, allowing OnUpdate and OnFixedUpdate to be called again.
+    /// </summary>
+    public void Resume()
+    {
+        if (Transition == SceneStateTransition.Paused)
+        {
+            Transition = SceneStateTransition.Active;
+            OnResume();
+        }
+    }
+}

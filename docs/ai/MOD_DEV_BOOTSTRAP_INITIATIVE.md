@@ -77,7 +77,7 @@ All entry points should delegate to the same underlying engine to prevent drift.
 ## Why This Fits TVS
 
 - Current tooling already leans heavily on PowerShell for mod and znelchar workflows.
-- Existing script patterns in `mods/scripts` are reusable starting points.
+- Existing script patterns in `mods/csharp/scripts` are reusable starting points.
 - Existing update/install behavior in znelchar can be generalized for common self-update flow.
 - Rush monorepo structure can host the shared project cleanly under `tools`.
 

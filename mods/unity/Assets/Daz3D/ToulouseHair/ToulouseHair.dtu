@@ -1,0 +1,3593 @@
+{
+	"DTU Version" : 4,
+	"Asset Name" : "ToulouseHair",
+	"Import Name" : "ToulouseHR",
+	"Asset Type" : "SkeletalMesh",
+	"Use Experimental Animation Transfer" : false,
+	"Asset Id" : "Genesis 2_35228",
+	"Content Type" : "Follower/Hair",
+	"FBX File" : "D:/Projects/tvs/mods/unity/Assets/Daz3D/ToulouseHair/ToulouseHair.fbx",
+	"Base FBX File" : "D:/Projects/tvs/mods/unity/Assets/Daz3D/ToulouseHair/ToulouseHair_base.fbx",
+	"HD FBX File" : "D:/Projects/tvs/mods/unity/Assets/Daz3D/ToulouseHair/ToulouseHair_HD.fbx",
+	"Import Folder" : "D:/Projects/tvs/mods/unity/Assets/Daz3D/ToulouseHair/",
+	"Product Name" : "",
+	"Product Component Name" : "",
+	"Materials" : [
+		{
+			"Version" : 4,
+			"Asset Name" : "ToulouseHR",
+			"Asset Label" : "Toulouse Hair",
+			"Material Name" : "Hair",
+			"Material Type" : "omUberSurface",
+			"Value" : "Follower/Hair",
+			"Properties" : [
+				{
+					"Name" : "Asset Type",
+					"Label" : "Asset Type",
+					"Value" : "Follower/Hair",
+					"Data Type" : "String",
+					"Texture" : ""
+				},
+				{
+					"Name" : "UV Set",
+					"Label" : "UV Set",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Smooth On",
+					"Label" : "Smooth",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Smooth Angle",
+					"Label" : "Angle",
+					"Value" : 89.9,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Line Preview Color",
+					"Label" : "Line Preview Color",
+					"Value" : "#000000",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Line Start Width",
+					"Label" : "Line Start Width (mm)",
+					"Value" : 0.1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Line End Width",
+					"Label" : "Line End Width (mm)",
+					"Value" : 0.1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Line UV Width",
+					"Label" : "Line UV Width",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Render Priority",
+					"Label" : "Render Priority",
+					"Value" : 3,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Propagate Priority",
+					"Label" : "Propagate Priority",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Follow Blend",
+					"Label" : "Follow Blend",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Diffuse Color",
+					"Label" : "Diffuse Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : "D:/DAZ 3D/Library/Runtime/Textures/SWAM_Art/ToulouseHR/SW_Toulouse_01.jpg"
+				},
+				{
+					"Name" : "Opacity Strength",
+					"Label" : "Opacity Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : "D:/DAZ 3D/Library/Runtime/Textures/SWAM_Art/ToulouseHR/SW_Toulouse_TR1.jpg"
+				},
+				{
+					"Name" : "Bump Active",
+					"Label" : "Bump Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Bump Strength",
+					"Label" : "Bump Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : "D:/DAZ 3D/Library/Runtime/Textures/SWAM_Art/ToulouseHR/SW_Toulouse_BUM.jpg"
+				},
+				{
+					"Name" : "Bump Minimum",
+					"Label" : "Bump Minimum",
+					"Value" : -0.02,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Bump Maximum",
+					"Label" : "Bump Maximum",
+					"Value" : 0.015,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Displacement Active",
+					"Label" : "Displacement Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Displacement Strength",
+					"Label" : "Displacement Strength",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Displacement Minimum",
+					"Label" : "Displacement Minimum",
+					"Value" : -0.1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Displacement Maximum",
+					"Label" : "Displacement Maximum",
+					"Value" : 0.1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Trace Displacements",
+					"Label" : "Trace Displacements",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Normal Map",
+					"Label" : "Normal Map",
+					"Value" : 0.875,
+					"Data Type" : "Double",
+					"Texture" : "D:/Projects/tvs/mods/unity/Assets/Daz3D/ToulouseHair/ExportTextures/SW_Toulouse_BUM_nm.png"
+				},
+				{
+					"Name" : "Diffuse Active",
+					"Label" : "Diffuse Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Diffuse Strength",
+					"Label" : "Diffuse Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Diffuse Roughness",
+					"Label" : "Diffuse Roughness",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Opacity Active",
+					"Label" : "Opacity Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Opacity Color",
+					"Label" : "Opacity Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Map Tiling U",
+					"Label" : "Map Tiling U",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Map Tiling V",
+					"Label" : "Map Tiling V",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular Active",
+					"Label" : "Specular Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular Color",
+					"Label" : "Specular Color",
+					"Value" : "#fff5ce",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular Strength",
+					"Label" : "Specular Strength",
+					"Value" : 0.5,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Glossiness",
+					"Label" : "Glossiness",
+					"Value" : 0.85,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular Sharpness",
+					"Label" : "Specular Sharpness",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Anisotropic Active",
+					"Label" : "Anisotropic Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Anisotropic Direction",
+					"Label" : "Anisotropic Direction",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular2 Active",
+					"Label" : "Specular2 Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular2 Color",
+					"Label" : "Specular2 Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular2 Strength",
+					"Label" : "Specular2 Strength",
+					"Value" : 0.05,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular2 Roughness",
+					"Label" : "Specular2 Roughness",
+					"Value" : 0.85,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular2 Sharpness",
+					"Label" : "Specular2 Sharpness",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Anisotropic2 Active",
+					"Label" : "Anisotropic2 Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Anisotropic2 Direction",
+					"Label" : "Anisotropic2 Direction",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Multiply Specular Through Opacity",
+					"Label" : "Multiply Specular Through Opacity",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Ambient Active",
+					"Label" : "Ambient Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Ambient Color",
+					"Label" : "Ambient Color",
+					"Value" : "#000000",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Ambient Strength",
+					"Label" : "Ambient Strength",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Refraction Active",
+					"Label" : "Refraction Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Index of Refraction",
+					"Label" : "Index of Refraction",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Active",
+					"Label" : "Reflection Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Mode",
+					"Label" : "Reflection Mode",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Environment Map (Map in Lat/Long format)",
+					"Label" : "Reflection Environment Map (Map in Lat/Long format)",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Color",
+					"Label" : "Reflection Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Strength",
+					"Label" : "Reflection Strength",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Blur",
+					"Label" : "Reflection Blur",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Blur Samples",
+					"Label" : "Reflection Blur Samples",
+					"Value" : 4,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Multiply Reflection Through Opacity",
+					"Label" : "Multiply Reflection Through Opacity",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Fresnel Active",
+					"Label" : "Fresnel Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Fresnel Strength",
+					"Label" : "Fresnel Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Fresnel Falloff",
+					"Label" : "Fresnel Falloff",
+					"Value" : 0.4,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Fresnel Sharpness",
+					"Label" : "Fresnel Sharpness",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Velvet Active",
+					"Label" : "Velvet Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Velvet Color",
+					"Label" : "Velvet Color",
+					"Value" : "#bbab86",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Velvet Strength",
+					"Label" : "Velvet Strength",
+					"Value" : 0.5,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Velvet Falloff",
+					"Label" : "Velvet Falloff",
+					"Value" : 20,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Active",
+					"Label" : "Subsurface Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Color",
+					"Label" : "Subsurface Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Strength",
+					"Label" : "Subsurface Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Refraction",
+					"Label" : "Subsurface Refraction",
+					"Value" : 1.5,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Scale",
+					"Label" : "Subsurface Scale",
+					"Value" : 4,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Group",
+					"Label" : "Subsurface Group",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Shading Rate",
+					"Label" : "Subsurface Shading Rate",
+					"Value" : 32,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Translucency Active",
+					"Label" : "Translucency Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Translucency Color",
+					"Label" : "Translucency Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Translucency Strength",
+					"Label" : "Translucency Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Fantom",
+					"Label" : "Fantom",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Raytrace",
+					"Label" : "Raytrace",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Accept Shadows",
+					"Label" : "Accept Shadows",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Occlusion",
+					"Label" : "Occlusion",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Occlusion Shading Rate Mode",
+					"Label" : "Occlusion Shading Rate Mode",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Occlusion Shading Rate",
+					"Label" : "Occlusion Shading Rate",
+					"Value" : 128,
+					"Data Type" : "Double",
+					"Texture" : ""
+				}
+			]
+		},
+		{
+			"Version" : 4,
+			"Asset Name" : "ToulouseHR",
+			"Asset Label" : "Toulouse Hair",
+			"Material Name" : "Strands",
+			"Material Type" : "omUberSurface",
+			"Value" : "Follower/Hair",
+			"Properties" : [
+				{
+					"Name" : "Asset Type",
+					"Label" : "Asset Type",
+					"Value" : "Follower/Hair",
+					"Data Type" : "String",
+					"Texture" : ""
+				},
+				{
+					"Name" : "UV Set",
+					"Label" : "UV Set",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Smooth On",
+					"Label" : "Smooth",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Smooth Angle",
+					"Label" : "Angle",
+					"Value" : 89.9,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Line Preview Color",
+					"Label" : "Line Preview Color",
+					"Value" : "#000000",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Line Start Width",
+					"Label" : "Line Start Width (mm)",
+					"Value" : 0.1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Line End Width",
+					"Label" : "Line End Width (mm)",
+					"Value" : 0.1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Line UV Width",
+					"Label" : "Line UV Width",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Render Priority",
+					"Label" : "Render Priority",
+					"Value" : 3,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Propagate Priority",
+					"Label" : "Propagate Priority",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Follow Blend",
+					"Label" : "Follow Blend",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Diffuse Color",
+					"Label" : "Diffuse Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : "D:/DAZ 3D/Library/Runtime/Textures/SWAM_Art/ToulouseHR/SW_Toulouse_01.jpg"
+				},
+				{
+					"Name" : "Opacity Strength",
+					"Label" : "Opacity Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : "D:/DAZ 3D/Library/Runtime/Textures/SWAM_Art/ToulouseHR/SW_Toulouse_TR1.jpg"
+				},
+				{
+					"Name" : "Bump Active",
+					"Label" : "Bump Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Bump Strength",
+					"Label" : "Bump Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : "D:/DAZ 3D/Library/Runtime/Textures/SWAM_Art/ToulouseHR/SW_Toulouse_BUM.jpg"
+				},
+				{
+					"Name" : "Bump Minimum",
+					"Label" : "Bump Minimum",
+					"Value" : -0.02,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Bump Maximum",
+					"Label" : "Bump Maximum",
+					"Value" : 0.015,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Displacement Active",
+					"Label" : "Displacement Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Displacement Strength",
+					"Label" : "Displacement Strength",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Displacement Minimum",
+					"Label" : "Displacement Minimum",
+					"Value" : -0.1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Displacement Maximum",
+					"Label" : "Displacement Maximum",
+					"Value" : 0.1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Trace Displacements",
+					"Label" : "Trace Displacements",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Normal Map",
+					"Label" : "Normal Map",
+					"Value" : 0.875,
+					"Data Type" : "Double",
+					"Texture" : "D:/Projects/tvs/mods/unity/Assets/Daz3D/ToulouseHair/ExportTextures/SW_Toulouse_BUM_nm.png"
+				},
+				{
+					"Name" : "Diffuse Active",
+					"Label" : "Diffuse Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Diffuse Strength",
+					"Label" : "Diffuse Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Diffuse Roughness",
+					"Label" : "Diffuse Roughness",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Opacity Active",
+					"Label" : "Opacity Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Opacity Color",
+					"Label" : "Opacity Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Map Tiling U",
+					"Label" : "Map Tiling U",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Map Tiling V",
+					"Label" : "Map Tiling V",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular Active",
+					"Label" : "Specular Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular Color",
+					"Label" : "Specular Color",
+					"Value" : "#fff5ce",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular Strength",
+					"Label" : "Specular Strength",
+					"Value" : 0.5,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Glossiness",
+					"Label" : "Glossiness",
+					"Value" : 0.85,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular Sharpness",
+					"Label" : "Specular Sharpness",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Anisotropic Active",
+					"Label" : "Anisotropic Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Anisotropic Direction",
+					"Label" : "Anisotropic Direction",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular2 Active",
+					"Label" : "Specular2 Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular2 Color",
+					"Label" : "Specular2 Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular2 Strength",
+					"Label" : "Specular2 Strength",
+					"Value" : 0.05,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular2 Roughness",
+					"Label" : "Specular2 Roughness",
+					"Value" : 0.85,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular2 Sharpness",
+					"Label" : "Specular2 Sharpness",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Anisotropic2 Active",
+					"Label" : "Anisotropic2 Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Anisotropic2 Direction",
+					"Label" : "Anisotropic2 Direction",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Multiply Specular Through Opacity",
+					"Label" : "Multiply Specular Through Opacity",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Ambient Active",
+					"Label" : "Ambient Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Ambient Color",
+					"Label" : "Ambient Color",
+					"Value" : "#000000",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Ambient Strength",
+					"Label" : "Ambient Strength",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Refraction Active",
+					"Label" : "Refraction Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Index of Refraction",
+					"Label" : "Index of Refraction",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Active",
+					"Label" : "Reflection Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Mode",
+					"Label" : "Reflection Mode",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Environment Map (Map in Lat/Long format)",
+					"Label" : "Reflection Environment Map (Map in Lat/Long format)",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Color",
+					"Label" : "Reflection Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Strength",
+					"Label" : "Reflection Strength",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Blur",
+					"Label" : "Reflection Blur",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Blur Samples",
+					"Label" : "Reflection Blur Samples",
+					"Value" : 4,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Multiply Reflection Through Opacity",
+					"Label" : "Multiply Reflection Through Opacity",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Fresnel Active",
+					"Label" : "Fresnel Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Fresnel Strength",
+					"Label" : "Fresnel Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Fresnel Falloff",
+					"Label" : "Fresnel Falloff",
+					"Value" : 0.4,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Fresnel Sharpness",
+					"Label" : "Fresnel Sharpness",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Velvet Active",
+					"Label" : "Velvet Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Velvet Color",
+					"Label" : "Velvet Color",
+					"Value" : "#bbab86",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Velvet Strength",
+					"Label" : "Velvet Strength",
+					"Value" : 0.5,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Velvet Falloff",
+					"Label" : "Velvet Falloff",
+					"Value" : 20,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Active",
+					"Label" : "Subsurface Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Color",
+					"Label" : "Subsurface Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Strength",
+					"Label" : "Subsurface Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Refraction",
+					"Label" : "Subsurface Refraction",
+					"Value" : 1.5,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Scale",
+					"Label" : "Subsurface Scale",
+					"Value" : 4,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Group",
+					"Label" : "Subsurface Group",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Shading Rate",
+					"Label" : "Subsurface Shading Rate",
+					"Value" : 32,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Translucency Active",
+					"Label" : "Translucency Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Translucency Color",
+					"Label" : "Translucency Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Translucency Strength",
+					"Label" : "Translucency Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Fantom",
+					"Label" : "Fantom",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Raytrace",
+					"Label" : "Raytrace",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Accept Shadows",
+					"Label" : "Accept Shadows",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Occlusion",
+					"Label" : "Occlusion",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Occlusion Shading Rate Mode",
+					"Label" : "Occlusion Shading Rate Mode",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Occlusion Shading Rate",
+					"Label" : "Occlusion Shading Rate",
+					"Value" : 128,
+					"Data Type" : "Double",
+					"Texture" : ""
+				}
+			]
+		},
+		{
+			"Version" : 4,
+			"Asset Name" : "ToulouseHR",
+			"Asset Label" : "Toulouse Hair",
+			"Material Name" : "Base",
+			"Material Type" : "omUberSurface",
+			"Value" : "Follower/Hair",
+			"Properties" : [
+				{
+					"Name" : "Asset Type",
+					"Label" : "Asset Type",
+					"Value" : "Follower/Hair",
+					"Data Type" : "String",
+					"Texture" : ""
+				},
+				{
+					"Name" : "UV Set",
+					"Label" : "UV Set",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Smooth On",
+					"Label" : "Smooth",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Smooth Angle",
+					"Label" : "Angle",
+					"Value" : 89.9,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Line Preview Color",
+					"Label" : "Line Preview Color",
+					"Value" : "#000000",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Line Start Width",
+					"Label" : "Line Start Width (mm)",
+					"Value" : 0.1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Line End Width",
+					"Label" : "Line End Width (mm)",
+					"Value" : 0.1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Line UV Width",
+					"Label" : "Line UV Width",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Render Priority",
+					"Label" : "Render Priority",
+					"Value" : 3,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Propagate Priority",
+					"Label" : "Propagate Priority",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Follow Blend",
+					"Label" : "Follow Blend",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Diffuse Color",
+					"Label" : "Diffuse Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : "D:/DAZ 3D/Library/Runtime/Textures/SWAM_Art/ToulouseHR/SW_Toulouse_01B.jpg"
+				},
+				{
+					"Name" : "Opacity Strength",
+					"Label" : "Opacity Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : "D:/DAZ 3D/Library/Runtime/Textures/SWAM_Art/ToulouseHR/SW_ToulouseT_Base_TR.jpg"
+				},
+				{
+					"Name" : "Bump Active",
+					"Label" : "Bump Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Bump Strength",
+					"Label" : "Bump Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : "D:/DAZ 3D/Library/Runtime/Textures/SWAM_Art/ToulouseHR/SW_Toulouse_03B.jpg"
+				},
+				{
+					"Name" : "Bump Minimum",
+					"Label" : "Bump Minimum",
+					"Value" : -0.02,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Bump Maximum",
+					"Label" : "Bump Maximum",
+					"Value" : 0.015,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Displacement Active",
+					"Label" : "Displacement Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Displacement Strength",
+					"Label" : "Displacement Strength",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Displacement Minimum",
+					"Label" : "Displacement Minimum",
+					"Value" : -0.1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Displacement Maximum",
+					"Label" : "Displacement Maximum",
+					"Value" : 0.1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Trace Displacements",
+					"Label" : "Trace Displacements",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Normal Map",
+					"Label" : "Normal Map",
+					"Value" : 0.875,
+					"Data Type" : "Double",
+					"Texture" : "D:/Projects/tvs/mods/unity/Assets/Daz3D/ToulouseHair/ExportTextures/SW_Toulouse_03B_nm.png"
+				},
+				{
+					"Name" : "Diffuse Active",
+					"Label" : "Diffuse Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Diffuse Strength",
+					"Label" : "Diffuse Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Diffuse Roughness",
+					"Label" : "Diffuse Roughness",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Opacity Active",
+					"Label" : "Opacity Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Opacity Color",
+					"Label" : "Opacity Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Map Tiling U",
+					"Label" : "Map Tiling U",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Map Tiling V",
+					"Label" : "Map Tiling V",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular Active",
+					"Label" : "Specular Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular Color",
+					"Label" : "Specular Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular Strength",
+					"Label" : "Specular Strength",
+					"Value" : 0.15,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Glossiness",
+					"Label" : "Glossiness",
+					"Value" : 0.1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular Sharpness",
+					"Label" : "Specular Sharpness",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Anisotropic Active",
+					"Label" : "Anisotropic Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Anisotropic Direction",
+					"Label" : "Anisotropic Direction",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular2 Active",
+					"Label" : "Specular2 Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular2 Color",
+					"Label" : "Specular2 Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular2 Strength",
+					"Label" : "Specular2 Strength",
+					"Value" : 0.3,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular2 Roughness",
+					"Label" : "Specular2 Roughness",
+					"Value" : 0.85,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Specular2 Sharpness",
+					"Label" : "Specular2 Sharpness",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Anisotropic2 Active",
+					"Label" : "Anisotropic2 Active",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Anisotropic2 Direction",
+					"Label" : "Anisotropic2 Direction",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Multiply Specular Through Opacity",
+					"Label" : "Multiply Specular Through Opacity",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Ambient Active",
+					"Label" : "Ambient Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Ambient Color",
+					"Label" : "Ambient Color",
+					"Value" : "#000000",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Ambient Strength",
+					"Label" : "Ambient Strength",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Refraction Active",
+					"Label" : "Refraction Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Index of Refraction",
+					"Label" : "Index of Refraction",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Active",
+					"Label" : "Reflection Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Mode",
+					"Label" : "Reflection Mode",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Environment Map (Map in Lat/Long format)",
+					"Label" : "Reflection Environment Map (Map in Lat/Long format)",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Color",
+					"Label" : "Reflection Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Strength",
+					"Label" : "Reflection Strength",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Blur",
+					"Label" : "Reflection Blur",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Reflection Blur Samples",
+					"Label" : "Reflection Blur Samples",
+					"Value" : 4,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Multiply Reflection Through Opacity",
+					"Label" : "Multiply Reflection Through Opacity",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Fresnel Active",
+					"Label" : "Fresnel Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Fresnel Strength",
+					"Label" : "Fresnel Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Fresnel Falloff",
+					"Label" : "Fresnel Falloff",
+					"Value" : 0.4,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Fresnel Sharpness",
+					"Label" : "Fresnel Sharpness",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Velvet Active",
+					"Label" : "Velvet Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Velvet Color",
+					"Label" : "Velvet Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Velvet Strength",
+					"Label" : "Velvet Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Velvet Falloff",
+					"Label" : "Velvet Falloff",
+					"Value" : 20,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Active",
+					"Label" : "Subsurface Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Color",
+					"Label" : "Subsurface Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Strength",
+					"Label" : "Subsurface Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Refraction",
+					"Label" : "Subsurface Refraction",
+					"Value" : 1.5,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Scale",
+					"Label" : "Subsurface Scale",
+					"Value" : 4,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Group",
+					"Label" : "Subsurface Group",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Subsurface Shading Rate",
+					"Label" : "Subsurface Shading Rate",
+					"Value" : 32,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Translucency Active",
+					"Label" : "Translucency Active",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Translucency Color",
+					"Label" : "Translucency Color",
+					"Value" : "#ffffff",
+					"Data Type" : "Color",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Translucency Strength",
+					"Label" : "Translucency Strength",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Fantom",
+					"Label" : "Fantom",
+					"Value" : 0,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Raytrace",
+					"Label" : "Raytrace",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Accept Shadows",
+					"Label" : "Accept Shadows",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Occlusion",
+					"Label" : "Occlusion",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Occlusion Shading Rate Mode",
+					"Label" : "Occlusion Shading Rate Mode",
+					"Value" : 1,
+					"Data Type" : "Double",
+					"Texture" : ""
+				},
+				{
+					"Name" : "Occlusion Shading Rate",
+					"Label" : "Occlusion Shading Rate",
+					"Value" : 128,
+					"Data Type" : "Double",
+					"Texture" : ""
+				}
+			]
+		}
+	],
+	"Morphs" : [
+		{
+			"Name" : "Scale",
+			"Label" : "Scale"
+		},
+		{
+			"Name" : "XRotate",
+			"Label" : "Bend"
+		},
+		{
+			"Name" : "XScale",
+			"Label" : "X Scale"
+		},
+		{
+			"Name" : "XTranslate",
+			"Label" : "X Translate"
+		},
+		{
+			"Name" : "YRotate",
+			"Label" : "Twist"
+		},
+		{
+			"Name" : "YScale",
+			"Label" : "Y Scale"
+		},
+		{
+			"Name" : "YTranslate",
+			"Label" : "Y Translate"
+		},
+		{
+			"Name" : "ZRotate",
+			"Label" : "Side-Side"
+		},
+		{
+			"Name" : "ZScale",
+			"Label" : "Z Scale"
+		},
+		{
+			"Name" : "ZTranslate",
+			"Label" : "Z Translate"
+		}
+	],
+	"MorphLinks" : {
+		"Scale" : {
+			"Label" : "Scale",
+			"Links" : [
+				{
+					"Bone" : "None",
+					"Property" : "SCLPropagatingHead",
+					"Type" : 0,
+					"Scalar" : 1,
+					"Addend" : 0
+				}
+			],
+			"SubLinks" : [
+			],
+			"Minimum" : -10000,
+			"Maximum" : 10000,
+			"isHidden" : false,
+			"Path" : "Head//General/Transforms/Scale",
+			"Controlled Meshes" : [
+				"ToulouseHR.Shape",
+				"head.Shape"
+			]
+		},
+		"XRotate" : {
+			"Label" : "Bend",
+			"Links" : [
+				{
+					"Bone" : "None",
+					"Property" : "pCTRLTorsoSlump",
+					"Type" : 0,
+					"Scalar" : -2.310925,
+					"Addend" : 0
+				},
+				{
+					"Bone" : "None",
+					"Property" : "pCTRLNeckHeadBend",
+					"Type" : 6,
+					"Scalar" : 1,
+					"Addend" : 0,
+					"Key Type" : 2,
+					"Keys" : {
+						"Key 0" : {
+							"Rotate" : -1,
+							"Value" : -27
+						},
+						"Key 1" : {
+							"Rotate" : 0,
+							"Value" : 0
+						},
+						"Key 2" : {
+							"Rotate" : 0.8,
+							"Value" : 10
+						}
+					}
+				}
+			],
+			"SubLinks" : [
+			],
+			"Minimum" : -27,
+			"Maximum" : 25,
+			"isHidden" : false,
+			"Path" : "Head//General/Transforms/Rotation",
+			"Controlled Meshes" : [
+				"ToulouseHR.Shape",
+				"head.Shape"
+			]
+		},
+		"XScale" : {
+			"Label" : "X Scale",
+			"Links" : [
+			],
+			"SubLinks" : [
+			],
+			"Minimum" : -10000,
+			"Maximum" : 10000,
+			"isHidden" : true,
+			"Path" : "Head//General/Transforms/Scale",
+			"Controlled Meshes" : [
+				"ToulouseHR.Shape",
+				"head.Shape"
+			]
+		},
+		"XTranslate" : {
+			"Label" : "X Translate",
+			"Links" : [
+			],
+			"SubLinks" : [
+			],
+			"Minimum" : 0,
+			"Maximum" : 0,
+			"isHidden" : true,
+			"Path" : "Head//General/Transforms/Translation",
+			"Controlled Meshes" : [
+				"ToulouseHR.Shape",
+				"head.Shape"
+			]
+		},
+		"YRotate" : {
+			"Label" : "Twist",
+			"Links" : [
+				{
+					"Bone" : "None",
+					"Property" : "pCTRLNeckHeadTwist",
+					"Type" : 0,
+					"Scalar" : 22,
+					"Addend" : 0
+				}
+			],
+			"SubLinks" : [
+			],
+			"Minimum" : -22,
+			"Maximum" : 22,
+			"isHidden" : false,
+			"Path" : "Head//General/Transforms/Rotation",
+			"Controlled Meshes" : [
+				"ToulouseHR.Shape",
+				"head.Shape"
+			]
+		},
+		"YScale" : {
+			"Label" : "Y Scale",
+			"Links" : [
+			],
+			"SubLinks" : [
+			],
+			"Minimum" : -10000,
+			"Maximum" : 10000,
+			"isHidden" : true,
+			"Path" : "Head//General/Transforms/Scale",
+			"Controlled Meshes" : [
+				"ToulouseHR.Shape",
+				"head.Shape"
+			]
+		},
+		"YTranslate" : {
+			"Label" : "Y Translate",
+			"Links" : [
+			],
+			"SubLinks" : [
+			],
+			"Minimum" : 0,
+			"Maximum" : 0,
+			"isHidden" : true,
+			"Path" : "Head//General/Transforms/Translation",
+			"Controlled Meshes" : [
+				"ToulouseHR.Shape",
+				"head.Shape"
+			]
+		},
+		"ZRotate" : {
+			"Label" : "Side-Side",
+			"Links" : [
+				{
+					"Bone" : "None",
+					"Property" : "pCTRLNeckHeadSide-Side",
+					"Type" : 0,
+					"Scalar" : -15,
+					"Addend" : 0
+				}
+			],
+			"SubLinks" : [
+			],
+			"Minimum" : -20,
+			"Maximum" : 20,
+			"isHidden" : false,
+			"Path" : "Head//General/Transforms/Rotation",
+			"Controlled Meshes" : [
+				"ToulouseHR.Shape",
+				"head.Shape"
+			]
+		},
+		"ZScale" : {
+			"Label" : "Z Scale",
+			"Links" : [
+			],
+			"SubLinks" : [
+			],
+			"Minimum" : -10000,
+			"Maximum" : 10000,
+			"isHidden" : true,
+			"Path" : "Head//General/Transforms/Scale",
+			"Controlled Meshes" : [
+				"ToulouseHR.Shape",
+				"head.Shape"
+			]
+		},
+		"ZTranslate" : {
+			"Label" : "Z Translate",
+			"Links" : [
+			],
+			"SubLinks" : [
+			],
+			"Minimum" : 0,
+			"Maximum" : 0,
+			"isHidden" : true,
+			"Path" : "Head//General/Transforms/Translation",
+			"Controlled Meshes" : [
+				"ToulouseHR.Shape",
+				"head.Shape"
+			]
+		}
+	},
+	"MorphNames" : [
+		"Scale",
+		"XRotate",
+		"XScale",
+		"XTranslate",
+		"YRotate",
+		"YScale",
+		"YTranslate",
+		"ZRotate",
+		"ZScale",
+		"ZTranslate"
+	],
+	"SkeletonData" : {
+		"skeletonScale" : [
+			"skeletonScale",
+			1
+		],
+		"offset" : [
+			"offset",
+			0
+		]
+	},
+	"HeadTailData" : {
+		"hip" : [
+			0,
+			105.1781,
+			1.824816,
+			0,
+			88.72153,
+			1.824816,
+			0,
+			0,
+			-1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		],
+		"pelvis" : [
+			0,
+			107.0423,
+			1.873485,
+			0,
+			88.00215,
+			1.873485,
+			0,
+			0,
+			-1,
+			0,
+			0,
+			0,
+			1,
+			1,
+			1,
+			0,
+			0,
+			0
+		],
+		"abdomenLower" : [
+			0,
+			106.9446,
+			0.3423212,
+			0,
+			115.0481,
+			0.3423212,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0,
+			1,
+			1,
+			1,
+			0,
+			0,
+			0
+		],
+		"abdomenUpper" : [
+			0,
+			115.0947,
+			1.53567,
+			0,
+			122.6277,
+			1.53567,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0,
+			1,
+			1,
+			1,
+			0,
+			0,
+			0
+		],
+		"chestLower" : [
+			0,
+			123,
+			1.138297,
+			0,
+			143.7314,
+			1.138297,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0,
+			1,
+			1,
+			1,
+			0,
+			0,
+			0
+		],
+		"chestUpper" : [
+			0,
+			136.0765,
+			-2.479732,
+			0,
+			149.5167,
+			-2.479732,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0,
+			1,
+			1,
+			1,
+			0,
+			0,
+			0
+		],
+		"lCollar" : [
+			1.61389,
+			146.51,
+			-4.110317,
+			14.3082,
+			146.8984,
+			-4.889407,
+			-0.03052319,
+			0.9995336,
+			0.0009355545,
+			0,
+			0,
+			0,
+			1,
+			1,
+			1,
+			0,
+			0,
+			0
+		],
+		"rCollar" : [
+			-1.61389,
+			146.51,
+			-4.110317,
+			-14.3082,
+			146.8984,
+			-4.889407,
+			-0.03052319,
+			-0.9995336,
+			-0.0009355545,
+			0,
+			0,
+			0,
+			1,
+			1,
+			1,
+			0,
+			0,
+			0
+		],
+		"neckLower" : [
+			0,
+			154.3325,
+			-3.979178,
+			0,
+			157.8125,
+			-3.459581,
+			0,
+			-0.1476742,
+			0.9890361,
+			0,
+			0,
+			0,
+			1,
+			1,
+			1,
+			0,
+			0,
+			0
+		],
+		"neckUpper" : [
+			0,
+			157.6141,
+			-2,
+			0,
+			162.5574,
+			-1.261915,
+			0,
+			-0.1476742,
+			0.9890361,
+			0,
+			0,
+			0,
+			1,
+			1,
+			1,
+			0,
+			0,
+			0
+		],
+		"head" : [
+			0,
+			162.5502,
+			-1.840575,
+			0,
+			165.8931,
+			-1.799902,
+			0,
+			-0.01216627,
+			0.999926,
+			0,
+			0,
+			0,
+			1,
+			1,
+			1,
+			0,
+			0,
+			0
+		],
+		"lowerJaw" : [
+			0,
+			164.1132,
+			0.09420407,
+			0,
+			160.2279,
+			9.008612,
+			0,
+			0.916714,
+			0.3995442,
+			0,
+			0,
+			0,
+			1,
+			1,
+			0,
+			0,
+			0,
+			0
+		],
+		"rBrowInner" : [
+			-1.95,
+			170.4,
+			8.75,
+			-1.95,
+			170.4,
+			9.000059,
+			0,
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		],
+		"rBrowMid" : [
+			-3.856626,
+			170.6706,
+			8.5,
+			-3.856626,
+			170.6706,
+			8.750031,
+			0,
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		],
+		"rBrowOuter" : [
+			-5.469148,
+			170.0714,
+			7.250023,
+			-5.469148,
+			170.0714,
+			7.468655,
+			0,
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		],
+		"lBrowInner" : [
+			1.95,
+			170.4,
+			8.75,
+			1.95,
+			170.4,
+			9.000059,
+			0,
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		],
+		"lBrowMid" : [
+			3.856626,
+			170.6706,
+			8.5,
+			3.856626,
+			170.6706,
+			8.750031,
+			0,
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		],
+		"lBrowOuter" : [
+			5.469148,
+			170.0714,
+			7.250023,
+			5.469148,
+			170.0714,
+			7.468655,
+			0,
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		],
+		"CenterBrow" : [
+			0,
+			170.31,
+			9.224089,
+			0,
+			170.31,
+			9.497457,
+			0,
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		],
+		"lCheekUpper" : [
+			5.464041,
+			165.6674,
+			6.802028,
+			5.464041,
+			165.6674,
+			7.545044,
+			0,
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		],
+		"rCheekUpper" : [
+			-5.464041,
+			165.6674,
+			6.802028,
+			-5.464041,
+			165.6674,
+			7.545044,
+			0,
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		],
+		"lEar" : [
+			6.89126,
+			166.6339,
+			-1.281856,
+			8.589584,
+			166.5147,
+			-4.197514,
+			0.03530968,
+			0.9991705,
+			-0.0202873,
+			0,
+			0,
+			0,
+			1,
+			1,
+			1,
+			0,
+			0,
+			0
+		],
+		"rEar" : [
+			-6.89126,
+			166.6339,
+			-1.281856,
+			-8.589584,
+			166.5147,
+			-4.197514,
+			0.03530968,
+			-0.9991705,
+			0.0202873,
+			0,
+			0,
+			0,
+			1,
+			1,
+			1,
+			0,
+			0,
+			0
+		],
+		"lPectoral" : [
+			3.121763,
+			131.7603,
+			-7.454938,
+			10.65756,
+			135.0165,
+			12.07514,
+			-0.05521585,
+			0.9881171,
+			-0.1434426,
+			0,
+			0,
+			0,
+			1,
+			1,
+			1,
+			0,
+			0,
+			0
+		],
+		"rPectoral" : [
+			-3.121763,
+			131.7603,
+			-7.454938,
+			-10.65756,
+			135.0165,
+			12.07514,
+			0.05521585,
+			0.9881171,
+			-0.1434426,
+			0,
+			0,
+			0,
+			1,
+			1,
+			1,
+			0,
+			0,
+			0
+		]
+	},
+	"JointOrientation" : {
+		"hip" : [
+			"YZX",
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0
+		],
+		"pelvis" : [
+			"YZX",
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0
+		],
+		"abdomenLower" : [
+			"YZX",
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0
+		],
+		"abdomenUpper" : [
+			"YZX",
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0
+		],
+		"chestLower" : [
+			"YZX",
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0
+		],
+		"chestUpper" : [
+			"YZX",
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0
+		],
+		"lCollar" : [
+			"XYZ",
+			0.0537041,
+			3.510381,
+			1.752411,
+			0.9994141,
+			-2.05915e-10,
+			-0.03063264,
+			-0.01527054
+		],
+		"rCollar" : [
+			"XYZ",
+			0.0537041,
+			-3.510381,
+			-1.752411,
+			0.9994141,
+			-2.05915e-10,
+			0.03063264,
+			0.01527054
+		],
+		"neckLower" : [
+			"YZX",
+			8.492167,
+			0,
+			0,
+			0.9972552,
+			-0.07404032,
+			0,
+			0
+		],
+		"neckUpper" : [
+			"YZX",
+			8.492167,
+			0,
+			0,
+			0.9972552,
+			-0.07404032,
+			0,
+			0
+		],
+		"head" : [
+			"YZX",
+			0.6970933,
+			0,
+			0,
+			0.9999815,
+			-0.006083248,
+			0,
+			0
+		],
+		"lowerJaw" : [
+			"ZYX",
+			23.54969,
+			0,
+			0,
+			0.9789571,
+			-0.2040663,
+			0,
+			0
+		],
+		"rBrowInner" : [
+			"ZYX",
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0
+		],
+		"rBrowMid" : [
+			"ZYX",
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0
+		],
+		"rBrowOuter" : [
+			"ZYX",
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0
+		],
+		"lBrowInner" : [
+			"ZYX",
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0
+		],
+		"lBrowMid" : [
+			"ZYX",
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0
+		],
+		"lBrowOuter" : [
+			"ZYX",
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0
+		],
+		"CenterBrow" : [
+			"ZYX",
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0
+		],
+		"lCheekUpper" : [
+			"ZYX",
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0
+		],
+		"rCheekUpper" : [
+			"ZYX",
+			0,
+			0,
+			0,
+			1,
+			0,
+			0,
+			0
+		],
+		"lEar" : [
+			"XYZ",
+			-2.305795,
+			59.71861,
+			-4.015397,
+			0.8668937,
+			1.595647e-09,
+			-0.4980768,
+			0.02036563
+		],
+		"rEar" : [
+			"XYZ",
+			-2.305795,
+			-59.71861,
+			4.015397,
+			0.8668937,
+			1.595647e-09,
+			0.4980768,
+			-0.02036563
+		],
+		"lPectoral" : [
+			"ZYX",
+			-8.844271,
+			21.09832,
+			-0.007492162,
+			0.9801725,
+			0.07578907,
+			-0.182539,
+			-0.01405208
+		],
+		"rPectoral" : [
+			"ZYX",
+			-8.844269,
+			-21.09832,
+			0.007491831,
+			0.9801725,
+			0.07578906,
+			0.182539,
+			0.01405208
+		]
+	},
+	"LimitData" : {
+		"hip" : [
+			"hip",
+			"YZX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"pelvis" : [
+			"pelvis",
+			"YZX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"abdomenLower" : [
+			"abdomenLower",
+			"YZX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"abdomenUpper" : [
+			"abdomenUpper",
+			"YZX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"chestLower" : [
+			"chestLower",
+			"YZX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"chestUpper" : [
+			"chestUpper",
+			"YZX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"lCollar" : [
+			"lCollar",
+			"XYZ",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"rCollar" : [
+			"rCollar",
+			"XYZ",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"neckLower" : [
+			"neckLower",
+			"YZX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"neckUpper" : [
+			"neckUpper",
+			"YZX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"head" : [
+			"head",
+			"YZX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"lowerJaw" : [
+			"lowerJaw",
+			"ZYX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"rBrowInner" : [
+			"rBrowInner",
+			"ZYX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"rBrowMid" : [
+			"rBrowMid",
+			"ZYX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"rBrowOuter" : [
+			"rBrowOuter",
+			"ZYX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"lBrowInner" : [
+			"lBrowInner",
+			"ZYX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"lBrowMid" : [
+			"lBrowMid",
+			"ZYX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"lBrowOuter" : [
+			"lBrowOuter",
+			"ZYX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"CenterBrow" : [
+			"CenterBrow",
+			"ZYX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"lCheekUpper" : [
+			"lCheekUpper",
+			"ZYX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"rCheekUpper" : [
+			"rCheekUpper",
+			"ZYX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"lEar" : [
+			"lEar",
+			"XYZ",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"rEar" : [
+			"rEar",
+			"XYZ",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"lPectoral" : [
+			"lPectoral",
+			"ZYX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		],
+		"rPectoral" : [
+			"rPectoral",
+			"ZYX",
+			-180,
+			180,
+			-180,
+			180,
+			-180,
+			180
+		]
+	},
+	"PoseData" : {
+		"ToulouseHR" : {
+			"Name" : "ToulouseHR",
+			"Label" : "Toulouse Hair",
+			"Object Type" : "MESH",
+			"Object" : "ToulouseHR",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"hip" : {
+			"Name" : "hip",
+			"Label" : "Hip",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"pelvis" : {
+			"Name" : "pelvis",
+			"Label" : "Pelvis",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"abdomenLower" : {
+			"Name" : "abdomenLower",
+			"Label" : "Abdomen Lower",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				-2.980232e-08
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"abdomenUpper" : {
+			"Name" : "abdomenUpper",
+			"Label" : "Abdomen Upper",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"chestLower" : {
+			"Name" : "chestLower",
+			"Label" : "Chest Lower",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"chestUpper" : {
+			"Name" : "chestUpper",
+			"Label" : "Chest Upper",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"lCollar" : {
+			"Name" : "lCollar",
+			"Label" : "Left Collar",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"rCollar" : {
+			"Name" : "rCollar",
+			"Label" : "Right Collar",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"neckLower" : {
+			"Name" : "neckLower",
+			"Label" : "Neck Lower",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"neckUpper" : {
+			"Name" : "neckUpper",
+			"Label" : "Neck Upper",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"head" : {
+			"Name" : "head",
+			"Label" : "Head",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"lowerJaw" : {
+			"Name" : "lowerJaw",
+			"Label" : "Lower Jaw",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"rBrowInner" : {
+			"Name" : "rBrowInner",
+			"Label" : "Right Brow Inner",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"rBrowMid" : {
+			"Name" : "rBrowMid",
+			"Label" : "Right Brow Middle",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"rBrowOuter" : {
+			"Name" : "rBrowOuter",
+			"Label" : "Right Brow Outer",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"lBrowInner" : {
+			"Name" : "lBrowInner",
+			"Label" : "Left Brow Inner",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"lBrowMid" : {
+			"Name" : "lBrowMid",
+			"Label" : "Left Brow Middle",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"lBrowOuter" : {
+			"Name" : "lBrowOuter",
+			"Label" : "Left Brow Outer",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"CenterBrow" : {
+			"Name" : "CenterBrow",
+			"Label" : "Center Brow",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"lCheekUpper" : {
+			"Name" : "lCheekUpper",
+			"Label" : "Left Cheek Upper",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				-4.768372e-07
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"rCheekUpper" : {
+			"Name" : "rCheekUpper",
+			"Label" : "Right Cheek Upper",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				-4.768372e-07
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"lEar" : {
+			"Name" : "lEar",
+			"Label" : "Left Ear",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"rEar" : {
+			"Name" : "rEar",
+			"Label" : "Right Ear",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"lPectoral" : {
+			"Name" : "lPectoral",
+			"Label" : "Left Pectoral",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		},
+		"rPectoral" : {
+			"Name" : "rPectoral",
+			"Label" : "Right Pectoral",
+			"Object Type" : "BONE",
+			"Object" : "EMPTY",
+			"Position" : [
+				0,
+				0,
+				0
+			],
+			"Rotation" : [
+				0,
+				0,
+				0
+			],
+			"Scale" : [
+				1,
+				1,
+				1
+			]
+		}
+	},
+	"Subdivisions" : [
+	],
+	"dForce" : [
+	]
+}

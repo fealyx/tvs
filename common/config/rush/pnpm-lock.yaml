@@ -10,6 +10,8 @@ importers:
 
   .: {}
 
-  ../../mods: {}
+  ../../mods/csharp: {}
+
+  ../../mods/unity: {}
 
   ../../tools/znelchar: {}

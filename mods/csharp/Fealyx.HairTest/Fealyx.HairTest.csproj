@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Fealyx.HairTest</AssemblyName>
+    <Description>Loading a new hair asset into the ZNE systems.</Description>
+    <EnableAssemblyPublicizer>true</EnableAssemblyPublicizer>
+    <GUID>Fealyx.HairTest</GUID>
+    <Product>Hair Test</Product>
+    <RootNamespace>Fealyx.HairTest</RootNamespace>
+    <TVSIsPlugin>true</TVSIsPlugin>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Core" />
+    <PackageReference Include="BepInEx.PluginInfoProps" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\Assembly-CSharp.dll')">
+    <Reference Update="Assembly-CSharp">
+      <Publicize>true</Publicize>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Fealyx.TVSLib\Fealyx.TVSLib.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Content\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>%(RecursiveDir)%(FileName)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+</Project>

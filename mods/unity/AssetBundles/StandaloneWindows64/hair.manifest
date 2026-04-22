@@ -1,0 +1,39 @@
+ManifestFileVersion: 0
+CRC: 3121795632
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 0bce5cf7ba171461e6d818ab9991b613
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 1d684f248c448ddd426214279e4c55c0
+  IncrementalBuildHash:
+    serializedVersion: 2
+    Hash: 0bce5cf7ba171461e6d818ab9991b613
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 90
+  Script: {instanceID: 0}
+- Class: 95
+  Script: {instanceID: 0}
+- Class: 137
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/@HairTest/icon.png
+- Assets/@HairTest/ToulouseHair.fbx
+Dependencies: []

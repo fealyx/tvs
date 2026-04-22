@@ -450,8 +450,13 @@
     //   "projectFolder": "tools/znelchar-gui"
     // },
     {
-      "packageName": "@tvs/mods",
-      "projectFolder": "mods",
+      "packageName": "@tvs/mods-csharp",
+      "projectFolder": "mods/csharp",
+      "tags": [ "mods" ]
+    },
+    {
+      "packageName": "@tvs/mods-unity",
+      "projectFolder": "mods/unity",
       "tags": [ "mods" ]
     }
   ]

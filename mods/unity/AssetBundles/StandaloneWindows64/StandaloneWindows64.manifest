@@ -1,0 +1,7 @@
+ManifestFileVersion: 0
+CRC: 1986008418
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: hair
+      Dependencies: {}
