@@ -54,10 +54,6 @@ Dumps a .znelchar file to a YAML representation without texture payloads.
         characterData = $character
     }
 
-    if (-not (Get-Command ConvertTo-Yaml -ErrorAction SilentlyContinue)) {
-        throw 'ConvertTo-Yaml was not found. Install module: Install-Module powershell-yaml -Scope CurrentUser'
-    }
-
     Write-Stage -Prefix 'dump-yaml' -Message 'Rendering YAML'
     $yaml = $clean | ConvertTo-Yaml -Options UseFlowStyle,WithIndentedSequences
     Write-Utf8NoBomFile -Path $resolvedOutputPath -Content $yaml

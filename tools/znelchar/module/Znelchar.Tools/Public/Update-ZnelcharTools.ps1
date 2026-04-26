@@ -1,5 +1,5 @@
 function Update-ZnelcharTools {
-<#!
+<#
 .SYNOPSIS
 Checks for and applies znelchar distribution updates from a release manifest.
 #>

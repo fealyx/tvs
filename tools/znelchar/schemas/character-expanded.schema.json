@@ -1,0 +1,211 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Character Expanded Structure Schema",
+  "description": "Schema defining the folder and file structure for expanded character data. Each section maps to one or more YAML/JSON files organized by folder.",
+  "type": "object",
+  "required": [
+    "_metadata",
+    "base",
+    "blendshapes",
+    "skeleton",
+    "skin",
+    "accessories",
+    "behavior"
+  ],
+  "properties": {
+    "_metadata": {
+      "type": "object",
+      "description": "File: _metadata.yaml. Versioning and source information.",
+      "properties": {
+        "schemaVersion": { "type": "integer", "minimum": 1 },
+        "expandedAtUtc": { "type": "string", "format": "date-time" },
+        "dataFormat": { "type": "string", "enum": ["yaml", "json"] }
+      },
+      "required": ["schemaVersion", "expandedAtUtc"]
+    },
+    "base": {
+      "type": "object",
+      "description": "File: base.yaml. Top-level scalar fields: characterName, version, isSynth, voicePitch, reactionSetName.",
+      "properties": {
+        "characterName": { "type": ["string", "null"] },
+        "version": { "type": ["string", "null"] },
+        "isSynth": { "type": "boolean" },
+        "voicePitch": { "type": "number" },
+        "reactionSetName": { "type": ["string", "null"] }
+      }
+    },
+    "blendshapes": {
+      "type": "object",
+      "description": "File: blendshapes.yaml. Map of blendshape name to value.",
+      "properties": {
+        "blendshapes": {
+          "type": "object",
+          "additionalProperties": { "type": "number" }
+        }
+      }
+    },
+    "skeleton": {
+      "type": "object",
+      "description": "Folder: skeleton/. Contains bones.yaml and bone-offsets.yaml.",
+      "properties": {
+        "bones": {
+          "type": "array",
+          "description": "File: skeleton/bones.yaml.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "boneName": { "type": "string" },
+              "ragdollBoneName": { "type": "string" },
+              "lossyUniformScale": { "type": "number" },
+              "lossyUniformNoCompScale": { "type": "number" },
+              "lossyXScale": { "type": "number" },
+              "lossyYScale": { "type": "number" },
+              "lossyZScale": { "type": "number" }
+            },
+            "required": ["boneName"]
+          }
+        },
+        "boneOffsets": {
+          "type": "array",
+          "description": "File: skeleton/bone-offsets.yaml.",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "skin": {
+      "type": "object",
+      "description": "Folder: skin/. Contains materials.yaml, eye-materials.yaml, custom-materials.yaml.",
+      "properties": {
+        "materials": {
+          "type": "array",
+          "description": "File: skin/materials.yaml. Skin material definitions."
+        },
+        "eyeMaterials": {
+          "type": "array",
+          "description": "File: skin/eye-materials.yaml. Eye material definitions."
+        },
+        "customMaterials": {
+          "type": "array",
+          "description": "File: skin/custom-materials.yaml. Custom material overrides."
+        }
+      }
+    },
+    "accessories": {
+      "type": "object",
+      "description": "Folder: accessories/. Contains _index.yaml and one file per accessory.",
+      "properties": {
+        "_index": {
+          "type": "object",
+          "description": "File: accessories/_index.yaml. Metadata about accessories.",
+          "properties": {
+            "count": { "type": "integer", "minimum": 0 },
+            "accessoryNames": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "items": {
+          "type": "object",
+          "description": "Individual accessory files: accessories/{itemName}.yaml.",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "itemName": { "type": "string" },
+              "colors": { "type": "array" },
+              "blendshapes": { "type": "array" },
+              "customMaterials": { "type": "array" },
+              "hideInCaseOfOverwear": { "type": "boolean" },
+              "shouldHideHair": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "vertexAccessories": {
+      "type": "object",
+      "description": "Folder: vertex-accessories/. Contains _index.yaml and one file per vertex accessory.",
+      "properties": {
+        "_index": {
+          "type": "object",
+          "description": "File: vertex-accessories/_index.yaml. Metadata about vertex accessories.",
+          "properties": {
+            "count": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "items": {
+          "type": "object",
+          "description": "Individual vertex accessory files: vertex-accessories/{prefabName}.yaml.",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "occlusionData": {
+      "type": "object",
+      "description": "File: occlusion-data.yaml. Occlusion mapping data.",
+      "properties": {
+        "occlusionDatas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "textureName": { "type": "string" },
+              "costumeName": { "type": "string" },
+              "maskName": { "type": "string" },
+              "bodyPart": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "behavior": {
+      "type": "object",
+      "description": "Folder: behavior/. Contains opinions.yaml and traits.yaml.",
+      "properties": {
+        "opinions": {
+          "type": "object",
+          "description": "File: behavior/opinions.yaml. Opinion data including difficulty and keyed opinion map.",
+          "properties": {
+            "_difficulty": { "type": "number" },
+            "_opinions": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "_preference": { "type": "integer" },
+                  "_opinionMultiplier": { "type": "number" }
+                },
+                "required": ["_preference", "_opinionMultiplier"]
+              }
+            }
+          }
+        },
+        "traits": {
+          "type": "object",
+          "description": "File: behavior/traits.yaml. Trait definitions and active states keyed by trait id.",
+          "properties": {
+            "_traits": {
+              "type": "object",
+              "additionalProperties": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "description": "Folder: ui/. Contains colors.yaml and other UI-related data.",
+      "properties": {
+        "colors": {
+          "type": "array",
+          "description": "File: ui/colors.yaml. UI color definitions.",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

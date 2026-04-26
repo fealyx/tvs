@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Character Expanded Metadata Schema",
+  "description": "Metadata for an expanded character data structure, tracking versioning and source information for round-trip conversions.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "expandedAtUtc"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "description": "Version of the expanded data format. Used for migration detection.",
+      "minimum": 1,
+      "examples": [1]
+    },
+    "expandedAtUtc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when the data was expanded.",
+      "examples": ["2025-04-26T12:34:56.789Z"]
+    },
+    "dataFormat": {
+      "type": "string",
+      "description": "Serialization format used for expanded data files.",
+      "enum": ["yaml", "json"],
+      "examples": ["yaml"]
+    },
+    "sourceFile": {
+      "type": ["string", "null"],
+      "description": "Path to the original character.json file (if known).",
+      "examples": ["Rita-Collab-b48-v1-5.extracted/character.json", null]
+    },
+    "sourceHashSha256": {
+      "type": ["string", "null"],
+      "description": "SHA256 hash of the source character.json for change detection. 64 hex characters.",
+      "pattern": "^[a-f0-9]{64}$|^$",
+      "examples": ["abcd1234...", null]
+    },
+    "characterName": {
+      "type": ["string", "null"],
+      "description": "Character name extracted from base.yaml for quick reference.",
+      "examples": ["Rita", null]
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Optional user notes about this expansion.",
+      "examples": ["Collaborative development branch", null]
+    }
+  },
+  "additionalProperties": false
+}

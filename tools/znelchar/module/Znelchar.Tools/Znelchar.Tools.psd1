@@ -1,6 +1,6 @@
 @{
     RootModule = 'Znelchar.Tools.psm1'
-    ModuleVersion = '0.1.0'
+    ModuleVersion = '0.2.0'
     GUID = '2d9fd4f8-4e1f-4e4f-9ef5-2f5c07d4db92'
     Author = 'Fealyx/TVS Contributors'
     CompanyName = 'Fealyx'
@@ -15,7 +15,9 @@
         'Convert-ZnelcharToYaml',
         'Test-ZnelcharFile',
         'Test-ZnelcharRoundtrip',
-        'Update-ZnelcharTools'
+        'Update-ZnelcharTools',
+        'Expand-ZnelcharData',
+        'Compress-ZnelcharData'
     )
     CmdletsToExport = @()
     AliasesToExport = @()
