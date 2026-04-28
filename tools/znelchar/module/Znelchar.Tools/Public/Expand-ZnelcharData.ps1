@@ -20,6 +20,8 @@ The expanded structure includes:
 - occlusion-data.yaml: Occlusion mappings
 - behavior/: Opinions and traits
 - ui/: UI color data
+- customIcon.<ext>: Custom icon image (decoded from character data, if present)
+- textures/: Texture files copied from the adjacent textures/ folder (if found or specified)
 
 .PARAMETER InputPath
 Path to character.json (extracted form from Export-ZnelcharContent).
@@ -29,6 +31,11 @@ Target folder for the expanded structure. Created if it doesn't exist.
 
 .PARAMETER Format
 Output format: 'yaml' (default, recommended) or 'json'.
+
+.PARAMETER TexturesPath
+Path to the textures folder to absorb into the expanded structure. If not specified,
+Expand-ZnelcharData auto-discovers a 'textures' sibling folder next to the input
+character.json (i.e. the textures/ folder produced by Export-ZnelcharContent).
 
 .PARAMETER Force
 Overwrite existing expanded structure if present.
@@ -74,6 +81,8 @@ function Expand-ZnelcharData {
         [ValidateSet('yaml', 'json')]
         [string]$Format = 'yaml',
 
+        [string]$TexturesPath,
+
         [switch]$Force
     )
 
@@ -112,20 +121,54 @@ function Expand-ZnelcharData {
         if ($characterData.ContainsKey('characterName') -and -not [string]::IsNullOrEmpty($characterData['characterName'])) {
             $baseFields['characterName'] = $characterData['characterName']
         }
-        # Pass through customIconData if present
-        if ($characterData.ContainsKey('customIconData')) {
-            $baseFields['customIconData'] = $characterData['customIconData']
+
+        # Discover custom icon: decode to a file rather than keeping raw base64 in base.yaml
+        $customIconFileName = $null
+        $customIconBytes    = $null
+        if ($characterData.ContainsKey('customIconData') -and -not [string]::IsNullOrWhiteSpace([string]$characterData['customIconData'])) {
+            $normalizedBase64 = ([string]$characterData['customIconData'] -replace '\s', '')
+            try {
+                $customIconBytes    = [System.Convert]::FromBase64String($normalizedBase64)
+                $customIconFormat   = Get-ImageFormatInfoFromBytes -Bytes $customIconBytes
+                $customIconFileName = 'customIcon' + $customIconFormat.extension
+            } catch {
+                Write-Warning "Failed to decode customIconData: $_. Keeping in base.yaml."
+                $baseFields['customIconData'] = $characterData['customIconData']
+            }
         }
+
+        # Discover textures: use explicit path or auto-discover sibling textures/ folder
+        $effectiveTexturesPath = $null
+        if ($PSBoundParameters.ContainsKey('TexturesPath')) {
+            if (Test-Path -LiteralPath $TexturesPath -PathType Container) {
+                $effectiveTexturesPath = (Resolve-Path -LiteralPath $TexturesPath).ProviderPath
+            } else {
+                Write-Warning "Specified -TexturesPath not found: $TexturesPath"
+            }
+        } else {
+            $characterDir    = [System.IO.Path]::GetDirectoryName((Resolve-Path -LiteralPath $InputPath).ProviderPath)
+            $siblingTextures = Join-Path $characterDir 'textures'
+            if (Test-Path -LiteralPath $siblingTextures -PathType Container) {
+                $effectiveTexturesPath = $siblingTextures
+                Write-Verbose "Auto-discovered textures at: $effectiveTexturesPath"
+            }
+        }
+        $textureFiles = if ($effectiveTexturesPath) {
+            @(Get-ChildItem -LiteralPath $effectiveTexturesPath -File)
+        } else { @() }
 
         # Write metadata
         $metadata = @{
-            schemaVersion      = 1
-            expandedAtUtc       = (Get-Date -AsUTC -Format 'o')
-            dataFormat          = $Format
-            sourceFile          = (Resolve-Path -LiteralPath $InputPath).ProviderPath
-            sourceHashSha256    = $sourceHash
-            characterName       = $baseFields['characterName'] ?? ""
-            notes               = ""
+            schemaVersion    = 1
+            expandedAtUtc    = (Get-Date -AsUTC -Format 'o')
+            dataFormat       = $Format
+            sourceFile       = (Resolve-Path -LiteralPath $InputPath).ProviderPath
+            sourceHashSha256 = $sourceHash
+            characterName    = $baseFields['characterName'] ?? ""
+            notes            = ""
+            hasCustomIcon    = ($null -ne $customIconFileName)
+            customIconFile   = $customIconFileName ?? ""
+            textureCount     = $textureFiles.Count
         }
         Write-DataFile -InputObject $metadata `
             -OutputPath (Join-Path $OutputPath '_metadata.yaml') `
@@ -133,12 +176,29 @@ function Expand-ZnelcharData {
             -Force
         Write-Verbose "Wrote metadata"
 
-        # Write base fields to file
+        # Write base fields to file (customIconData not included; icon is stored as a separate file)
         Write-DataFile -InputObject $baseFields `
             -OutputPath (Join-Path $OutputPath 'base.yaml') `
             -Format $Format `
             -Force
         Write-Verbose "Wrote base.yaml"
+
+        # Write custom icon file if decoded successfully
+        if ($null -ne $customIconBytes) {
+            $customIconOutPath = Join-Path $OutputPath $customIconFileName
+            [System.IO.File]::WriteAllBytes($customIconOutPath, $customIconBytes)
+            Write-Verbose "Wrote $customIconFileName"
+        }
+
+        # Copy textures into textures/ subdirectory
+        if ($textureFiles.Count -gt 0) {
+            $texturesOutDir = Join-Path $OutputPath 'textures'
+            New-Item -ItemType Directory -Path $texturesOutDir -Force | Out-Null
+            foreach ($tf in $textureFiles) {
+                Copy-Item -LiteralPath $tf.FullName -Destination (Join-Path $texturesOutDir $tf.Name) -Force
+            }
+            Write-Verbose "Copied $($textureFiles.Count) texture(s) to textures/"
+        }
 
         # Extract blendshapes as a key/value map for cleaner diffs
         $blendshapesSource = if ($characterData.ContainsKey('blendshapes')) { $characterData['blendshapes'] } else { @() }
@@ -341,10 +401,12 @@ function Expand-ZnelcharData {
         }
 
         return @{
-            ExpandedPath       = (Resolve-Path -LiteralPath $OutputPath).ProviderPath
-            FileCount          = @(Get-ChildItem -LiteralPath $OutputPath -Recurse -File).Count
-            SchemaVersion      = 1
-            Format             = $Format
+            ExpandedPath  = (Resolve-Path -LiteralPath $OutputPath).ProviderPath
+            FileCount     = @(Get-ChildItem -LiteralPath $OutputPath -Recurse -File).Count
+            SchemaVersion = 1
+            Format        = $Format
+            TextureCount  = $textureFiles.Count
+            HasCustomIcon = ($null -ne $customIconFileName)
         }
     }
 }

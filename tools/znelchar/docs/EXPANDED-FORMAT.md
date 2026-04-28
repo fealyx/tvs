@@ -4,7 +4,7 @@ For collaborative character development in Git, znelchar-tools supports an "expa
 
 ## Workflow
 
-1. **Export znelchar** → `extracted/character.json`
+1. **Export znelchar** → `extracted/`
    ```powershell
    Export-ZnelcharContent -InputPath character.znelchar -OutputPath extracted
    ```
@@ -13,6 +13,9 @@ For collaborative character development in Git, znelchar-tools supports an "expa
    ```powershell
    Expand-ZnelcharData -InputPath extracted/character.json -OutputPath character-expanded -Format yaml
    ```
+   The `textures/` folder produced by `Export-ZnelcharContent` is auto-discovered as a
+   sibling of `character.json` and copied into the expanded structure. Pass `-TexturesPath`
+   explicitly to override the auto-discovery path.
 
 3. **Edit files in version control** (Git, etc.)
    - Individual accessory changes in separate files
@@ -21,12 +24,15 @@ For collaborative character development in Git, znelchar-tools supports an "expa
 
 4. **Compress back to JSON** → `character.json`
    ```powershell
-   Compress-ZnelcharData -InputPath character-expanded -OutputPath character.json
+   $result = Compress-ZnelcharData -InputPath character-expanded -OutputPath character.json
+   # $result.TexturesPath points to character-expanded/textures/ if present
    ```
 
 5. **Repack into znelchar** → `character.znelchar`
    ```powershell
-   New-ZnelcharFile -CharacterJsonPath character.json -OutputPath character.znelchar
+   New-ZnelcharFile -CharacterJsonPath character.json -TexturesDir $result.TexturesPath -OutputPath character.znelchar
+   # Or use the original manifest if you have it:
+   New-ZnelcharFile -ManifestPath extracted/manifest.json -CharacterJsonPath character.json
    ```
 
 ## Folder Structure
@@ -34,6 +40,7 @@ For collaborative character development in Git, znelchar-tools supports an "expa
 ```
 character-expanded/
 ├── _metadata.yaml           # Schema version, source hash, timestamps
+├── customIcon.png           # Custom icon image (if present in source character data)
 ├── base.yaml                # Top-level metadata (version, isSynth, voicePitch, etc.)
 ├── blendshapes.yaml         # Blendshape definitions
 ├── skeleton/
@@ -55,9 +62,21 @@ character-expanded/
 ├── behavior/
 │   ├── opinions.yaml        # Character opinions and preferences
 │   └── traits.yaml          # Character traits
-└── ui/
-    └── colors.yaml          # UI color definitions
+├── ui/
+│   └── colors.yaml          # UI color definitions
+├── textures/                # Texture files copied from extracted textures/ (roundtripped by compress)
+│   ├── SomeTexture_D.png
+│   └── ...
+└── images/                  # Optional: user-managed supplementary images (never packed)
+    ├── cover.png
+    └── ...
 ```
+
+### Image directories
+
+- **`customIcon.<ext>`** — decoded from `customIconData` in `_characterData`. Singular; re-embedded by `Compress-ZnelcharData` automatically.
+- **`textures/`** — copied from the extracted `textures/` folder; re-used by `New-ZnelcharFile` to repack into `_textureDatas`. `Compress-ZnelcharData` returns its path as `TexturesPath` for convenience.
+- **`images/`** — user-managed, never read or written by tooling. Safe to add cover art, reference sheets, etc.
 
 ## Format Preference
 
@@ -102,7 +121,8 @@ Currently only schema v1 is implemented. Migration infrastructure is in place fo
 
 | File | Contents |
 |------|----------|
-| `_metadata.yaml` | Versioning, source info |
+| `_metadata.yaml` | Versioning, source info, `hasCustomIcon`, `textureCount` |
+| `customIcon.<ext>` | Custom icon image decoded from character data (if present) |
 | `base.yaml` | Character metadata (name, version, isSynth, voicePitch, reaction set) |
 | `blendshapes.yaml` | Map of blendshape name -> numeric value |
 | `skeleton/bones.yaml` | Bone hierarchy and scale data |
@@ -116,6 +136,8 @@ Currently only schema v1 is implemented. Migration infrastructure is in place fo
 | `behavior/opinions.yaml` | Opinion system with `_opinions` as map of opinion id -> opinion fields |
 | `behavior/traits.yaml` | Traits with `_traits` as map of trait id -> active boolean |
 | `ui/colors.yaml` | UI color customization |
+| `textures/` | Texture files for repacking (roundtripped) |
+| `images/` | Optional supplementary images (user-managed, never packed) |
 
 ## Round-trip Guarantees
 
@@ -128,6 +150,7 @@ Currently only schema v1 is implemented. Migration infrastructure is in place fo
 
 - The expanded structure is designed for human editing and Git collaboration
 - The binary `.znelchar` format remains the distribution/storage format
-- Textures remain in a separate `/textures/` folder alongside the expanded structure
-- Custom icons are handled separately during packing/unpacking
+- `customIconData` is decoded to `customIcon.<ext>` at the expanded root — not stored as base64 in `base.yaml`
+- `textures/` is copied from the `textures/` folder produced by `Export-ZnelcharContent` and roundtripped back through `New-ZnelcharFile`
+- `images/` is user-managed and completely ignored by all tooling
 - Empty arrays and null values are preserved correctly

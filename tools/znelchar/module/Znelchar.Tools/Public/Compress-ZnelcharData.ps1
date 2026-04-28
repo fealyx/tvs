@@ -7,11 +7,20 @@ Reconstructs character.json from an expanded folder structure created by Expand-
 This is the complementary operation that merges all atomic YAML/JSON files back into
 the unified JSON format.
 
+Custom icon handling:
+- If a customIcon.<ext> file exists at the expanded root, its bytes are re-embedded as
+  customIconData in the output character.json.
+- Legacy expanded structures that store customIconData directly in base.yaml are also
+  supported; the file takes precedence if both are present.
+
 Includes automatic schema version detection and validation:
 - If expanded structure uses a different schema version, throws an error with
   instructions to run Update-ExpandedDataStructure before retrying
 - Validates merged structure against characterData schema
 - Preserves array ordering for deterministic output
+
+The return object includes a TexturesPath field pointing to the textures/ subdirectory
+of the expanded structure (if present), which can be passed directly to New-ZnelcharFile.
 
 .PARAMETER InputPath
 Path to the expanded folder structure (created by Expand-ZnelcharData).
@@ -265,6 +274,14 @@ function Compress-ZnelcharData {
             $character['_uiColourData'] = $colorsData['colors']
         }
 
+        # Re-embed custom icon from file if present (takes precedence over legacy base.yaml field)
+        $customIconFile = Get-ChildItem -LiteralPath $InputPath -Filter 'customIcon.*' -File -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($null -ne $customIconFile) {
+            $customIconBytes = [System.IO.File]::ReadAllBytes($customIconFile.FullName)
+            $character['customIconData'] = [System.Convert]::ToBase64String($customIconBytes)
+            Write-Verbose "Re-embedded custom icon from $($customIconFile.Name)"
+        }
+
         # Validate merged structure
         Write-Verbose "Validating merged character structure"
         if (-not $character['characterName']) {
@@ -294,12 +311,14 @@ function Compress-ZnelcharData {
         Write-Utf8NoBomFile -Path $OutputPath `
             -Content (ConvertTo-Json -InputObject $character -Depth 100)
 
+        $texturesDirPath = Join-Path $InputPath 'textures'
         return @{
             OutputPath           = (Resolve-Path -LiteralPath $OutputPath).ProviderPath
             FieldCount           = $character.Keys.Count
             AccessoryCount       = $character['accessories'].Count
             VertexAccessoryCount = if ($character.ContainsKey('vertexAccessories')) { $character['vertexAccessories'].Count } else { 0 }
             ValidationStatus     = 'Valid'
+            TexturesPath         = if (Test-Path -LiteralPath $texturesDirPath -PathType Container) { (Resolve-Path -LiteralPath $texturesDirPath).ProviderPath } else { $null }
         }
     }
 }
