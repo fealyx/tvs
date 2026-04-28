@@ -5,8 +5,6 @@ using System.Linq;
 
 using BepInEx.Configuration;
 
-using SRF;
-
 namespace Fealyx.TVSLib.Configuration;
 
 public class SettingGroup : IEnumerable
@@ -118,8 +116,8 @@ public class SettingGroup : IEnumerable
         if (_isInitialized == false)
             throw new InvalidOperationException("Cannot get settings from an uninitialized group");
 
-        string settingName = pathParts.PopLast();
-        SettingGroup group = GetGroup(pathParts);
+        string settingName = pathParts.Last();
+        SettingGroup group = GetGroup(pathParts.Take(pathParts.Length - 1).ToArray());
 
         if (group._settingsByName.TryGetValue(settingName, out var setting))
         {

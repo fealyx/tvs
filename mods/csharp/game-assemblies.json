@@ -27,6 +27,14 @@
       "usedBy": [
         "TVS.SampleMod"
       ]
+    },
+    {
+      "name": "Newtonsoft.Json.dll",
+      "required": true,
+      "description": "Popular JSON serialization library; may be needed for mods that handle complex data structures or config files",
+      "usedBy": [
+        "Fealyx.TVSLib"
+      ]
     }
   ],
   "notes": [
