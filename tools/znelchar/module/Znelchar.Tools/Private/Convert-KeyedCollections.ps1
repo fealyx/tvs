@@ -55,7 +55,9 @@ function Convert-OpinionsListToMap {
     [CmdletBinding()]
     param(
         [AllowNull()]
-        [object]$Opinions
+        [object]$Opinions,
+
+        [hashtable]$IdToNameDict = $null
     )
 
     $result = [ordered]@{}
@@ -68,20 +70,34 @@ function Convert-OpinionsListToMap {
             continue
         }
 
-        $name = if ($item -is [hashtable]) { $item['_name'] } else { $item._name }
-        if ($null -eq $name) {
+        $id = if ($item -is [hashtable]) { $item['_name'] } else { $item._name }
+        if ($null -eq $id) {
             continue
         }
 
+        # Use display name as key if dictionary provided, otherwise use ID
+        $keyName = if ($IdToNameDict) {
+            $IdToNameDict[[string]$id]
+        } else {
+            [string]$id
+        }
+
         $entry = @{}
+        # Always include the ID for roundtrip integrity
+        if ($IdToNameDict) {
+            $entry['id'] = $id
+        }
+
         $properties = if ($item -is [hashtable]) { $item.Keys } else { $item.PSObject.Properties.Name }
         foreach ($property in $properties) {
             if ($property -ne '_name') {
-                $entry[$property] = if ($item -is [hashtable]) { $item[$property] } else { $item.$property }
+                # Strip _ prefix from property names
+                $cleanProp = if ($property -match '^_(.+)$') { $matches[1] } else { $property }
+                $entry[$cleanProp] = if ($item -is [hashtable]) { $item[$property] } else { $item.$property }
             }
         }
 
-        $result[[string]$name] = $entry
+        $result[$keyName] = $entry
     }
 
     return $result
@@ -91,7 +107,9 @@ function Convert-OpinionsMapToList {
     [CmdletBinding()]
     param(
         [AllowNull()]
-        [object]$Opinions
+        [object]$Opinions,
+
+        [hashtable]$NameToIdDict = $null
     )
 
     if ($null -eq $Opinions) {
@@ -104,14 +122,32 @@ function Convert-OpinionsMapToList {
 
     $result = @()
     foreach ($key in $Opinions.Keys) {
+        # If dictionary provided, try to get ID from value.id, otherwise look up by display name
+        $id = if ($NameToIdDict) {
+            $value = $Opinions[$key]
+            if ($value -is [System.Collections.IDictionary] -and $value.Contains('id')) {
+                $value['id']
+            } else {
+                # Fallback: lookup by display name
+                $NameToIdDict[[string]$key]
+            }
+        } else {
+            [int]$key
+        }
+
         $entry = @{
-            _name = [int]$key
+            _name = [int]$id
         }
 
         $value = $Opinions[$key]
         if ($value -is [System.Collections.IDictionary]) {
             foreach ($property in $value.Keys) {
-                $entry[$property] = $value[$property]
+                # Skip the 'id' field as we've already used it for _name
+                if ($property -ne 'id') {
+                    # Restore _ prefix to property names (unless already prefixed)
+                    $prefixedProp = if ($property -match '^_') { $property } else { "_$property" }
+                    $entry[$prefixedProp] = $value[$property]
+                }
             }
         }
 
@@ -125,7 +161,9 @@ function Convert-TraitsListToMap {
     [CmdletBinding()]
     param(
         [AllowNull()]
-        [object]$Traits
+        [object]$Traits,
+
+        [hashtable]$IdToNameDict = $null
     )
 
     $result = [ordered]@{}
@@ -138,10 +176,27 @@ function Convert-TraitsListToMap {
             continue
         }
 
-        $name = if ($item -is [hashtable]) { $item['_name'] } else { $item._name }
+        $id = if ($item -is [hashtable]) { $item['_name'] } else { $item._name }
         $active = if ($item -is [hashtable]) { $item['_active'] } else { $item._active }
-        if ($null -ne $name) {
-            $result[[string]$name] = [bool]$active
+        if ($null -ne $id) {
+            # Use display name as key if dictionary provided, otherwise use ID
+            $keyName = if ($IdToNameDict) {
+                $IdToNameDict[[string]$id]
+            } else {
+                [string]$id
+            }
+
+            # Store as nested object with id and active when using display names
+            $value = if ($IdToNameDict) {
+                @{
+                    id = $id
+                    active = [bool]$active
+                }
+            } else {
+                [bool]$active
+            }
+
+            $result[$keyName] = $value
         }
     }
 
@@ -152,7 +207,9 @@ function Convert-TraitsMapToList {
     [CmdletBinding()]
     param(
         [AllowNull()]
-        [object]$Traits
+        [object]$Traits,
+
+        [hashtable]$NameToIdDict = $null
     )
 
     if ($null -eq $Traits) {
@@ -165,9 +222,30 @@ function Convert-TraitsMapToList {
 
     $result = @()
     foreach ($key in $Traits.Keys) {
+        $value = $Traits[$key]
+
+        # If dictionary provided and value is a hashtable with id, use that
+        $id = if ($NameToIdDict) {
+            if ($value -is [System.Collections.IDictionary] -and $value.Contains('id')) {
+                $value['id']
+            } else {
+                # Fallback: lookup by display name
+                $NameToIdDict[[string]$key]
+            }
+        } else {
+            [int]$key
+        }
+
+        # Extract active state
+        $active = if ($value -is [System.Collections.IDictionary] -and $value.Contains('active')) {
+            [bool]$value['active']
+        } else {
+            [bool]$value
+        }
+
         $result += @{
-            _name = [int]$key
-            _active = [bool]$Traits[$key]
+            _name = [int]$id
+            _active = $active
         }
     }
 

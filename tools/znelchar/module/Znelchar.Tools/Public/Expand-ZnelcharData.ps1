@@ -286,14 +286,19 @@ function Expand-ZnelcharData {
         $behaviorDir = Join-Path $OutputPath 'behavior'
         New-Item -ItemType Directory -Path $behaviorDir -Force | Out-Null
 
+        # Load opinion/trait dictionaries for ID-to-name conversion
+        $dictionaries = Get-OpinionTraitDictionaries
+
         $opinionsSource = if ($characterData.ContainsKey('opinionDataString')) { $characterData['opinionDataString'] } else { @{} }
         $opinionsData = @{}
         if ($opinionsSource) {
             foreach ($key in $opinionsSource.Keys) {
-                $opinionsData[$key] = $opinionsSource[$key]
+                # Strip _ prefix from keys
+                $cleanKey = if ($key -match '^_(.+)$') { $matches[1] } else { $key }
+                $opinionsData[$cleanKey] = $opinionsSource[$key]
             }
             if ($opinionsSource.ContainsKey('_opinions')) {
-                $opinionsData['_opinions'] = Convert-OpinionsListToMap -Opinions $opinionsSource['_opinions']
+                $opinionsData['opinions'] = Convert-OpinionsListToMap -Opinions $opinionsSource['_opinions'] -IdToNameDict $dictionaries.OpinionIdToName
             }
         }
         Write-DataFile -InputObject $opinionsData `
@@ -306,10 +311,12 @@ function Expand-ZnelcharData {
         $traitsData = @{}
         if ($traitsSource) {
             foreach ($key in $traitsSource.Keys) {
-                $traitsData[$key] = $traitsSource[$key]
+                # Strip _ prefix from keys
+                $cleanKey = if ($key -match '^_(.+)$') { $matches[1] } else { $key }
+                $traitsData[$cleanKey] = $traitsSource[$key]
             }
             if ($traitsSource.ContainsKey('_traits')) {
-                $traitsData['_traits'] = Convert-TraitsListToMap -Traits $traitsSource['_traits']
+                $traitsData['traits'] = Convert-TraitsListToMap -Traits $traitsSource['_traits'] -IdToNameDict $dictionaries.TraitIdToName
             }
         }
         Write-DataFile -InputObject $traitsData `

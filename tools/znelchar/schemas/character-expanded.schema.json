@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://fealyx.github.io/tvs/schemas/znelchar/character-expanded.schema.json",
   "title": "Character Expanded Structure Schema",
   "description": "Schema defining the folder and file structure for expanded character data. Each section maps to one or more YAML/JSON files organized by folder.",
   "type": "object",

@@ -212,23 +212,50 @@ function Compress-ZnelcharData {
             $character['occlusionDatas'] = $occlusionData['occlusionDatas']
         }
 
+        # Load opinion/trait dictionaries for name-to-ID conversion
+        $dictionaries = Get-OpinionTraitDictionaries
+
         # Load behavior data
         $opinionsPath = Join-Path $InputPath 'behavior' 'opinions.yaml'
         if (Test-Path -LiteralPath $opinionsPath) {
             $opinionsData = Read-DataFile -Path $opinionsPath -Format $dataFormat
-            if ($opinionsData -and $opinionsData.Contains('_opinions')) {
-                $opinionsData['_opinions'] = Convert-OpinionsMapToList -Opinions $opinionsData['_opinions']
+            if ($opinionsData) {
+                # Rebuild with _ prefixes restored
+                $rebuilt = @{}
+                foreach ($key in $opinionsData.Keys) {
+                    # Restore _ prefix
+                    $prefixedKey = if ($key -match '^_') { $key } else { "_$key" }
+                    $rebuilt[$prefixedKey] = $opinionsData[$key]
+                }
+                # Convert opinions map back to list, checking both 'opinions' and '_opinions'
+                if ($opinionsData.Contains('opinions')) {
+                    $rebuilt['_opinions'] = Convert-OpinionsMapToList -Opinions $opinionsData['opinions'] -NameToIdDict $dictionaries.OpinionNameToId
+                } elseif ($opinionsData.Contains('_opinions')) {
+                    $rebuilt['_opinions'] = Convert-OpinionsMapToList -Opinions $opinionsData['_opinions'] -NameToIdDict $dictionaries.OpinionNameToId
+                }
+                $character['opinionDataString'] = $rebuilt
             }
-            $character['opinionDataString'] = $opinionsData
         }
 
         $traitsPath = Join-Path $InputPath 'behavior' 'traits.yaml'
         if (Test-Path -LiteralPath $traitsPath) {
             $traitsData = Read-DataFile -Path $traitsPath -Format $dataFormat
-            if ($traitsData -and $traitsData.Contains('_traits')) {
-                $traitsData['_traits'] = Convert-TraitsMapToList -Traits $traitsData['_traits']
+            if ($traitsData) {
+                # Rebuild with _ prefixes restored
+                $rebuilt = @{}
+                foreach ($key in $traitsData.Keys) {
+                    # Restore _ prefix
+                    $prefixedKey = if ($key -match '^_') { $key } else { "_$key" }
+                    $rebuilt[$prefixedKey] = $traitsData[$key]
+                }
+                # Convert traits map back to list, checking both 'traits' and '_traits'
+                if ($traitsData.Contains('traits')) {
+                    $rebuilt['_traits'] = Convert-TraitsMapToList -Traits $traitsData['traits'] -NameToIdDict $dictionaries.TraitNameToId
+                } elseif ($traitsData.Contains('_traits')) {
+                    $rebuilt['_traits'] = Convert-TraitsMapToList -Traits $traitsData['_traits'] -NameToIdDict $dictionaries.TraitNameToId
+                }
+                $character['traitsData'] = $rebuilt
             }
-            $character['traitsData'] = $traitsData
         }
 
         # Load UI colors
