@@ -118,6 +118,8 @@ function Write-PerToolLaunchers {
     $tools = [ordered]@{
         'inspect'          = 'inspect.ps1'
         'extract'          = 'extract.ps1'
+        'expand'           = 'expand.ps1'
+        'compress'         = 'compress.ps1'
         'pack'             = 'pack.ps1'
         'dump-yaml'        = 'dump-yaml.ps1'
         'verify'           = 'verify-znelchar.ps1'

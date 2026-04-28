@@ -1,6 +1,6 @@
 {
   "name": "@tvs/znelchar-tools",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Tools and schemas for working with .znelchar files",
   "scripts": {
@@ -9,7 +9,10 @@
     "build:dist:release": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./build/package.ps1 -Clean -DownloadPortableRuntime",
     "inspect": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/inspect.ps1",
     "extract": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/extract.ps1",
+    "expand": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/expand.ps1",
+    "compress": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/compress.ps1",
     "pack": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/pack.ps1",
+    "test:expand-compress": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/test-expand-compress.ps1",
     "swap:image": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/swap-image.ps1",
     "dump-yaml": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/dump-yaml.ps1",
     "verify": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/verify-znelchar.ps1",

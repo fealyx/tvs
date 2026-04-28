@@ -8,6 +8,11 @@ PowerShell-first tooling for `.znelchar` files.
 - `npm run inspect -- -InputPath ../../temp/Foxy.znelchar -MetadataOnly`
 - `npm run extract -- -InputPath ../../temp/Foxy.znelchar -OutputDir ./out/Foxy`
 - `npm run extract -- -InputPath ../../temp/Foxy.znelchar -OutputDir ./out/Foxy-meta -MetadataOnly`
+- `npm run expand -- -InputPath ./out/Foxy/character.json -OutputPath ./out/Foxy.expanded`
+- `npm run expand -- -InputPath ./out/Foxy/character.json -OutputPath ./out/Foxy.expanded -Format json`
+- `npm run compress -- -InputPath ./out/Foxy.expanded -OutputPath ./out/Foxy.compressed.json`
+- `npm run compress -- -InputPath ./out/Foxy.expanded -OutputPath ./out/Foxy.compressed.json -Force`
+- `npm run test:expand-compress -- -CharacterJsonPath ./out/Foxy/character.json`
 - `npm run pack -- -CharacterJsonPath ./out/Foxy/character.json -TexturesDir ./out/Foxy/textures -OutputPath ./out/Foxy.repacked.znelchar`
 - `npm run swap:image -- -InputPath ../../temp/Foxy.znelchar -ImagePath ./out/new-icon.png -Target icon -BackupOriginalFile`
 - `npm run swap:image -- -InputPath ../../temp/Uravity.znelchar -ImagePath ./out/new-texture.png -Target texture -TextureName 'Juno_Torso_D.png' -OutputPath ./out/Uravity.swapped.znelchar`
@@ -60,12 +65,6 @@ PowerShell-first tooling for `.znelchar` files.
 - `update:selftest:matrix` runs the same updater hardening checks across `core`, `module`, and `portable` variants.
 - CI uses `update:selftest:matrix` for release/update coverage.
 - See `docs/DISTRIBUTION.md` for packaging and module-install details.
+- See `docs/EXPANDED-FORMAT.md` for the expanded folder structure written by `expand` / read by `compress`.
 - `dump-yaml` uses `ConvertTo-Yaml` when available. Install module if needed:
   - `Install-Module powershell-yaml -Scope CurrentUser`
-
-## Session Continuity
-
-- Session continuity is managed globally for this monorepo under `docs/ai/`.
-- Use `../../../docs/ai/SESSION_HANDOFF_TEMPLATE.json` as the standard payload for cross-session handoff.
-- Use `../../../docs/ai/SESSION_HANDOFF_WORKFLOW.md` for the runbook and persistence policy.
-- Recommended local-only snapshot path (gitignored): `../../../temp/ai/session-handoff.latest.json`

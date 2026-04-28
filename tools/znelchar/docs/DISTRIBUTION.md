@@ -69,6 +69,8 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File ./build/package.ps1 -ReleaseReposi
 
 - `inspect.cmd` / `inspect.sh`
 - `extract.cmd` / `extract.sh`
+- `expand.cmd` / `expand.sh`
+- `compress.cmd` / `compress.sh`
 - `pack.cmd` / `pack.sh`
 - `dump-yaml.cmd` / `dump-yaml.sh`
 - `verify.cmd` / `verify.sh`
@@ -105,6 +107,8 @@ Exposed commands:
 
 - `Get-ZnelcharInfo`
 - `Export-ZnelcharContent`
+- `Expand-ZnelcharData` — decomposes `character.json` into a YAML/JSON folder hierarchy
+- `Compress-ZnelcharData` — reconstructs `character.json` from an expanded folder hierarchy
 - `New-ZnelcharFile`
 - `Convert-ZnelcharToYaml`
 - `Test-ZnelcharFile`
