@@ -76,8 +76,11 @@ function Convert-OpinionsListToMap {
         }
 
         # Use display name as key if dictionary provided, otherwise use ID
+        # Fall back to the string ID if the dictionary doesn't contain this ID
+        # (e.g. opinion/trait added in a newer game version)
         $keyName = if ($IdToNameDict) {
-            $IdToNameDict[[string]$id]
+            $resolved = $IdToNameDict[[string]$id]
+            if ($null -ne $resolved) { $resolved } else { [string]$id }
         } else {
             [string]$id
         }
@@ -180,8 +183,11 @@ function Convert-TraitsListToMap {
         $active = if ($item -is [hashtable]) { $item['_active'] } else { $item._active }
         if ($null -ne $id) {
             # Use display name as key if dictionary provided, otherwise use ID
+            # Fall back to the string ID if the dictionary doesn't contain this ID
+            # (e.g. trait added in a newer game version)
             $keyName = if ($IdToNameDict) {
-                $IdToNameDict[[string]$id]
+                $resolved = $IdToNameDict[[string]$id]
+                if ($null -ne $resolved) { $resolved } else { [string]$id }
             } else {
                 [string]$id
             }
