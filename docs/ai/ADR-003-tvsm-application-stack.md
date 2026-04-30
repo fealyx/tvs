@@ -132,8 +132,9 @@ Tradeoffs:
 
 ## Follow-Up Tasks
 
-1. Create `tools/tvsm` package and add to Rush monorepo (`package.json`, `rush-project.json`).
-2. Scaffold `TVSM.psm1` / `TVSM.psd1` and `tvsm.ps1` entry-point, mirroring `Znelchar.Tools` structure.
-3. Add `PwshSpectreConsole` to the module's dependency list; include it in the portable bundle build.
-4. Implement `tvsm config show` and `tvsm config init` (delegates to `Initialize-TVSEnvironment`) as the first vertical slice, using Spectre widgets.
+1. Create `tools/tvsm` package and add to Rush monorepo (`package.json`, `rush-project.json`). ✅
+2. Scaffold `TVSM.psm1` / `TVSM.psd1` and `tvsm.ps1` entry-point, mirroring `Znelchar.Tools` structure. ✅
+3. Add `PwshSpectreConsole` to the module's dependency list; include it in the portable bundle build. ✅
+4. Implement `tvsm config show` and `tvsm config init` (delegates to `Initialize-TVSEnvironment`) as the first vertical slice, using Spectre widgets. ✅
 5. Define the full command surface spec as a follow-up doc.
+6. Add Pester tests in Phase 2 alongside the mod-manager implementation. Phase 1 cmdlets were reviewed and deferred: `Invoke-TVSMConfigInit` is interactive TUI (not unit-testable at the prompt level); `Get-TVSMVersion` and the Phase 2/3 stubs have no logic to assert. Priority tests for Phase 2: `Show-TVSMConfig` display-contract, `Get-TVSMModStatus` manifest parsing, and `Invoke-TVSMModRollback` snapshot/restore (safety-critical).

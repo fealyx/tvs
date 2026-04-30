@@ -11,7 +11,8 @@
         'Get-TVSEnvironment',
         'Set-TVSEnvironmentValue',
         'Initialize-TVSEnvironment',
-        'Test-TVSEnvironment'
+        'Test-TVSEnvironment',
+        'Resolve-TVSProfileKey'
     )
     CmdletsToExport   = @()
     AliasesToExport   = @()

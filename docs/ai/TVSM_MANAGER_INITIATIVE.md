@@ -49,9 +49,10 @@ What `tvsm` does NOT own:
 See the following ADRs for detailed decisions on each layer:
 
 - [ADR-002](./ADR-002-shared-environment-profile.md): Shared environment profile (`TVS.Environment`)
-- [ADR-003](./ADR-003-tvsm-application-stack.md): tvsm application technology (.NET + Spectre.Console)
+- [ADR-003](./ADR-003-tvsm-application-stack.md): tvsm application technology (PowerShell + PwshSpectreConsole)
 - [ADR-004](./ADR-004-tvs-save-tools-module.md): `TVSSave.Tools` PS module
 - [ADR-005](./ADR-005-unified-tvs-tools-bundle.md): Unified distribution bundle
+- [ADR-006](./ADR-006-mod-storage-and-linking-strategy.md): Mod storage and linking strategy
 
 ### High-level component diagram
 
@@ -87,14 +88,20 @@ Community Mod Registry (hosted JSON)
 
 ### Mod Management
 
-- [ ] `tvsm mod status` — inventory of installed mods in the plugins dir; flag version mismatches or missing deps
-- [ ] `tvsm mod install <name>` — install a named mod from the community registry
-- [ ] `tvsm mod install --all` — install all mods the registry marks as recommended
-- [ ] `tvsm mod update [name]` — update one or all installed mods
-- [ ] `tvsm mod remove <name>` — uninstall a mod
-- [ ] `tvsm mod rollback` — restore plugins dir from the most recent pre-mutation snapshot
-- [ ] `tvsm mod verify` — check BepInEx integrity, TVSLib presence and version, config manager presence
-- [ ] `tvsm mod snapshot` — manually create a named rollback point
+- [ ] `tvsm mod apply [--profile]` — assemble staging from store and (re-)establish game dir junctions/symlinks
+- [ ] `tvsm mod status` — diff active profile against linked state; detect post-update wipe
+- [ ] `tvsm mod install <name>` — download to store, update active profile, apply
+- [ ] `tvsm mod install --all` — install all registry-recommended mods
+- [ ] `tvsm mod update [name]` — update one or all mods in store + re-apply
+- [ ] `tvsm mod remove <name>` — remove from active profile + apply (store entry preserved)
+- [ ] `tvsm mod rollback` — revert profile to pre-mutation snapshot + apply
+- [ ] `tvsm mod verify` — check BepInEx integrity, junction health, TVSLib presence
+- [ ] `tvsm mod snapshot [name]` — manually create a named profile snapshot
+- [ ] `tvsm mod store list` — list all downloaded mod versions in the store
+- [ ] `tvsm mod store prune` — remove store entries not referenced by any profile
+- [ ] `tvsm mod profile list` — list available mod profiles
+- [ ] `tvsm mod profile switch <name>` — switch active mod profile + apply
+- [ ] `tvsm mod profile new <name>` — clone active profile under a new name
 
 ### Character and Save File Tooling (TUI façade over PS modules)
 
@@ -151,21 +158,22 @@ Key design constraints:
 
 ## Phased Implementation Plan
 
-### Phase 0: TVS.Environment Module
+### Phase 0: TVS.Environment Module ✅ COMPLETE
 
 Goals:
 - Implement `TVS.Environment` PS module with profile read/write.
 - Migrate `mod-manager.ps1`, `setup-modding-env.ps1`, and znelchar portable launchers to use it.
 
 Deliverables:
-- `tools/tvs-environment` module skeleton.
-- Profile schema and default key set.
-- Migration of existing config resolution in consuming scripts.
+- `tools/tvs-environment` module skeleton. ✅
+- Profile schema and default key set. ✅
+- Migration of existing config resolution in consuming scripts. ✅
+- `Resolve-TVSProfileKey` priority chain with Pester test coverage. ✅
 
 Exit criteria:
-- All existing scripts that previously parsed `.env` / `GameDir.props` separately now call `Get-TVSEnvironment`.
+- All existing scripts that previously parsed `.env` / `GameDir.props` separately now call `Get-TVSEnvironment`. ✅
 
-### Phase 1: tvsm CLI Skeleton
+### Phase 1: tvsm CLI Skeleton ✅ COMPLETE
 
 Goals:
 - PowerShell module + `tvsm.ps1` entry-point script under `tools/tvsm`.
@@ -173,28 +181,62 @@ Goals:
 - Help output and version command.
 
 Deliverables:
-- `tools/tvsm` package in Rush monorepo.
-- `TVSM` PS module scaffold mirroring `Znelchar.Tools` structure.
-- `PwshSpectreConsole` bundled as a dependency.
-- `tvsm config init` delegates to `Initialize-TVSEnvironment`.
+- `tools/tvsm` package in Rush monorepo. ✅
+- `TVSM` PS module scaffold mirroring `Znelchar.Tools` structure. ✅
+- `PwshSpectreConsole` bundled as a dependency (auto-installed at runtime if absent). ✅
+- `tvsm config init` — PwshSpectreConsole wizard with gameDir validation. ✅
+- `tvsm config show` — Spectre table of all resolved keys + derived `pluginsDir`. ✅
+- `tvsm config get/set` — thin wrappers over `TVS.Environment`. ✅
+- `tvsm version` — component version table. ✅
+- Interactive TUI menu on no-args invocation (`Read-SpectreSelection`). ✅
+- `--json`, `--no-ansi`, `--profile` flags wired through all commands. ✅
+- Dev-repo and portable-bundle `PSModulePath` seeding in `tvsm.ps1`. ✅
+- UTF-8 encoding swap with session-scoped restore for Spectre Unicode output. ✅
+- `build/package.ps1` producing `tvsm-module-<version>.zip` with co-bundled dependencies. ✅
+- Phase 2/3 command stubs (`mod *`, `save watch`) with Phase labels. ✅
 
 Exit criteria:
-- `tvsm config init` walks a new user to a complete, valid profile.
-- `tvsm config show` renders the resolved config as a formatted table.
+- `tvsm config init` walks a new user to a complete, valid profile. ✅
+- `tvsm config show` renders the resolved config as a formatted table. ✅
 
 ### Phase 2: Mod Manager
 
 Goals:
+- Implement the store-and-link mod management model per [ADR-006](./ADR-006-mod-storage-and-linking-strategy.md).
 - Absorb and formalize behavior from `mods/csharp/scripts/mod-manager.ps1`.
 - Implement community mod registry fetch and cache.
-- Implement rollback snapshot mechanism.
+- Implement rollback/profile snapshot mechanism.
+
+Background — why store-and-link:
+Game updates on Steam replace the entire game installation directory, wiping BepInEx, all mods, and mod configs. The store-and-link model keeps all mod artifacts in `{modWorkDir}/store/` and re-establishes directory junctions (Windows) / symlinks (Linux) into `{gameDir}/BepInEx/{plugins,config,patchers}` on demand. After a game update, `tvsm mod apply` restores everything in seconds with no network traffic. See ADR-006 for the full layout and rationale.
 
 Deliverables:
-- `tvsm mod status`, `install`, `update`, `remove`, `rollback`, `verify` commands.
+- Mod store layout under `{modWorkDir}/store/{modName}/{version}/`.
+- Mod profile format (`{modWorkDir}/profiles/{name}.json`) with version selection and enabled flags.
+- Staging directory assembly: copy store entries into `{modWorkDir}/staging/{profile}/`.
+- Junction/symlink creation for `{gameDir}/BepInEx/{plugins,config,patchers}` → staging.
+- Doorstop proxy (`winhttp.dll`) copy from store into `{gameDir}/` on every apply.
+- `tvsm mod apply [--profile]` — assemble + link + drop doorstop.
+- `tvsm mod status` — diff active profile vs. linked state; detect post-update wipe.
+- `tvsm mod install <name>` — download to store → update profile → apply.
+- `tvsm mod update [name]` — fetch latest → store → profile → apply.
+- `tvsm mod remove <name>` — remove from profile → apply (store entry preserved).
+- `tvsm mod rollback` — revert profile to pre-mutation snapshot → apply.
+- `tvsm mod verify` — check BepInEx integrity, TVSLib presence and version, junction health.
+- `tvsm mod snapshot [name]` — manually create a named profile snapshot.
+- `tvsm mod store list` / `tvsm mod store prune`.
+- `tvsm mod profile list` / `tvsm mod profile switch <name>` / `tvsm mod profile new <name>`.
 - Community registry v1 JSON hosted and validated.
+- Pester test suite under `tools/tvsm/tests/`:
+  - `Show-TVSMConfig.Tests.ps1` — display-contract tests for null/empty key mapping and derived `pluginsDir` row.
+  - `Get-TVSMModStatus.Tests.ps1` — manifest parsing and version-mismatch detection.
+  - `Invoke-TVSMModRollback.Tests.ps1` — rollback snapshot creation and restore (highest-priority; safety-critical path).
 
 Exit criteria:
 - A fresh Windows user can run `tvsm mod install --all` and have a working BepInEx + TVSLib environment with no manual steps.
+- Running `tvsm mod apply` after a game update restores all junctions and the doorstop proxy without re-downloading anything.
+- Switching mod profiles (`tvsm mod profile switch dev`) takes effect immediately without manual file management.
+- All Pester tests pass in CI.
 
 ### Phase 3: TVSSave.Tools Module
 
