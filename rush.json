@@ -441,6 +441,16 @@
     //   "tags": [ "tools" ]
     // }
     {
+      "packageName": "@tvs/tvs-environment",
+      "projectFolder": "tools/tvs-environment",
+      "tags": [ "tools" ]
+    },
+    {
+      "packageName": "@tvs/tvsm",
+      "projectFolder": "tools/tvsm",
+      "tags": [ "tools" ]
+    },
+    {
       "packageName": "@tvs/znelchar-tools",
       "projectFolder": "tools/znelchar",
       "tags": [ "tools" ]
