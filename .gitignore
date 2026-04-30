@@ -128,7 +128,6 @@ dist-storybook/
 temp/
 
 # TVS Modding environment and local game refs (never commit)
-.env
 mods/csharp/.local/
 
 # .NET build artifacts

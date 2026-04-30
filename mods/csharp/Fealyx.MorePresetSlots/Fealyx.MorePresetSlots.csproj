@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Fealyx.MorePresetSlots</AssemblyName>
+    <Description>Adds additional custom character slots.</Description>
+    <EnableAssemblyPublicizer>true</EnableAssemblyPublicizer>
+    <GUID>Fealyx.MorePresetSlots</GUID>
+    <Product>More Preset Slots</Product>
+    <RootNamespace>Fealyx.MorePresetSlots</RootNamespace>
+    <TVSIsPlugin>true</TVSIsPlugin>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Core" />
+    <PackageReference Include="BepInEx.PluginInfoProps" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\Assembly-CSharp.dll')">
+    <Reference Update="Assembly-CSharp">
+      <Publicize>true</Publicize>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Fealyx.TVSLib\Fealyx.TVSLib.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('Content')">
+    <None Include="Content\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>%(RecursiveDir)%(FileName)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+</Project>
