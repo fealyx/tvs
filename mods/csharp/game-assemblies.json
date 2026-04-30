@@ -35,6 +35,14 @@
       "usedBy": [
         "Fealyx.TVSLib"
       ]
+    },
+    {
+      "name": "Unity.TextMeshPro.dll",
+      "required": true,
+      "description": "TextMeshPro types; may be needed for mods that handle advanced text rendering or UI elements",
+      "usedBy": [
+        "Fealyx.MorePresetSlots"
+      ]
     }
   ],
   "notes": [

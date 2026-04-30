@@ -75,7 +75,7 @@ function Expand-ZnelcharData {
         })]
         [string]$InputPath,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [string]$OutputPath,
 
         [ValidateSet('yaml', 'json')]
@@ -87,8 +87,25 @@ function Expand-ZnelcharData {
     )
 
     process {
+        # Resolve OutputPath: optional — fall back to TVS.Environment characterWorkDir if not supplied
+        if (-not $OutputPath) {
+            try {
+                $workDir = Get-TVSEnvironment -Key characterWorkDir
+                if ($workDir) {
+                    $inputBaseName = [System.IO.Path]::GetFileNameWithoutExtension(
+                        (Split-Path -Leaf (Split-Path -Parent (Resolve-Path $InputPath).Path))
+                    ) -replace '\.extracted$', ''
+                    $OutputPath = Join-Path $workDir ($inputBaseName + '.expanded')
+                }
+            } catch { }
+        }
+        if (-not $OutputPath) {
+            throw "Parameter -OutputPath is required. Provide it explicitly or configure 'characterWorkDir' via Initialize-TVSEnvironment."
+        }
+
         # Check if output exists
         if ((Test-Path -LiteralPath $OutputPath) -and -not $Force) {
+
             throw "Output path already exists: $OutputPath. Use -Force to overwrite."
         }
 

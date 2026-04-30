@@ -35,6 +35,13 @@ Extracts character and texture data from a .znelchar file.
     $inputRootName = [System.IO.Path]::GetFileNameWithoutExtension($resolvedInputPath)
 
     if (-not $OutputDir) {
+        # Soft dependency: use characterWorkDir from TVS.Environment if available
+        try {
+            $workDir = Get-TVSEnvironment -Key characterWorkDir
+            if ($workDir) { $OutputDir = Join-Path $workDir ($inputRootName + '.extracted') }
+        } catch { }
+    }
+    if (-not $OutputDir) {
         $OutputDir = Join-Path ([System.IO.Path]::GetDirectoryName($resolvedInputPath)) ($inputRootName + '.extracted')
     }
     $OutputDir = Resolve-UserPath -Path $OutputDir

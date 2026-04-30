@@ -241,6 +241,13 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup Condition="Exists('$(TVSManagedDir)\Unity.TextMeshPro.dll')">
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(TVSManagedDir)\Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
 
   <Target Name="WarnIfTVSManagedDirMissing" BeforeTargets="PrepareForBuild" Condition="'$(TVSManagedDir)' == '' or !Exists('$(TVSManagedDir)')">
     <Warning Text="TVS game references are not configured. Copy GameDir.props.example to GameDir.props and set TVSGameDir to your game install path." />

@@ -15,75 +15,9 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
 $modsRoot = Join-Path $repoRoot 'mods' 'csharp'
-$envPath = Join-Path $repoRoot '.env'
-$gameDirPropsPath = Join-Path $modsRoot 'GameDir.props'
 $devModsManifestPath = Join-Path $modsRoot 'dev-mods.manifest.json'
 
-function Read-DotEnv {
-    param([string]$Path)
-    $values = @{}
-    if (-not (Test-Path $Path)) {
-        return $values
-    }
-
-    foreach ($line in Get-Content $Path) {
-        $trimmed = $line.Trim()
-        if (-not $trimmed -or $trimmed.StartsWith('#')) {
-            continue
-        }
-        $index = $trimmed.IndexOf('=')
-        if ($index -le 0) {
-            continue
-        }
-        $key = $trimmed.Substring(0, $index).Trim()
-        $value = $trimmed.Substring($index + 1).Trim()
-        $values[$key] = $value
-    }
-
-    return $values
-}
-
-function Get-TVSContext {
-    param([string]$PluginDirOverride)
-
-    $envMap = Read-DotEnv -Path $envPath
-    $gameDir = $null
-
-    if ($envMap.ContainsKey('TVS_GAME_DIR') -and (Test-Path $envMap['TVS_GAME_DIR'])) {
-        $gameDir = $envMap['TVS_GAME_DIR']
-    }
-
-    if (-not $gameDir -and (Test-Path $gameDirPropsPath)) {
-        try {
-            [xml]$propsXml = Get-Content $gameDirPropsPath
-            $propGameDir = $propsXml.Project.PropertyGroup.TVSGameDir
-            if ($propGameDir -and (Test-Path $propGameDir)) {
-                $gameDir = $propGameDir
-            }
-        }
-        catch {
-            # Ignore parse failures and throw below
-        }
-    }
-
-    if ($PluginDirOverride) {
-        return [pscustomobject]@{
-            GameDir = $gameDir
-            PluginsDir = $PluginDirOverride
-            EnvMap = $envMap
-        }
-    }
-
-    if (-not $gameDir) {
-        throw "Unable to resolve TVS game directory. Run mods/csharp/scripts/setup-modding-env.ps1 first or set TVS_GAME_DIR in .env, or pass -PluginsDir for deploy operations."
-    }
-
-    return [pscustomobject]@{
-        GameDir = $gameDir
-        PluginsDir = Join-Path $gameDir 'BepInEx' 'plugins'
-        EnvMap = $envMap
-    }
-}
+Import-Module TVS.Environment -ErrorAction Stop
 
 function Invoke-SafeCopy {
     param(
@@ -216,40 +150,52 @@ function Clean-DeployedPlugins {
     }
 }
 
+$tvsEnv = Get-TVSEnvironment
+$resolvedGameDir    = $tvsEnv.gameDir
+$resolvedPluginsDir = if ($PluginsDir) { $PluginsDir } else { $tvsEnv.pluginsDir }
+
 switch ($Action) {
     'install-bepinex' {
-        $context = Get-TVSContext -PluginDirOverride $PluginsDir
-        Install-BepInEx -GameDir $context.GameDir -Version $BepInExVersion
+        if (-not $resolvedGameDir) {
+            throw "Unable to resolve TVS game directory. Run Initialize-TVSEnvironment or set gameDir with Set-TVSEnvironmentValue."
+        }
+        Install-BepInEx -GameDir $resolvedGameDir -Version $BepInExVersion
     }
     'install-dev-mods' {
-        $context = Get-TVSContext -PluginDirOverride $PluginsDir
-        if (-not (Test-Path $context.PluginsDir) -and -not $DryRun) {
-            New-Item -ItemType Directory -Path $context.PluginsDir -Force | Out-Null
+        if (-not $resolvedPluginsDir) {
+            throw "Unable to resolve TVS plugins directory. Run Initialize-TVSEnvironment or pass -PluginsDir."
         }
-        Install-DevMods -PluginsDir $context.PluginsDir
+        if (-not (Test-Path $resolvedPluginsDir) -and -not $DryRun) {
+            New-Item -ItemType Directory -Path $resolvedPluginsDir -Force | Out-Null
+        }
+        Install-DevMods -PluginsDir $resolvedPluginsDir
     }
     'deploy' {
-        $context = Get-TVSContext -PluginDirOverride $PluginsDir
         if (-not $Project) {
             throw "-Project is required for Action=deploy (example: -Project TVS.SampleMod)"
         }
-
         $candidate = Join-Path $modsRoot $Project "$Project.csproj"
         if (-not (Test-Path $candidate)) {
             throw "Project not found at $candidate"
         }
-
-        Deploy-Project -ProjectPath $candidate -ConfigurationName $Configuration -PluginsDir $context.PluginsDir
+        if (-not $resolvedPluginsDir) {
+            throw "Unable to resolve TVS plugins directory. Run Initialize-TVSEnvironment or pass -PluginsDir."
+        }
+        Deploy-Project -ProjectPath $candidate -ConfigurationName $Configuration -PluginsDir $resolvedPluginsDir
     }
     'deploy-all' {
-        $context = Get-TVSContext -PluginDirOverride $PluginsDir
+        if (-not $resolvedPluginsDir) {
+            throw "Unable to resolve TVS plugins directory. Run Initialize-TVSEnvironment or pass -PluginsDir."
+        }
         $projects = Get-PluginProjects
         foreach ($project in $projects) {
-            Deploy-Project -ProjectPath $project -ConfigurationName $Configuration -PluginsDir $context.PluginsDir
+            Deploy-Project -ProjectPath $project -ConfigurationName $Configuration -PluginsDir $resolvedPluginsDir
         }
     }
     'clean-plugins' {
-        $context = Get-TVSContext -PluginDirOverride $PluginsDir
-        Clean-DeployedPlugins -PluginsDir $context.PluginsDir
+        if (-not $resolvedPluginsDir) {
+            throw "Unable to resolve TVS plugins directory. Run Initialize-TVSEnvironment or pass -PluginsDir."
+        }
+        Clean-DeployedPlugins -PluginsDir $resolvedPluginsDir
     }
 }
