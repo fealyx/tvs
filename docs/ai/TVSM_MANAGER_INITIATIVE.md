@@ -26,7 +26,7 @@ As the TVS tool ecosystem grows, users and developers encounter increasing frict
 
 - **TVS.Environment**: a shared configuration module all other tools read from.
 - **TVSSave.Tools**: a new PS module for save-file operations.
-- **tvsm CLI**: a .NET console application providing TUI and scriptable CLI modes.
+- **tvsm CLI**: a PowerShell script application providing TUI and scriptable CLI modes.
 - **Unified TVS Tools bundle**: a single distribution artifact replacing per-tool portable bundles for end-users.
 - **Community mod registry**: a hosted manifest driving `tvsm mod install` and update workflows.
 
@@ -38,7 +38,7 @@ What `tvsm` does NOT own:
 ## Guiding Principles
 
 1. One config profile, read everywhere.
-2. Spectre.Console for all interactive user-facing surfaces in `tvsm`.
+2. [PwshSpectreConsole](https://github.com/ShaunLawrie/PwshSpectreConsole) for all end-user-facing interactive output in `tvsm`; .NET/Spectre.Console directly if PwshSpectreConsole proves insufficient for a specific use case.
 3. PS modules stay independently useful; `tvsm` orchestrates but does not replace them.
 4. No internet required for basic offline operations — community manifest fetching is lazy and cached.
 5. Mutations (mod installs, updates, overwrites) are preceded by a rollback snapshot.
@@ -56,12 +56,12 @@ See the following ADRs for detailed decisions on each layer:
 ### High-level component diagram
 
 ```
-tvsm CLI (.NET, Spectre.Console)
+tvsm CLI (PowerShell module + tvsm.ps1 entry point)
   ├── reads TVS.Environment profile (~/.tvs/config.json)
-  ├── invokes Znelchar.Tools (PS runspace) for character operations
-  ├── invokes TVSSave.Tools (PS runspace) for save operations
+  ├── imports Znelchar.Tools for character operations
+  ├── imports TVSSave.Tools for save operations
   ├── fetches community mod registry (cached JSON from GitHub)
-  └── delegates dev env setup to mods/csharp/scripts via env vars
+  └── delegates dev env setup to mods/csharp/scripts via TVS.Environment
 
 TVS.Environment (PS module)
   └── shared by Znelchar.Tools, TVSSave.Tools, tvsm, mods/csharp/scripts
@@ -168,18 +168,19 @@ Exit criteria:
 ### Phase 1: tvsm CLI Skeleton
 
 Goals:
-- .NET console app project under `tools/tvsm`.
-- Spectre.Console wired up; help output and version command.
-- Reads `TVS.Environment` profile natively.
-- `tvsm config` command surface fully functional.
+- PowerShell module + `tvsm.ps1` entry-point script under `tools/tvsm`.
+- `tvsm config` command surface fully functional, delegating to `TVS.Environment`.
+- Help output and version command.
 
 Deliverables:
-- `tools/tvsm` project in Rush monorepo.
-- Config TUI wizard for first-run.
+- `tools/tvsm` package in Rush monorepo.
+- `TVSM` PS module scaffold mirroring `Znelchar.Tools` structure.
+- `PwshSpectreConsole` bundled as a dependency.
+- `tvsm config init` delegates to `Initialize-TVSEnvironment`.
 
 Exit criteria:
 - `tvsm config init` walks a new user to a complete, valid profile.
-- `tvsm config show` renders the resolved config in a Spectre table.
+- `tvsm config show` renders the resolved config as a formatted table.
 
 ### Phase 2: Mod Manager
 
