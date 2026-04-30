@@ -22,8 +22,10 @@
         }
     },
 
-    // Install Rush globally at the pinned version from rush.json, then do initial install
-    "postCreateCommand": "npm install -g @microsoft/rush@5.162.0 && rush install",
+    // Install Rush globally at the pinned version from rush.json, then do initial install.
+    // Also seed the live .code-workspace file from the committed template if it does not already exist
+    // (-n = no-clobber so the worktree scripts can manage it freely after first create).
+    "postCreateCommand": "npm install -g @microsoft/rush@5.162.0 && rush install && cp -n tvs.code-workspace.template tvs.code-workspace || true",
 
     "customizations": {
         "vscode": {

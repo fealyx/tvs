@@ -10,7 +10,7 @@ docs/ai/
   AGENT_CONVENTIONS.md   ← rules for what AI agents may/must/must-not do autonomously
   adr/                   ← Architecture Decision Records (permanent, immutable)
   initiatives/           ← Long-term planning and north-star docs per initiative
-  session/               ← Session handoff tooling and templates
+  session/               ← Session handoff templates, workflow, and worktree runbook
 ```
 
 ---
@@ -52,6 +52,7 @@ Initiative docs are living documents — they are updated as phases complete and
 |---|---|
 | [SESSION_HANDOFF_TEMPLATE.json](./session/SESSION_HANDOFF_TEMPLATE.json) | Canonical schema for a concise cross-session context handoff payload |
 | [SESSION_HANDOFF_WORKFLOW.md](./session/SESSION_HANDOFF_WORKFLOW.md) | Runbook: what to keep in git vs. local-only, when and how to write a handoff |
+| [WORKTREE_WORKFLOW.md](./session/WORKTREE_WORKFLOW.md) | Runbook: branch naming, worktree lifecycle scripts, VS Code multi-root setup, Windows/VS workflow |
 
 Local working snapshot (gitignored): `temp/ai/session-handoff.latest.json`
 

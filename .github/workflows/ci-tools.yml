@@ -1,0 +1,66 @@
+name: CI — Tools
+
+on:
+  push:
+    branches: [ "main", "feature/**", "fix/**", "chore/**" ]
+    paths:
+      - "tools/**"
+      - "common/**"
+      - "rush.json"
+      - ".github/workflows/ci-tools.yml"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "tools/**"
+      - "common/**"
+      - "rush.json"
+      - ".github/workflows/ci-tools.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '22.20.0'
+
+      - name: Cache Rush and pnpm state
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: |
+            common/temp/pnpm-store
+            common/temp/pnpm-local
+            common/temp/install-run
+            common/temp/build-cache
+          key: rush-${{ runner.os }}-${{ hashFiles('rush.json', 'common/config/rush/pnpm-lock.yaml', 'common/config/rush/build-cache.json') }}
+          restore-keys: |
+            rush-${{ runner.os }}-
+
+      - name: Verify Change Logs
+        run: node common/scripts/install-run-rush.js change --verify
+
+      - name: Rush Install
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Rush Build
+        # Mods are built in the dedicated ci-mods.yml workflow which handles
+        # private TVS managed-assembly fetching and fallback behavior.
+        run: node common/scripts/install-run-rush.js build --verbose --to-except @tvs/mods-csharp
+
+      - name: Znelchar Update Self-Test Matrix
+        # Rush build should generate dist outputs, but when outputs are missing
+        # (for example due to cache edge cases) self-test needs a fallback build.
+        shell: pwsh
+        run: >-
+          if (-not (Test-Path -LiteralPath './tools/znelchar/dist/znelchar-release-manifest.json')) {
+            Write-Host 'znelchar release manifest missing after Rush build; running explicit dist build.'
+            npm --prefix tools/znelchar run build:dist
+          }
+
+          npm --prefix tools/znelchar run update:selftest:matrix
