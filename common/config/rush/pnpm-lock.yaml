@@ -14,4 +14,8 @@ importers:
 
   ../../mods/unity: {}
 
+  ../../tools/tvs-environment: {}
+
+  ../../tools/tvsm: {}
+
   ../../tools/znelchar: {}

@@ -48,11 +48,11 @@ What `tvsm` does NOT own:
 
 See the following ADRs for detailed decisions on each layer:
 
-- [ADR-002](./ADR-002-shared-environment-profile.md): Shared environment profile (`TVS.Environment`)
-- [ADR-003](./ADR-003-tvsm-application-stack.md): tvsm application technology (PowerShell + PwshSpectreConsole)
-- [ADR-004](./ADR-004-tvs-save-tools-module.md): `TVSSave.Tools` PS module
-- [ADR-005](./ADR-005-unified-tvs-tools-bundle.md): Unified distribution bundle
-- [ADR-006](./ADR-006-mod-storage-and-linking-strategy.md): Mod storage and linking strategy
+- [ADR-002](../adr/ADR-002-shared-environment-profile.md): Shared environment profile (`TVS.Environment`)
+- [ADR-003](../adr/ADR-003-tvsm-application-stack.md): tvsm application technology (PowerShell + PwshSpectreConsole)
+- [ADR-004](../adr/ADR-004-tvs-save-tools-module.md): `TVSSave.Tools` PS module
+- [ADR-005](../adr/ADR-005-unified-tvs-tools-bundle.md): Unified distribution bundle
+- [ADR-006](../adr/ADR-006-mod-storage-and-linking-strategy.md): Mod storage and linking strategy
 
 ### High-level component diagram
 
@@ -202,7 +202,7 @@ Exit criteria:
 ### Phase 2: Mod Manager
 
 Goals:
-- Implement the store-and-link mod management model per [ADR-006](./ADR-006-mod-storage-and-linking-strategy.md).
+- Implement the store-and-link mod management model per [ADR-006](../adr/ADR-006-mod-storage-and-linking-strategy.md).
 - Absorb and formalize behavior from `mods/csharp/scripts/mod-manager.ps1`.
 - Implement community mod registry fetch and cache.
 - Implement rollback/profile snapshot mechanism.
