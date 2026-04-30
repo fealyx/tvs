@@ -98,6 +98,9 @@ jspm_packages/
 !.vscode/tasks.json
 !.vscode/launch.json
 
+# Live multi-root workspace file (per-developer local state; seeded from tvs.code-workspace.template)
+tvs.code-workspace
+
 # Rush temporary files
 common/deploy/
 common/temp/

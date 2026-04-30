@@ -75,6 +75,53 @@ When moving or renaming files in `docs/ai/`, agents MUST check all sibling docs 
 
 ---
 
+## Branching conventions
+
+All agent work happens on a named feature branch. **Agents MUST NOT commit directly to `main`.** Merges to `main` are always human-initiated (PR or explicit local merge).
+
+### Branch naming
+
+Convention: `<type>/<area>/<slug>`
+
+| Type | Use for |
+|---|---|
+| `feature` | New capabilities (default) |
+| `fix` | Bug fixes |
+| `chore` | Housekeeping, deps, CI |
+
+Canonical area names:
+
+| Area | Covers |
+|---|---|
+| `tvsm` | `tools/tvsm/**` |
+| `znelchar` | `tools/znelchar/**`, `tools/znelchar-gui/**` |
+| `tvs-env` | `tools/tvs-environment/**` |
+| `content` | `content/**` |
+| `mods` | `mods/**` |
+| `infra` | Cross-cutting developer infrastructure: `.devcontainer/**`, `common/scripts/**`, `docs/ai/**`, `.gitignore`, `*.code-workspace*`, CI workflows (`.github/**`) |
+| `deps` | Rush / package dependency updates (`rush.json` package resolution, `package.json` dep changes, lockfile) |
+| `docs` | `docs/**` outside `docs/ai/` (user-facing documentation) |
+
+Examples: `feature/tvsm/save-tools`, `fix/znelchar/round-trip-encoding`, `chore/deps/rush-update-q2`, `feature/infra/worktree-workflow`
+
+Area names are for human/UI organization. CI routing is driven by which files actually changed (`paths:` filters in workflow files), not by branch names.
+
+### Worktree lifecycle
+
+For isolated feature work, agents should use the worktree scripts:
+
+```powershell
+# Start work
+./common/scripts/new-worktree.ps1 -Area <area> -Slug <slug> -Purpose "..."
+
+# End work (push branch, clean up)
+./common/scripts/close-worktree.ps1 -WorktreePath <path> -Push
+```
+
+The scripts manage `tvs.code-workspace` (adding/removing roots) and the session handoff snapshot automatically. See [session/WORKTREE_WORKFLOW.md](./session/WORKTREE_WORKFLOW.md) for the full runbook.
+
+---
+
 ## Monorepo hygiene
 
 ### Rush shrinkwrap
@@ -103,3 +150,4 @@ Then stage and commit `common/config/rush/pnpm-lock.yaml` along with your other 
 | Initiative doc | Human direction | ✅ autonomously | Scope changes: human direction | Autonomous for progress; human for scope |
 | Session handoff | Autonomous | Autonomous | Autonomous | N/A (gitignored) |
 | README / cross-refs | If directed | Autonomous when structure changes | If directed | Autonomous |
+| Branches / worktrees | Agents create feature branches via scripts | N/A | N/A | Push: autonomous; merge to main: human only |
