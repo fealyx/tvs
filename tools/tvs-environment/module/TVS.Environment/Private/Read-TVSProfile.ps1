@@ -46,5 +46,5 @@ function Read-TVSProfile {
         return $merged
     }
 
-    return if ($activeProfileData) { $activeProfileData } else { @{} }
+    return $(if ($activeProfileData) { $activeProfileData } else { @{} })
 }

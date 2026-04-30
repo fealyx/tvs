@@ -24,7 +24,7 @@ function Get-ToolVersion {
     $packageJsonPath = Join-Path $RepoRoot 'package.json'
     $pkg = Get-Content -Raw -Path $packageJsonPath | ConvertFrom-Json
     $v = [string]$pkg.version
-    return if ([string]::IsNullOrWhiteSpace($v)) { '0.0.0' } else { $v }
+    return $(if ([string]::IsNullOrWhiteSpace($v)) { '0.0.0' } else { $v })
 }
 
 function Reset-Directory {
