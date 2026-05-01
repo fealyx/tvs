@@ -3,9 +3,10 @@
     Creates a new git worktree + branch for isolated feature work.
 
 .DESCRIPTION
-    Creates a linked worktree at a sibling path, creates a new branch, adds
-    the worktree root to tvs.code-workspace, and seeds a starter session
-    handoff snapshot in the new worktree.
+    Creates a linked worktree, creates a new branch, adds the worktree root to
+    tvs.code-workspace, and seeds a starter session handoff snapshot in the new
+    worktree. The default path is OS-aware: worktrees/ inside the repo on Linux
+    (devcontainer), or a sibling of the repo root on Windows (host).
 
 .PARAMETER Area
     Canonical area name. Determines default WorktreePath and forms the branch name.
@@ -22,7 +23,9 @@
 
 .PARAMETER WorktreePath
     Absolute or relative path for the new worktree directory.
-    Default: worktrees/tvs-<area>-<slug> (subdirectory of the repo root, gitignored).
+    Default (Linux/devcontainer): worktrees/tvs-<area>-<slug> inside the repo root (gitignored).
+    Default (Windows host):       ../tvs-<area>-<slug> sibling of the repo root.
+    Override with an explicit path when the default is not suitable (e.g. a custom Windows path for Unity work).
 
 .PARAMETER Purpose
     Optional one-line description seeded into the session handoff snapshot.
@@ -62,7 +65,13 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $branchName = "$Type/$Area/$Slug"
 
 if (-not $WorktreePath) {
-    $WorktreePath = Join-Path $repoRoot "worktrees/tvs-$Area-$Slug"
+    if ($IsWindows) {
+        # On Windows host: place as a sibling of the repo root (accessible to VS/Unity)
+        $WorktreePath = Join-Path (Split-Path $repoRoot -Parent) "tvs-$Area-$Slug"
+    } else {
+        # In devcontainer (Linux): place inside repo root under worktrees/ (gitignored)
+        $WorktreePath = Join-Path $repoRoot "worktrees/tvs-$Area-$Slug"
+    }
 }
 $WorktreePath = [System.IO.Path]::GetFullPath($WorktreePath)
 
