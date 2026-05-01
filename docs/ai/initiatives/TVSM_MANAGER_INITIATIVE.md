@@ -102,6 +102,9 @@ Community Mod Registry (hosted JSON)
 - [ ] `tvsm mod profile list` — list available mod profiles
 - [ ] `tvsm mod profile switch <name>` — switch active mod profile + apply
 - [ ] `tvsm mod profile new <name>` — clone active profile under a new name
+- [ ] `tvsm mod dev link <name> --src <path>` — register a live build output path as a dev overlay; bypass staging
+- [ ] `tvsm mod dev unlink <name>` — remove dev link; fall back to store version if present
+- [ ] `tvsm mod dev list` — show all active dev links and their source paths
 
 ### Character and Save File Tooling (TUI façade over PS modules)
 
@@ -203,9 +206,10 @@ Exit criteria:
 
 Goals:
 - Implement the store-and-link mod management model per [ADR-006](../adr/ADR-006-mod-storage-and-linking-strategy.md).
-- Absorb and formalize behavior from `mods/csharp/scripts/mod-manager.ps1`.
+- Supersede `mods/csharp/scripts/mod-manager.ps1` (legacy prototype — copy-based, no store, no versioning).
 - Implement community mod registry fetch and cache.
 - Implement rollback/profile snapshot mechanism.
+- Implement dev link overlay for mod developer workflows (`tvsm mod dev link`).
 
 Background — why store-and-link:
 Game updates on Steam replace the entire game installation directory, wiping BepInEx, all mods, and mod configs. The store-and-link model keeps all mod artifacts in `{modWorkDir}/store/` and re-establishes directory junctions (Windows) / symlinks (Linux) into `{gameDir}/BepInEx/{plugins,config,patchers}` on demand. After a game update, `tvsm mod apply` restores everything in seconds with no network traffic. See ADR-006 for the full layout and rationale.
@@ -216,16 +220,18 @@ Deliverables:
 - Staging directory assembly: copy store entries into `{modWorkDir}/staging/{profile}/`.
 - Junction/symlink creation for `{gameDir}/BepInEx/{plugins,config,patchers}` → staging.
 - Doorstop proxy (`winhttp.dll`) copy from store into `{gameDir}/` on every apply.
-- `tvsm mod apply [--profile]` — assemble + link + drop doorstop.
-- `tvsm mod status` — diff active profile vs. linked state; detect post-update wipe.
+- `tvsm mod apply [--profile]` — assemble + link + drop doorstop + apply dev links.
+- `tvsm mod status` — diff active profile vs. linked state; detect post-update wipe; show dev links.
 - `tvsm mod install <name>` — download to store → update profile → apply.
 - `tvsm mod update [name]` — fetch latest → store → profile → apply.
 - `tvsm mod remove <name>` — remove from profile → apply (store entry preserved).
-- `tvsm mod rollback` — revert profile to pre-mutation snapshot → apply.
+- `tvsm mod rollback` — revert profile to pre-mutation snapshot → apply (dev links unaffected).
 - `tvsm mod verify` — check BepInEx integrity, TVSLib presence and version, junction health.
 - `tvsm mod snapshot [name]` — manually create a named profile snapshot.
 - `tvsm mod store list` / `tvsm mod store prune`.
 - `tvsm mod profile list` / `tvsm mod profile switch <name>` / `tvsm mod profile new <name>`.
+- `tvsm mod dev link <name> --src <path>` / `tvsm mod dev unlink <name>` / `tvsm mod dev list`.
+- `dev-links.json` overlay format (machine-local, gitignored, excluded from snapshots/rollback).
 - Community registry v1 JSON hosted and validated.
 - Pester test suite under `tools/tvsm/tests/`:
   - `Show-TVSMConfig.Tests.ps1` — display-contract tests for null/empty key mapping and derived `pluginsDir` row.

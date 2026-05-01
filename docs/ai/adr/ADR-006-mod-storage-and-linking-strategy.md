@@ -57,6 +57,7 @@ A secondary concern is mod version management: users who want to maintain separa
       plugins/                           ← assembled from store entries
       config/                            ← preserved across game updates
       patchers/
+  dev-links.json                         ← machine-local dev overlay (never snapshotted)
 ```
 
 ### Profile format
@@ -93,21 +94,55 @@ Mod config files (`BepInEx/config/*.cfg`) are written by mods at runtime. They a
 
 TVS.Environment profiles (in `~/.tvs/config.json`) hold environment keys: `gameDir`, `modWorkDir`, etc. Mod profiles (in `{modWorkDir}/profiles/`) hold mod version selections. Both are addressed by the same profile name so `tvsm --profile dev` consistently resolves both the environment and mod set for the `dev` profile.
 
+### Developer workflow: dev links
+
+Mod developers need their build output active in the game directory without going through the store. `tvsm mod dev link` provides an `npm link`-style overlay:
+
+```powershell
+tvsm mod dev link MyMod --src mods/csharp/MyMod/bin/Debug/net6.0
+tvsm mod dev unlink MyMod
+tvsm mod dev list
+```
+
+**Mechanics:**
+- Dev links are stored in `{modWorkDir}/dev-links.json` — a machine-local file, never included in profile snapshots or rollback.
+- `tvsm mod apply` creates a **direct junction/symlink** for each dev-linked mod pointing straight at the declared source path, bypassing staging entirely. Each `dotnet build` makes the new DLL live in-game immediately with no further `tvsm` commands.
+- `tvsm mod status` displays dev-linked mods distinctly (e.g. `[DEV] MyMod → mods/csharp/...`).
+- `tvsm mod dev unlink MyMod` removes the direct link; if a store version exists in the active profile, `apply` re-establishes the store-backed staging link.
+- Dev links are always re-applied on every `tvsm mod apply` — declaring a dev link means you always want it active until you explicitly unlink it.
+- Rollback and snapshot operations are entirely unaware of `dev-links.json`; dev links persist independently across profile mutations.
+
+**Dev links format:**
+
+```json
+{
+  "schemaVersion": 1,
+  "links": {
+    "MyMod": { "src": "mods/csharp/MyMod/bin/Debug/net6.0", "linkedAt": "2026-05-01T00:00:00Z" }
+  }
+}
+```
+
+Paths in `src` are resolved relative to the repo root when run from within a monorepo context, or as absolute paths otherwise.
+
 ## New and modified commands
 
 | Command | Behaviour |
 |---|---|
-| `tvsm mod apply [--profile]` | Assemble staging dir from store + (re-)create junctions + drop doorstop proxy |
+| `tvsm mod apply [--profile]` | Assemble staging dir from store + (re-)create junctions + drop doorstop proxy + apply any dev links |
 | `tvsm mod install <name>` | Download to store → update active profile → run apply |
 | `tvsm mod update [name]` | Fetch latest from registry → store → update profile → apply |
 | `tvsm mod remove <name>` | Remove from active profile → apply (does not delete from store) |
 | `tvsm mod rollback` | Revert profile to previous snapshot → apply |
-| `tvsm mod status` | Diff active profile against what is linked in game dir; detect wipe |
+| `tvsm mod status` | Diff active profile against what is linked in game dir; detect wipe; show dev links |
 | `tvsm mod store list` | Show all mod versions currently in the store |
 | `tvsm mod store prune` | Remove store entries not referenced by any profile |
 | `tvsm mod profile list` | List available mod profiles |
 | `tvsm mod profile switch <name>` | Set active profile → apply |
 | `tvsm mod profile new <name>` | Clone active profile under a new name |
+| `tvsm mod dev link <name> --src <path>` | Register a live build output path as a dev overlay; apply immediately |
+| `tvsm mod dev unlink <name>` | Remove dev link; fall back to store version if present; apply |
+| `tvsm mod dev list` | Show all active dev links and their source paths |
 
 ## Consequences
 
@@ -117,6 +152,7 @@ TVS.Environment profiles (in `~/.tvs/config.json`) hold environment keys: `gameD
 - Multiple mod profiles (stable/dev/stream) coexist without copying files.
 - Config files survive game updates.
 - No elevated privileges required on Windows (junctions, not symlinks).
+- Mod developers get a live feedback loop: `tvsm mod dev link` + `dotnet build` = immediate in-game effect with no manual copy step.
 
 **Tradeoffs:**
 - `tvsm mod apply` must be re-run after every game update (or triggered automatically by detecting a missing junction — `tvsm mod status` can flag this).
