@@ -12,10 +12,20 @@ Dispatches tvsm subcommands to the TVSM module. Supports:
   tvsm config get <key> [--profile <name>] [--json]
   tvsm mod status [--json]
   tvsm mod install [<name>] [--all] [--yes]
+  tvsm mod apply [--profile <name>] [--force]
   tvsm mod remove <name> [--yes]
+  tvsm mod update [<name>]
   tvsm mod rollback [--yes]
   tvsm mod verify [--json]
   tvsm mod snapshot [<name>]
+  tvsm mod profile list [--json]
+  tvsm mod profile switch <name>
+  tvsm mod profile new <name>
+  tvsm mod store list [--json]
+  tvsm mod store prune [--yes]
+  tvsm mod dev link <name> --src <path> [--layout <value>] [--note <text>]
+  tvsm mod dev unlink <name>
+  tvsm mod dev list [--json]
   tvsm save watch [<path>]
   tvsm version [--json]
   tvsm help
@@ -33,6 +43,10 @@ param(
     [switch]$NoAnsi,
     [switch]$Yes,
     [switch]$All,
+    [switch]$Force,
+    [string]$Src    = '',
+    [string]$Layout = 'plugins-dll',
+    [string]$Note   = '',
     [switch]$Help
 )
 
@@ -189,15 +203,67 @@ switch ($Noun) {
 
     'mod' {
         switch ($Verb) {
+            'apply'    { Invoke-TVSMModApply -Force:$Force @profileArg }
             'status'   { Get-TVSMModStatus -Json:$Json @profileArg }
             'install'  { Install-TVSMMod -Name:$Arg1 -All:$All -Yes:$Yes @profileArg }
+            'update'   { Update-TVSMMod -Name:$Arg1 -Yes:$Yes }
             'remove'   { Remove-TVSMMod -Name:$Arg1 -Yes:$Yes }
-            'rollback' { Invoke-TVSMModRollback -Yes:$Yes }
+            'rollback' { Invoke-TVSMModRollback -Yes:$Yes @profileArg }
             'verify'   { Test-TVSMModEnvironment -Json:$Json @profileArg }
             'snapshot' { New-TVSMModSnapshot -Name:$Arg1 }
+            'profile'  {
+                switch ($Arg1) {
+                    'list'   { Get-TVSMModProfileList -Json:$Json }
+                    'switch' {
+                        if (-not $Arg2) { Write-SpectreHost '[yellow]Usage: tvsm mod profile switch <name>[/]'; exit 1 }
+                        Switch-TVSMModProfile -Name:$Arg2
+                    }
+                    'new'    {
+                        if (-not $Arg2) { Write-SpectreHost '[yellow]Usage: tvsm mod profile new <name>[/]'; exit 1 }
+                        New-TVSMModProfile -Name:$Arg2
+                    }
+                    default  {
+                        Write-SpectreHost "[yellow]Unknown profile command: '$Arg1'[/]"
+                        Write-SpectreHost 'Available: [cyan]list[/], [cyan]switch[/], [cyan]new[/]'
+                        exit 1
+                    }
+                }
+            }
+            'store' {
+                switch ($Arg1) {
+                    'list'  { Get-TVSMModStoreList -Json:$Json }
+                    'prune' { Invoke-TVSMModStorePrune -Yes:$Yes }
+                    default {
+                        Write-SpectreHost "[yellow]Unknown store command: '$Arg1'[/]"
+                        Write-SpectreHost 'Available: [cyan]list[/], [cyan]prune[/]'
+                        exit 1
+                    }
+                }
+            }
+            'dev' {
+                switch ($Arg1) {
+                    'link' {
+                        if (-not $Arg2) { Write-SpectreHost '[yellow]Usage: tvsm mod dev link <name> --src <path>[/]'; exit 1 }
+                        if (-not $Src)  { Write-SpectreHost '[yellow]--src is required for dev link[/]'; exit 1 }
+                        $devLinkArgs = @{ Name = $Arg2; Src = $Src; Layout = $Layout }
+                        if ($Note) { $devLinkArgs['Note'] = $Note }
+                        Add-TVSMDevLink @devLinkArgs
+                    }
+                    'unlink' {
+                        if (-not $Arg2) { Write-SpectreHost '[yellow]Usage: tvsm mod dev unlink <name>[/]'; exit 1 }
+                        Remove-TVSMDevLink -Name:$Arg2
+                    }
+                    'list'   { Get-TVSMDevLinkList -Json:$Json }
+                    default  {
+                        Write-SpectreHost "[yellow]Unknown dev command: '$Arg1'[/]"
+                        Write-SpectreHost 'Available: [cyan]link[/], [cyan]unlink[/], [cyan]list[/]'
+                        exit 1
+                    }
+                }
+            }
             default {
                 Write-SpectreHost "[yellow]Unknown mod command: '$Verb'[/]"
-                Write-SpectreHost 'Available: [cyan]status[/], [cyan]install[/], [cyan]remove[/], [cyan]rollback[/], [cyan]verify[/], [cyan]snapshot[/]'
+                Write-SpectreHost 'Available: [cyan]apply[/], [cyan]status[/], [cyan]install[/], [cyan]update[/], [cyan]remove[/], [cyan]rollback[/], [cyan]verify[/], [cyan]snapshot[/], [cyan]profile[/], [cyan]store[/], [cyan]dev[/]'
                 exit 1
             }
         }
