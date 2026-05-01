@@ -130,6 +130,9 @@ dist-storybook/
 # Project temp files
 temp/
 
+# Git worktrees (per-developer local state; paths are machine-specific)
+worktrees/
+
 # TVS Modding environment and local game refs (never commit)
 mods/csharp/.local/
 

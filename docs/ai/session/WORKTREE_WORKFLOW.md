@@ -15,10 +15,10 @@ The monorepo has one git history and one `.git` directory, but can have **multip
 Worktrees share the underlying object store, so switching between them is instant — no re-clone, no duplicate remote.
 
 ```
-/workspaces/tvs                   ← main worktree  (e.g. main branch)
-/workspaces/tvs-tvsm-save-tools   ← linked worktree (feature/tvsm/save-tools)
-/workspaces/tvs-content-guides    ← linked worktree (feature/content/guides-restructure)
-C:\dev\tvs-mods-foobar            ← linked worktree on Windows host (feature/mods/foobar)
+/workspaces/tvs                            ← main worktree  (e.g. main branch)
+/workspaces/tvs/worktrees/tvs-tvsm-save-tools  ← linked worktree (feature/tvsm/save-tools)
+/workspaces/tvs/worktrees/tvs-content-guides   ← linked worktree (feature/content/guides-restructure)
+C:\dev\tvs-mods-foobar                     ← linked worktree on Windows host (feature/mods/foobar)
 ```
 
 All four live in the same git repo. Any one can push, PR, or merge independently.
@@ -78,7 +78,7 @@ Both scripts live in `common/scripts/` and run from PowerShell 7.
 ### `new-worktree.ps1` — create a worktree
 
 ```powershell
-# Minimal — defaults to feature/ type, main base branch, ../tvs-<area>-<slug> path
+# Minimal — defaults to feature/ type, main base branch, worktrees/tvs-<area>-<slug> path
 ./common/scripts/new-worktree.ps1 -Area tvsm -Slug save-tools
 
 # With purpose (seeded into session handoff) and explicit type
@@ -86,7 +86,7 @@ Both scripts live in `common/scripts/` and run from PowerShell 7.
   -Purpose "Implement TVSSave.Tools PS module (Phase 3)" `
   -Type feature
 
-# Custom worktree path (useful for Windows host path)
+# Custom worktree path (useful for Windows host path or non-default location)
 ./common/scripts/new-worktree.ps1 -Area mods -Slug foobar `
   -WorktreePath 'C:\dev\tvs-mods-foobar'
 ```
@@ -100,13 +100,13 @@ What it does:
 
 ```powershell
 # Standard close (prompts for confirmation via ShouldProcess)
-./common/scripts/close-worktree.ps1 -WorktreePath ../tvs-tvsm-save-tools
+./common/scripts/close-worktree.ps1 -WorktreePath worktrees/tvs-tvsm-save-tools
 
 # Push branch before closing
-./common/scripts/close-worktree.ps1 -WorktreePath ../tvs-tvsm-save-tools -Push
+./common/scripts/close-worktree.ps1 -WorktreePath worktrees/tvs-tvsm-save-tools -Push
 
 # Force (no confirmation, bypass dirty-worktree check)
-./common/scripts/close-worktree.ps1 -WorktreePath ../tvs-tvsm-save-tools -Force
+./common/scripts/close-worktree.ps1 -WorktreePath worktrees/tvs-tvsm-save-tools -Force
 ```
 
 What it does:
@@ -125,13 +125,13 @@ What it does:
   -Purpose "Implement TVSSave.Tools PS module and tvsm save command surface"
 
 # 2. VS Code: File > Open Workspace from File > tvs.code-workspace
-#    (or open ../tvs-tvsm-save-tools in a new window)
+#    (or open worktrees/tvs-tvsm-save-tools in a new window)
 
 # 3. In the new worktree, do your work...
 #    rush install, implement, test, commit
 
 # 4. When done, close the worktree (from the main worktree terminal)
-./common/scripts/close-worktree.ps1 -WorktreePath ../tvs-tvsm-save-tools -Push
+./common/scripts/close-worktree.ps1 -WorktreePath worktrees/tvs-tvsm-save-tools -Push
 
 # 5. Open a PR on GitHub from feature/tvsm/save-tools into main
 

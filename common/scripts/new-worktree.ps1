@@ -22,18 +22,18 @@
 
 .PARAMETER WorktreePath
     Absolute or relative path for the new worktree directory.
-    Default: ../tvs-<area>-<slug> (sibling of the repo root).
+    Default: worktrees/tvs-<area>-<slug> (subdirectory of the repo root, gitignored).
 
 .PARAMETER Purpose
     Optional one-line description seeded into the session handoff snapshot.
 
 .EXAMPLE
     ./common/scripts/new-worktree.ps1 -Area tvsm -Slug save-tools -Purpose "Implement TVSSave.Tools PS module"
-    Creates branch feature/tvsm/save-tools in ../tvs-tvsm-save-tools.
+    Creates branch feature/tvsm/save-tools in worktrees/tvs-tvsm-save-tools.
 
 .EXAMPLE
     ./common/scripts/new-worktree.ps1 -Area content -Slug guides-restructure -Type chore
-    Creates branch chore/content/guides-restructure in ../tvs-content-guides-restructure.
+    Creates branch chore/content/guides-restructure in worktrees/tvs-content-guides-restructure.
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
@@ -62,7 +62,7 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $branchName = "$Type/$Area/$Slug"
 
 if (-not $WorktreePath) {
-    $WorktreePath = Join-Path (Split-Path $repoRoot -Parent) "tvs-$Area-$Slug"
+    $WorktreePath = Join-Path $repoRoot "worktrees/tvs-$Area-$Slug"
 }
 $WorktreePath = [System.IO.Path]::GetFullPath($WorktreePath)
 
