@@ -117,12 +117,16 @@ if ($NoAnsi) {
 # ---------------------------------------------------------------------------
 function Invoke-InteractiveMenu {
     $choices = @(
-        'config show   — display current environment configuration',
-        'config init   — interactive setup wizard',
-        'mod status    — show installed mods [[Phase 2]]',
-        'mod install   — install a mod [[Phase 2]]',
-        'save watch    — watch saves and auto-expand [[Phase 3]]',
-        'version       — show component versions',
+        'config show    — display current environment configuration',
+        'config init    — interactive first-run setup wizard',
+        'mod apply      — (re-)establish junctions after a game update',
+        'mod status     — show installed mods and junction health',
+        'mod install    — install mods from the community registry',
+        'mod update     — update installed mods to latest versions',
+        'mod rollback   — revert profile to previous snapshot',
+        'mod verify     — check BepInEx integrity and junction health',
+        'save watch     — watch saves and auto-expand [[Phase 3]]',
+        'version        — show component versions',
         'exit'
     )
 
@@ -132,8 +136,19 @@ function Invoke-InteractiveMenu {
         switch -Wildcard ($selection) {
             'config show*'   { Show-TVSMConfig -Json:$Json -Profile:$Profile }
             'config init*'   { Invoke-TVSMConfigInit -Profile:$Profile }
-            'mod status*'    { Get-TVSMModStatus -Json:$Json }
-            'mod install*'   { Install-TVSMMod }
+            'mod apply*'     { Invoke-TVSMModApply @profileArg }
+            'mod status*'    { Get-TVSMModStatus -Json:$Json @profileArg }
+            'mod install*'   {
+                $modName = Read-SpectreText -Message 'Mod name [grey](leave blank for --all)[/]:'
+                if ([string]::IsNullOrEmpty($modName)) {
+                    Install-TVSMMod -All @profileArg
+                } else {
+                    Install-TVSMMod -Name $modName @profileArg
+                }
+            }
+            'mod update*'    { Update-TVSMMod }
+            'mod rollback*'  { Invoke-TVSMModRollback @profileArg }
+            'mod verify*'    { Test-TVSMModEnvironment -Json:$Json @profileArg }
             'save watch*'    { Watch-TVSSave }
             'version*'       { Get-TVSMVersion -Json:$Json }
             'exit'           { return }
