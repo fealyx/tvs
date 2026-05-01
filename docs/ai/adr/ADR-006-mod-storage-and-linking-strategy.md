@@ -1,6 +1,6 @@
 # ADR-006: Mod Storage and Linking Strategy
 
-- Status: Accepted
+- Status: Accepted · Implemented (Phase 2, 2026-05-01)
 - Date: 2026-04-30
 - Initiative: TVS Manager
 

@@ -88,23 +88,23 @@ Community Mod Registry (hosted JSON)
 
 ### Mod Management
 
-- [ ] `tvsm mod apply [--profile] [--force]` — assemble staging from store and (re-)establish game dir junctions/symlinks; warns on out-of-range mods (`--force` suppresses)
-- [ ] `tvsm mod status` — diff active profile against linked state; detect post-update wipe; show `[DEV]` and `[OUTDATED RANGE]` indicators
-- [ ] `tvsm mod install <name>` — download to store, update active profile, apply; hard-blocks on out-of-range
-- [ ] `tvsm mod install --all` — install all registry-recommended mods
-- [ ] `tvsm mod update [name]` — update one or all mods in store + re-apply
-- [ ] `tvsm mod remove <name>` — remove from active profile + apply (store entry preserved)
-- [ ] `tvsm mod rollback` — revert profile to pre-mutation snapshot + apply (dev links unaffected)
-- [ ] `tvsm mod verify` — check BepInEx integrity, junction health, TVSLib presence
-- [ ] `tvsm mod snapshot [name]` — manually create a named profile snapshot (embedded in profile file)
-- [ ] `tvsm mod store list` — list all downloaded mod versions in the store
-- [ ] `tvsm mod store prune` — remove store entries not referenced by any profile
-- [ ] `tvsm mod profile list` — list available mod profiles
-- [ ] `tvsm mod profile switch <name>` — switch active mod profile + apply
-- [ ] `tvsm mod profile new <name>` — clone active profile under a new name
-- [ ] `tvsm mod dev link <name> --src <path> [--layout <installLayout>]` — register a live build output path as a dev overlay; `src` resolved to absolute at link time
-- [ ] `tvsm mod dev unlink <name>` — remove dev link; fall back to store version if present
-- [ ] `tvsm mod dev list` — show all active dev links and their source paths
+- [x] `tvsm mod apply [--profile] [--force]` — assemble staging from store and (re-)establish game dir junctions/symlinks; warns on out-of-range mods (`--force` suppresses)
+- [x] `tvsm mod status` — diff active profile against linked state; detect post-update wipe; show `[DEV]` and `[OUTDATED RANGE]` indicators
+- [x] `tvsm mod install <name>` — download to store, update active profile, apply; hard-blocks on out-of-range
+- [x] `tvsm mod install --all` — install all registry-recommended mods
+- [x] `tvsm mod update [name]` — update one or all mods in store + re-apply
+- [x] `tvsm mod remove <name>` — remove from active profile + apply (store entry preserved)
+- [x] `tvsm mod rollback` — revert profile to pre-mutation snapshot + apply (dev links unaffected)
+- [x] `tvsm mod verify` — check BepInEx integrity, junction health, TVSLib presence
+- [x] `tvsm mod snapshot [name]` — manually create a named profile snapshot (embedded in profile file)
+- [x] `tvsm mod store list` — list all downloaded mod versions in the store
+- [x] `tvsm mod store prune` — remove store entries not referenced by any profile
+- [x] `tvsm mod profile list` — list available mod profiles
+- [x] `tvsm mod profile switch <name>` — switch active mod profile + apply
+- [x] `tvsm mod profile new <name>` — clone active profile under a new name
+- [x] `tvsm mod dev link <name> --src <path> [--layout <installLayout>]` — register a live build output path as a dev overlay; `src` resolved to absolute at link time
+- [x] `tvsm mod dev unlink <name>` — remove dev link; fall back to store version if present
+- [x] `tvsm mod dev list` — show all active dev links and their source paths
 
 ### Character and Save File Tooling (TUI façade over PS modules)
 
@@ -202,7 +202,7 @@ Exit criteria:
 - `tvsm config init` walks a new user to a complete, valid profile. ✅
 - `tvsm config show` renders the resolved config as a formatted table. ✅
 
-### Phase 2: Mod Manager
+### Phase 2: Mod Manager ✅ COMPLETE
 
 Goals:
 - Implement the store-and-link mod management model per [ADR-006](../adr/ADR-006-mod-storage-and-linking-strategy.md).
@@ -243,6 +243,8 @@ Exit criteria:
 - Running `tvsm mod apply` after a game update restores all junctions and the doorstop proxy without re-downloading anything.
 - Switching mod profiles (`tvsm mod profile switch dev`) takes effect immediately without manual file management.
 - All Pester tests pass in CI.
+
+> **Status (2026-05-01):** All deliverables implemented in `feature/tvsm/mod-manager`. Pester tests added for `Invoke-TVSMModRollback`, `Get-TVSMModStatus`, and `Show-TVSMConfig`. JSON schemas published under `tools/tvsm/schemas/` and picked up by `collect-schemas.js` for GitHub Pages. Interactive TUI menu updated with all Phase 2 mod commands.
 
 ### Phase 3: TVSSave.Tools Module
 
