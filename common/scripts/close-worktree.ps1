@@ -20,10 +20,10 @@
     unclean worktrees. Use with care.
 
 .EXAMPLE
-    ./common/scripts/close-worktree.ps1 -WorktreePath ../tvs-tvsm-save-tools
+    ./common/scripts/close-worktree.ps1 -WorktreePath worktrees/tvs-tvsm-save-tools
 
 .EXAMPLE
-    ./common/scripts/close-worktree.ps1 -WorktreePath ../tvs-tvsm-save-tools -Push -Force
+    ./common/scripts/close-worktree.ps1 -WorktreePath worktrees/tvs-tvsm-save-tools -Push -Force
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
