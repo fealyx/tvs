@@ -88,21 +88,21 @@ Community Mod Registry (hosted JSON)
 
 ### Mod Management
 
-- [ ] `tvsm mod apply [--profile]` — assemble staging from store and (re-)establish game dir junctions/symlinks
-- [ ] `tvsm mod status` — diff active profile against linked state; detect post-update wipe
-- [ ] `tvsm mod install <name>` — download to store, update active profile, apply
+- [ ] `tvsm mod apply [--profile] [--force]` — assemble staging from store and (re-)establish game dir junctions/symlinks; warns on out-of-range mods (`--force` suppresses)
+- [ ] `tvsm mod status` — diff active profile against linked state; detect post-update wipe; show `[DEV]` and `[OUTDATED RANGE]` indicators
+- [ ] `tvsm mod install <name>` — download to store, update active profile, apply; hard-blocks on out-of-range
 - [ ] `tvsm mod install --all` — install all registry-recommended mods
 - [ ] `tvsm mod update [name]` — update one or all mods in store + re-apply
 - [ ] `tvsm mod remove <name>` — remove from active profile + apply (store entry preserved)
-- [ ] `tvsm mod rollback` — revert profile to pre-mutation snapshot + apply
+- [ ] `tvsm mod rollback` — revert profile to pre-mutation snapshot + apply (dev links unaffected)
 - [ ] `tvsm mod verify` — check BepInEx integrity, junction health, TVSLib presence
-- [ ] `tvsm mod snapshot [name]` — manually create a named profile snapshot
+- [ ] `tvsm mod snapshot [name]` — manually create a named profile snapshot (embedded in profile file)
 - [ ] `tvsm mod store list` — list all downloaded mod versions in the store
 - [ ] `tvsm mod store prune` — remove store entries not referenced by any profile
 - [ ] `tvsm mod profile list` — list available mod profiles
 - [ ] `tvsm mod profile switch <name>` — switch active mod profile + apply
 - [ ] `tvsm mod profile new <name>` — clone active profile under a new name
-- [ ] `tvsm mod dev link <name> --src <path>` — register a live build output path as a dev overlay; bypass staging
+- [ ] `tvsm mod dev link <name> --src <path> [--layout <installLayout>]` — register a live build output path as a dev overlay; `src` resolved to absolute at link time
 - [ ] `tvsm mod dev unlink <name>` — remove dev link; fall back to store version if present
 - [ ] `tvsm mod dev list` — show all active dev links and their source paths
 

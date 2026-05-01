@@ -68,13 +68,27 @@ A secondary concern is mod version management: users who want to maintain separa
   "name": "default",
   "bepInExVersion": "5.4.23.2",
   "mods": {
-    "TVSLib":   { "version": "1.2.3", "enabled": true },
-    "SomeMod":  { "version": "0.5.0", "enabled": true }
-  }
+    "TVSLib":  { "version": "1.2.3", "enabled": true },
+    "SomeMod": { "version": "0.5.0", "enabled": false }
+  },
+  "snapshots": [
+    {
+      "id": "2026-05-01T12:00:00Z",
+      "label": "before-install-SomeMod",
+      "bepInExVersion": "5.4.23.2",
+      "mods": {
+        "TVSLib": { "version": "1.2.3", "enabled": true }
+      }
+    }
+  ]
 }
 ```
 
-Multiple profiles can coexist; only one is active per game install at a time. Switching profiles re-runs `tvsm mod apply` with the new profile's selections.
+Key design points:
+- **Snapshots are embedded** in the profile file rather than stored as separate files. This keeps rollback atomic — one read, one write, no directory management. `tvsm mod snapshot [label]` prepends to the `snapshots` array; `tvsm mod rollback` pops the most recent entry and restores `mods` + `bepInExVersion` from it.
+- **`enabled: false` preserves the version pin** rather than removing the entry. Temporarily disabling a mod for debugging does not lose the version selection.
+- **`bepInExVersion` is profile-level**, not per-mod. BepInEx is a monolith — mixed versions are not supported.
+- Multiple profiles can coexist; only one is active per game install at a time. Switching profiles re-runs `tvsm mod apply` with the new profile's selections.
 
 ### Linking mechanism
 
@@ -118,18 +132,102 @@ tvsm mod dev list
 {
   "schemaVersion": 1,
   "links": {
-    "MyMod": { "src": "mods/csharp/MyMod/bin/Debug/net6.0", "linkedAt": "2026-05-01T00:00:00Z" }
+    "MyMod": {
+      "src": "C:/dev/tvs/mods/csharp/MyMod/bin/Debug/net6.0",
+      "installLayout": "plugins-dll",
+      "linkedAt": "2026-05-01T00:00:00Z",
+      "note": "optional freeform annotation"
+    },
+    "NewItemPack": {
+      "src": "C:/dev/tvs/mods/items/NewItemPack/build",
+      "installLayout": "gameroot-overlay",
+      "linkedAt": "2026-05-01T00:00:00Z"
+    }
   }
 }
 ```
 
-Paths in `src` are resolved relative to the repo root when run from within a monorepo context, or as absolute paths otherwise.
+Key design points:
+- **`src` is always an absolute path** in the stored file. `tvsm mod dev link` resolves any relative `--src` argument against the current working directory at link time before writing. This eliminates ambiguity at apply time regardless of where the CLI is subsequently invoked.
+- **`installLayout`** declares how the source is applied (see the `installLayout` taxonomy below). Defaults to `plugins-dll` when omitted.
+- **`note`** is optional freeform text shown in `tvsm mod dev list`.
+- `dev-links.json` is machine-local and should be added to `.gitignore` if `modWorkDir` is inside a repository.
+
+### `installLayout` taxonomy
+
+`installLayout` is declared on both registry entries and dev-links entries. It tells `tvsm mod apply` how to materialise a mod into the game environment.
+
+| Value | Applies to | Behaviour |
+|---|---|---|
+| `bepinex-root` | Registry only | Extract archive into `{gameDir}/`; places `winhttp.dll`, `doorstop_config.ini`, and `BepInEx/core/` at their expected locations |
+| `plugins-dll` | Both | Locate `{modName}.dll` in `src`; copy/link into `staging/plugins/` (or `{gameDir}/BepInEx/plugins/` for dev links) |
+| `plugins-dir` | Both | Copy/link the entire `src` directory as `staging/plugins/{modName}/` |
+| `patchers-dll` | Both | Locate `{modName}.dll` in `src`; copy/link into `staging/patchers/` |
+| `gameroot-overlay` | Both | Copy/link contents of `src` directly into `{gameDir}/`; intended for custom formats (e.g. JSON + AssetBundle item packs) that live outside the BepInEx tree |
+| `config-only` | Both | Copy/link contents of `src` into `staging/config/` |
+
+Default when omitted: `plugins-dll` (dev-links only; registry entries must declare `installLayout` explicitly — a missing value is a validation error).
+
+### Community registry schema
+
+The registry is a JSON file hosted on GitHub Pages (or as a GitHub release asset). It is fetched lazily on `tvsm mod install`, `update`, and `status`, and cached locally at `{modWorkDir}/.registry-cache.json` with a configurable TTL (default: 1 hour, controlled by `communityRegistryCacheTtlMinutes` in TVS.Environment).
+
+```json
+{
+  "schemaVersion": 1,
+  "updated": "2026-05-01T00:00:00Z",
+  "mods": [
+    {
+      "name": "BepInEx",
+      "description": "Unity mod framework. Required by all TVS mods.",
+      "required": true,
+      "recommended": true,
+      "versions": [
+        {
+          "version": "5.4.23.2",
+          "url": "https://github.com/BepInEx/BepInEx/releases/download/v5.4.23.2/BepInEx_x64_5.4.23.2.zip",
+          "sha256": "...",
+          "installLayout": "bepinex-root",
+          "requires": [],
+          "gameVersionRange": ">=0.1"
+        }
+      ]
+    },
+    {
+      "name": "TVSLib",
+      "description": "Shared library required by all TVS mods.",
+      "required": true,
+      "recommended": true,
+      "versions": [
+        {
+          "version": "1.2.3",
+          "url": "https://...",
+          "sha256": "...",
+          "installLayout": "plugins-dll",
+          "requires": ["BepInEx"],
+          "gameVersionRange": ">=0.45"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Key design constraints:
+- `installLayout` is **required** on every version entry — a missing value is a validation error at registry parse time.
+- `required: true` mods are installed without prompting during `tvsm mod install --all`.
+- `requires` is a list of other registry mod names; `tvsm` resolves the install order (dependency-first).
+- `gameVersionRange` uses semver range syntax (e.g. `>=0.45`, `>=0.45 <1.0`). Enforcement behaviour:
+  - **At install**: hard block — tvsm refuses to install a version whose range excludes the detected game version.
+  - **At apply**: warn only — each out-of-range mod emits a warning, but apply proceeds. `tvsm mod apply --force` suppresses the warnings entirely (intended for post-update wipe recovery).
+  - **`tvsm mod status`**: flags out-of-range mods with an `[OUTDATED RANGE]` indicator.
+- Registry updates are never applied automatically to installed mods without user confirmation.
 
 ## New and modified commands
 
 | Command | Behaviour |
 |---|---|
-| `tvsm mod apply [--profile]` | Assemble staging dir from store + (re-)create junctions + drop doorstop proxy + apply any dev links |
+| `tvsm mod apply [--profile] [--force]` | Assemble staging dir from store + (re-)create junctions + drop doorstop proxy + apply dev links. Warns on out-of-range mods; `--force` suppresses warnings |
 | `tvsm mod install <name>` | Download to store → update active profile → run apply |
 | `tvsm mod update [name]` | Fetch latest from registry → store → update profile → apply |
 | `tvsm mod remove <name>` | Remove from active profile → apply (does not delete from store) |
