@@ -1,11 +1,12 @@
 function Export-TVSCharacterPreset {
 <#
 .SYNOPSIS
-Exports one preset slot file to a .znelchar file.
+Exports one preset slot to a valid .znelchar file.
 
 .DESCRIPTION
-Reads a presetSlot{n}.txt.tmp file, converts it to valid znelchar JSON,
-and writes it to {characterWorkDir}/presets/{name}.znelchar.
+Composes a full .znelchar file from a presetSlot{n}.txt.tmp file
+and its referenced skin textures in SkinPresetTextures/, producing
+the proper {"_characterData": "...", "_textureDatas": [...]} envelope.
 
 .PARAMETER Slot
 Zero-based slot index to export. If omitted, uses the slot index
@@ -89,12 +90,6 @@ lookup.
         throw "presetSlot file not found at: $PresetSlotPath"
     }
 
-    $znelcharJson = ConvertFrom-TVSPresetSlot -Path $PresetSlotPath
-
-    if (-not (Test-Path $OutputPath -PathType Container)) {
-        New-Item -Path $OutputPath -ItemType Directory -Force | Out-Null
-    }
-
     # Sanitize name for filesystem use: strip zero-width and invisible Unicode
     # characters that can leak from game serialization (defense in depth —
     # Read-TVSSaveIndex also strips these at ingestion).
@@ -104,9 +99,32 @@ lookup.
         $safeName = "Slot$Slot"
     }
 
+    if (-not (Test-Path $OutputPath -PathType Container)) {
+        New-Item -Path $OutputPath -ItemType Directory -Force | Out-Null
+    }
+
     $outputFile = Join-Path $OutputPath "${safeName}.znelchar"
-    Set-Content -Path $outputFile -Value $znelcharJson -Encoding UTF8
+
+    # Delegate to Compose-ZnelcharPreset (in Znelchar.Tools) which:
+    # 1. Reads presetSlot and extracts _characterData
+    # 2. Parses it to discover custom texture filenames
+    # 3. Base64-encodes matching files from SkinPresetTextures/
+    # 4. Writes the full {"_characterData": "...", "_textureDatas": [...]} envelope
+    $textureDir = Join-Path $env.playerDataDir 'SkinPresetTextures'
+
+    # Ensure Znelchar.Tools is available
+    if (-not (Get-Module -Name 'Znelchar.Tools')) {
+        if (-not (Get-Module -ListAvailable -Name 'Znelchar.Tools')) {
+            throw "Znelchar.Tools module is not available. Install it from the TVS Tools bundle."
+        }
+        Import-Module 'Znelchar.Tools' -Global -Force
+    }
+
+    $result = Znelchar.Tools\Compose-ZnelcharPreset `
+        -PresetSlotPath $PresetSlotPath `
+        -TextureDir $textureDir `
+        -OutputPath $outputFile
 
     Write-Verbose "Exported slot $Slot ('$Name') to $outputFile"
-    return $outputFile
+    return $result
 }

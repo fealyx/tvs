@@ -1,13 +1,15 @@
 function Import-TVSCharacterPreset {
 <#
 .SYNOPSIS
-Imports a .znelchar file back into a presetSlot{n}.txt.tmp save file.
+Imports a .znelchar file back into the game's preset slot and SkinPresetTextures.
 
 .DESCRIPTION
-Reads a .znelchar file from {characterWorkDir}/presets/, converts it
-to the presetSlot wrapper format, and writes it to the player data
-directory. Requires -Force as a safety guard against overwriting
-live save data.
+Decomposes a .znelchar file into its _characterData and _textureDatas
+components using Expand-ZnelcharPreset (Znelchar.Tools), writing:
+  - _characterData → presetSlot{n}.txt.tmp in the player data directory
+  - _textureDatas  → {playerDataDir}/SkinPresetTextures/ as discrete image files
+
+Requires -Force as a safety guard against overwriting live save data.
 
 .PARAMETER Name
 Character name (matches the .znelchar filename without extension).
@@ -53,16 +55,6 @@ the intent to write into the live player data directory.
         throw ".znelchar file not found at: $SourcePath"
     }
 
-    $znelcharJson = Get-Content -Path $SourcePath -Raw -Encoding UTF8
-
-    # Validate it's valid znelchar JSON
-    try {
-        $null = $znelcharJson | ConvertFrom-Json -Depth 10
-    }
-    catch {
-        throw "Source file at '$SourcePath' is not valid JSON: $_"
-    }
-
     # Resolve slot index
     if ($Slot -lt 0) {
         # Try to extract name from filename
@@ -78,10 +70,28 @@ the intent to write into the live player data directory.
     }
 
     $presetPath = Join-Path $env.playerDataDir "presetSlot${Slot}.txt.tmp"
+    $textureDir = Join-Path $env.playerDataDir 'SkinPresetTextures'
 
-    if ($PSCmdlet.ShouldProcess($presetPath, "Write znelchar character data to preset slot $Slot")) {
-        ConvertTo-TVSPresetSlot -ZnelcharJson $znelcharJson -OutputPath $presetPath
-        Write-Verbose "Imported '$SourcePath' to $presetPath"
+    if ($PSCmdlet.ShouldProcess($presetPath, "Decompose znelchar into preset slot $Slot and SkinPresetTextures")) {
+
+        # Ensure Znelchar.Tools is available for Expand-ZnelcharPreset
+        if (-not (Get-Module -Name 'Znelchar.Tools')) {
+            if (-not (Get-Module -ListAvailable -Name 'Znelchar.Tools')) {
+                throw "Znelchar.Tools module is not available. Install it from the TVS Tools bundle."
+            }
+            Import-Module 'Znelchar.Tools' -Global -Force
+        }
+
+        # Delegate to Expand-ZnelcharPreset which:
+        # 1. Parses the znelchar envelope
+        # 2. Writes _characterData to presetSlot{n}.txt.tmp
+        # 3. Base64-decodes _textureDatas to SkinPresetTextures/
+        $result = Znelchar.Tools\Expand-ZnelcharPreset `
+            -InputPath $SourcePath `
+            -PresetSlotPath $presetPath `
+            -TextureDir $textureDir
+
+        Write-Verbose "Imported '$SourcePath' to $presetPath and $textureDir"
         return $presetPath
     }
 }
