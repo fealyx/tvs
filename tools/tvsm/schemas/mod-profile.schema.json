@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fealyx.github.io/tvs/schemas/tvsm/mod-profile.schema.json",
+  "title": "TVSM Mod Profile",
+  "description": "A named mod profile stored at {modWorkDir}/profiles/{name}.json. Tracks BepInEx version, per-mod version selections with enabled flags, and a prepended snapshots array for rollback.",
+  "type": "object",
+  "required": ["schemaVersion", "name", "mods"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Profile name; matches the filename without the .json extension."
+    },
+    "bepInExVersion": {
+      "type": ["string", "null"],
+      "description": "BepInEx version active in this profile. Profile-level (not per-mod); mixed BepInEx versions are not supported."
+    },
+    "mods": {
+      "type": "object",
+      "description": "Map of mod name to mod entry. BepInEx itself is tracked via bepInExVersion, not here.",
+      "additionalProperties": { "$ref": "#/$defs/modEntry" }
+    },
+    "snapshots": {
+      "type": "array",
+      "description": "Prepended list of pre-mutation snapshots. Most recent is index 0. tvsm mod rollback pops index 0 and restores mods and bepInExVersion.",
+      "items": { "$ref": "#/$defs/snapshot" }
+    }
+  },
+  "$defs": {
+    "installLayout": {
+      "type": "string",
+      "enum": ["bepinex-root", "plugins-dll", "plugins-dir", "patchers-dll", "gameroot-overlay", "config-only"],
+      "description": "How tvsm mod apply materialises this mod into the game environment."
+    },
+    "modEntry": {
+      "type": "object",
+      "required": ["version", "enabled"],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "false preserves the version pin without active linking; useful for temporarily disabling a mod without losing its version selection."
+        },
+        "installLayout": {
+          "$ref": "#/$defs/installLayout",
+          "default": "plugins-dll"
+        },
+        "gameVersionRange": {
+          "type": ["string", "null"],
+          "description": "Semver range string (e.g. '>=0.45', '>=0.45 <1.0'). Out-of-range mods emit a warning at apply time unless --force is passed."
+        }
+      }
+    },
+    "snapshot": {
+      "type": "object",
+      "required": ["id", "mods"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of when the snapshot was created."
+        },
+        "label": {
+          "type": "string",
+          "description": "Human-readable label, e.g. 'before-install-SomeMod'."
+        },
+        "bepInExVersion": {
+          "type": ["string", "null"]
+        },
+        "mods": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/modEntry" }
+        }
+      }
+    }
+  }
+}

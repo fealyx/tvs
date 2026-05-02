@@ -57,9 +57,9 @@ if ($gitContent -notmatch 'gitdir:\s*(.+)') {
     throw ".git file does not contain a gitdir reference. Is '$WorktreePath' a linked worktree?"
 }
 $gitdirPath = $Matches[1].Trim()
-# Walk up from the worktrees/<name> subdir to find the main .git directory
-$mainGitDir = [System.IO.Path]::GetFullPath((Join-Path $gitdirPath '../../..'))
-$repoRoot   = [System.IO.Path]::GetFullPath((Join-Path $mainGitDir '..'))
+# $gitdirPath = {repo}/.git/worktrees/{name}
+# Navigate ../../.. to reach: worktrees -> .git -> repo root
+$repoRoot = [System.IO.Path]::GetFullPath((Join-Path $gitdirPath '../../..'))
 
 if (-not (Test-Path (Join-Path $repoRoot 'rush.json'))) {
     throw "Could not resolve main worktree root (expected rush.json at: $repoRoot)"

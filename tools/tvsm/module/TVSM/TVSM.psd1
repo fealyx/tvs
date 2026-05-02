@@ -15,13 +15,26 @@
         # config
         'Show-TVSMConfig',
         'Invoke-TVSMConfigInit',
-        # mod
+        # mod — core
+        'Invoke-TVSMModApply',
         'Get-TVSMModStatus',
         'Install-TVSMMod',
+        'Update-TVSMMod',
         'Remove-TVSMMod',
         'Invoke-TVSMModRollback',
         'Test-TVSMModEnvironment',
         'New-TVSMModSnapshot',
+        # mod — profiles
+        'Get-TVSMModProfileList',
+        'Switch-TVSMModProfile',
+        'New-TVSMModProfile',
+        # mod — store
+        'Get-TVSMModStoreList',
+        'Invoke-TVSMModStorePrune',
+        # mod — dev links
+        'Add-TVSMDevLink',
+        'Remove-TVSMDevLink',
+        'Get-TVSMDevLinkList',
         # save
         'Watch-TVSSave',
         # version / self

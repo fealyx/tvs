@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fealyx.github.io/tvs/schemas/tvsm/dev-links.schema.json",
+  "title": "TVSM Dev Links",
+  "description": "Machine-local developer overlay stored at {modWorkDir}/dev-links.json. Registers live build output paths that bypass the store and staging for fast iteration. Never included in snapshots or rollback.",
+  "type": "object",
+  "required": ["schemaVersion", "links"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "links": {
+      "type": "object",
+      "description": "Map of mod name to dev link entry.",
+      "additionalProperties": { "$ref": "#/$defs/devLinkEntry" }
+    }
+  },
+  "$defs": {
+    "devLinkEntry": {
+      "type": "object",
+      "required": ["src", "linkedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "src": {
+          "type": "string",
+          "description": "Absolute path to the build output directory. Resolved from --src at link time; stored as absolute to eliminate CWD ambiguity at apply time."
+        },
+        "installLayout": {
+          "type": "string",
+          "enum": ["plugins-dll", "plugins-dir", "patchers-dll", "gameroot-overlay", "config-only"],
+          "default": "plugins-dll",
+          "description": "How tvsm mod apply materialises this dev link. Defaults to plugins-dll. bepinex-root is not valid for dev links."
+        },
+        "linkedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of when the link was registered."
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional freeform annotation shown in tvsm mod dev list."
+        }
+      }
+    }
+  }
+}
