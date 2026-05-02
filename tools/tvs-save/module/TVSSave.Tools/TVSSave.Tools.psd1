@@ -7,10 +7,8 @@
     Copyright         = '(c) Fealyx/TVS Contributors. All rights reserved.'
     Description       = 'Cmdlets for inspecting, exporting, importing, and syncing character data in TVS save files.'
     PowerShellVersion = '7.0'
-    RequiredModules   = @(
-        @{ ModuleName = 'TVS.Environment'; ModuleVersion = '0.1.0' },
-        @{ ModuleName = 'Znelchar.Tools'; ModuleVersion = '0.2.0' }
-    )
+    # RequiredModules removed: dependency resolution is handled in .psm1
+    # to support workspace development scenarios where modules are not in PSModulePath
     FunctionsToExport = @(
         'Get-TVSSaveCharacterList',
         'Export-TVSCharacterPreset',
