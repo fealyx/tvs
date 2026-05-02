@@ -54,8 +54,7 @@ string as-is from the file (may contain formatting variations).
     # We need to JSON-unescape it. The safest way is to wrap it
     # as a JSON string value and parse it.
     try {
-        $wrapped = '"' + $inner + '"'
-        $unescaped = $wrapped | ConvertFrom-Json
+        $unescaped = $inner | ConvertFrom-Json
     }
     catch {
         # Fallback: try with escaped content as-is (some files may

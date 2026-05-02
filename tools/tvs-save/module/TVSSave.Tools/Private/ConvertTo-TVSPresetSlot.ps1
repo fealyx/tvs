@@ -33,17 +33,13 @@ Path to write the presetSlot{n}.txt.tmp file.
         throw "ZnelcharJson is not valid JSON: $_"
     }
 
-    # JSON-escape the znelchar string by serialising it as a JSON string value
-    # ConvertTo-Json on a string produces "escaped content"
+    # JSON-escape the znelchar string by serialising it as a JSON string value.
+    # ConvertTo-Json on a string produces "escaped content" — a JSON string literal.
+    # The presetSlot format wraps this JSON string literal in { … } braces.
     $escaped = $ZnelcharJson | ConvertTo-Json -Compress
 
-    # Strip the leading and trailing double quotes added by ConvertTo-Json
-    if ($escaped.StartsWith('"') -and $escaped.EndsWith('"')) {
-        $escaped = $escaped.Substring(1, $escaped.Length - 2)
-    }
-
-    # Wrap in { … } (matching observed game output: no closing brace)
-    $wrapped = '{' + $escaped
+    # Wrap the JSON string literal in { … }
+    $wrapped = '{' + $escaped + '}'
 
     $parentDir = Split-Path $OutputPath -Parent
     if ($parentDir -and -not (Test-Path $parentDir -PathType Container)) {
