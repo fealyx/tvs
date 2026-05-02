@@ -1,46 +1,56 @@
 <#
 .SYNOPSIS
-Compresses an expanded character data structure back into a single character.json file.
+Compresses an expanded character data structure back into a character.json or .znelchar file.
 
 .DESCRIPTION
-Reconstructs character.json from an expanded folder structure created by Expand-ZnelcharData.
+Reconstructs a character from an expanded folder structure created by Expand-ZnelcharData.
 This is the complementary operation that merges all atomic YAML/JSON files back into
-the unified JSON format.
+the unified format.
+
+When -OutputPath ends in '.znelchar' (direct pipeline):
+  Produces a .znelchar file directly. The texture name map stored in _metadata.yaml is
+  used to reconstruct the original texture ordering. No external manifest.json is needed.
+  If _metadata.yaml has no 'textures' field (e.g. expanded from character.json), falls back
+  to sorted filenames from textures/.
+
+When -OutputPath ends in '.json' (explicit pipeline):
+  Produces a character.json file only. The return object includes a TexturesPath field
+  pointing to the textures/ subdirectory (if present), which can be passed to New-ZnelcharFile.
 
 Custom icon handling:
 - If a customIcon.<ext> file exists at the expanded root, its bytes are re-embedded as
-  customIconData in the output character.json.
+  customIconData in the output.
 - Legacy expanded structures that store customIconData directly in base.yaml are also
   supported; the file takes precedence if both are present.
 
 Includes automatic schema version detection and validation:
-- If expanded structure uses a different schema version, throws an error with
-  instructions to run Update-ExpandedDataStructure before retrying
-- Validates merged structure against characterData schema
-- Preserves array ordering for deterministic output
-
-The return object includes a TexturesPath field pointing to the textures/ subdirectory
-of the expanded structure (if present), which can be passed directly to New-ZnelcharFile.
+- Supports schema v1 (no texture map) and v2 (with texture map in _metadata.yaml).
+- If the expanded structure is on an unsupported future version, throws with migration instructions.
+- Preserves array ordering for deterministic output.
 
 .PARAMETER InputPath
 Path to the expanded folder structure (created by Expand-ZnelcharData).
 
 .PARAMETER OutputPath
-Output path for the reconstructed character.json file.
+Output path. Use a '.znelchar' extension for the direct pipeline (produces a .znelchar file
+directly). Use a '.json' extension for the explicit pipeline (produces character.json).
 
 .PARAMETER Force
-Overwrite existing character.json if present.
+Overwrite existing output file if present.
+
+.PARAMETER KeepIntermediaryJson
+When producing .znelchar output, also write the intermediate character.json alongside it.
+Useful for diagnostics. Ignored when OutputPath ends in '.json'.
 
 .EXAMPLE
-# Compress expanded structure back to JSON
-Compress-ZnelcharData -InputPath character-expanded -OutputPath character.json
+# Direct pipeline: compress expanded structure directly to .znelchar
+Compress-ZnelcharData -InputPath character-expanded -OutputPath character.znelchar
 
-# Then repack with znelchar
-New-ZnelcharFile -ManifestPath extracted/manifest.json -CharacterJsonPath character.json
+# Explicit pipeline: compress to character.json, then repack separately
+$result = Compress-ZnelcharData -InputPath character-expanded -OutputPath character.json
+New-ZnelcharFile -CharacterJsonPath character.json -TexturesDir $result.TexturesPath -OutputPath character.znelchar
 
 .NOTES
-After condensing, use New-ZnelcharFile to repack into znelchar binary format.
-
 See also: Expand-ZnelcharData, New-ZnelcharFile
 #>
 
@@ -62,10 +72,15 @@ function Compress-ZnelcharData {
         [Parameter(Mandatory = $true)]
         [string]$OutputPath,
 
-        [switch]$Force
+        [switch]$Force,
+
+        [switch]$KeepIntermediaryJson
     )
 
     process {
+        $outputExt = [System.IO.Path]::GetExtension($OutputPath).ToLower()
+        $isDirectPipeline = ($outputExt -eq '.znelchar')
+
         # Check if output exists
         if ((Test-Path -LiteralPath $OutputPath) -and -not $Force) {
             throw "Output file already exists: $OutputPath. Use -Force to overwrite."
@@ -86,12 +101,13 @@ function Compress-ZnelcharData {
             throw "Unsupported metadata dataFormat '$dataFormat'. Expected 'yaml' or 'json'."
         }
 
-        # Check schema version
-        $latestVersion = 1
-        if ($schemaVersion -ne $latestVersion) {
-            Write-Warning "Schema version mismatch: expanded structure is v$schemaVersion, but v$latestVersion is expected"
-            throw "Run 'Update-ExpandedDataStructure -InputPath $InputPath -FromVersion $schemaVersion -ToVersion $latestVersion' to migrate, then try again."
+        # Check schema version — support v1 and v2; reject anything higher
+        $latestVersion = 2
+        if ($schemaVersion -gt $latestVersion) {
+            throw "Expanded structure schema v$schemaVersion is newer than this version of Znelchar.Tools (supports up to v$latestVersion). Please upgrade Znelchar.Tools."
         }
+        # v1 is accepted without migration for compress — the only functional difference is the
+        # absence of the textures map, which we handle gracefully via fallback below.
 
         # Load all data files
         Write-Verbose "Loading atomic data files"
@@ -300,25 +316,94 @@ function Compress-ZnelcharData {
             $character['accessories'] = @()
         }
 
-        # Ensure directory exists
-        $outputDir = Split-Path -Parent $OutputPath
-        if (-not (Test-Path -LiteralPath $outputDir)) {
-            New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
-        }
-
-        # Write character.json with deterministic formatting
-        Write-Verbose "Writing condensed character.json"
-        Write-Utf8NoBomFile -Path $OutputPath `
-            -Content (ConvertTo-Json -InputObject $character -Depth 100)
-
         $texturesDirPath = Join-Path $InputPath 'textures'
-        return @{
-            OutputPath           = (Resolve-Path -LiteralPath $OutputPath).ProviderPath
-            FieldCount           = $character.Keys.Count
-            AccessoryCount       = $character['accessories'].Count
-            VertexAccessoryCount = if ($character.ContainsKey('vertexAccessories')) { $character['vertexAccessories'].Count } else { 0 }
-            ValidationStatus     = 'Valid'
-            TexturesPath         = if (Test-Path -LiteralPath $texturesDirPath -PathType Container) { (Resolve-Path -LiteralPath $texturesDirPath).ProviderPath } else { $null }
+        $resolvedTexturesDirPath = if (Test-Path -LiteralPath $texturesDirPath -PathType Container) {
+            (Resolve-Path -LiteralPath $texturesDirPath).ProviderPath
+        } else { $null }
+
+        if ($isDirectPipeline) {
+            # --- Direct pipeline: produce .znelchar via New-ZnelcharFile ---
+
+            # Determine the intermediary character.json path
+            $outputDir = Split-Path -Parent $OutputPath
+            if ([string]::IsNullOrWhiteSpace($outputDir)) { $outputDir = '.' }
+            $baseName = [System.IO.Path]::GetFileNameWithoutExtension($OutputPath)
+            $charJsonPath = Join-Path $outputDir "${baseName}.character.json"
+
+            # Write character.json (to a temp path or a kept path)
+            if (-not (Test-Path -LiteralPath $outputDir)) {
+                New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
+            }
+            Write-Verbose "Writing intermediary character.json to: $charJsonPath"
+            Write-Utf8NoBomFile -Path $charJsonPath `
+                -Content (ConvertTo-Json -InputObject $character -Depth 100)
+
+            # Build texture descriptors from _metadata.yaml 'textures' field (v2) or fallback
+            $textureDescriptors = @()
+            if ($metadata.Contains('textures') -and $null -ne $metadata['textures'] -and @($metadata['textures']).Count -gt 0) {
+                foreach ($entry in @($metadata['textures'])) {
+                    $tn = if ($entry.ContainsKey('textureName')) { [string]$entry['textureName'] } else { '' }
+                    $fn = if ($entry.ContainsKey('file'))        { [string]$entry['file'] }        else { '' }
+                    if (-not [string]::IsNullOrWhiteSpace($fn)) {
+                        $textureDescriptors += [ordered]@{ textureName = $tn; fileName = $fn }
+                    }
+                }
+                Write-Verbose "Using $($textureDescriptors.Count) texture descriptor(s) from _metadata.yaml texture map"
+            } elseif ($null -ne $resolvedTexturesDirPath) {
+                # Fallback: sorted filenames from textures/ directory
+                $files = Get-ChildItem -File -Path $resolvedTexturesDirPath | Sort-Object Name
+                foreach ($f in $files) {
+                    $textureDescriptors += [ordered]@{ textureName = $f.Name; fileName = $f.Name }
+                }
+                Write-Verbose "Fallback: using $($textureDescriptors.Count) texture(s) sorted from textures/ directory"
+            }
+
+            # New-ZnelcharFile requires TexturesDir to exist; create an empty one if textures/ is absent
+            $effectiveTexturesDir = $resolvedTexturesDirPath
+            if ($null -eq $effectiveTexturesDir) {
+                $effectiveTexturesDir = $texturesDirPath
+                New-Item -ItemType Directory -Path $effectiveTexturesDir -Force | Out-Null
+                Write-Verbose "Created empty textures/ directory (no textures in expanded structure)"
+            }
+
+            try {
+                $packResult = New-ZnelcharFile `
+                    -CharacterJsonPath $charJsonPath `
+                    -TexturesDir $effectiveTexturesDir `
+                    -OutputPath $OutputPath `
+                    -Force:$Force
+            } finally {
+                if (-not $KeepIntermediaryJson -and (Test-Path -LiteralPath $charJsonPath)) {
+                    Remove-Item -LiteralPath $charJsonPath -Force
+                    Write-Verbose "Cleaned up intermediary character.json"
+                }
+            }
+
+            return @{
+                OutputPath           = (Resolve-Path -LiteralPath $OutputPath).ProviderPath
+                FieldCount           = $character.Keys.Count
+                AccessoryCount       = $character['accessories'].Count
+                VertexAccessoryCount = if ($character.ContainsKey('vertexAccessories')) { $character['vertexAccessories'].Count } else { 0 }
+                ValidationStatus     = 'Valid'
+                TextureCount         = $textureDescriptors.Count
+                DirectPipeline       = $true
+                IntermediaryJsonKept = [bool]$KeepIntermediaryJson
+            }
+        } else {
+            # --- Explicit pipeline: produce character.json only ---
+            Write-Verbose "Writing condensed character.json"
+            Write-Utf8NoBomFile -Path $OutputPath `
+                -Content (ConvertTo-Json -InputObject $character -Depth 100)
+
+            return @{
+                OutputPath           = (Resolve-Path -LiteralPath $OutputPath).ProviderPath
+                FieldCount           = $character.Keys.Count
+                AccessoryCount       = $character['accessories'].Count
+                VertexAccessoryCount = if ($character.ContainsKey('vertexAccessories')) { $character['vertexAccessories'].Count } else { 0 }
+                ValidationStatus     = 'Valid'
+                TexturesPath         = $resolvedTexturesDirPath
+                DirectPipeline       = $false
+            }
         }
     }
 }

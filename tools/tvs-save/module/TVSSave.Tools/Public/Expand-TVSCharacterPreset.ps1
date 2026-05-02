@@ -4,8 +4,12 @@ function Expand-TVSCharacterPreset {
 Expands a .znelchar preset file to the multi-file character format.
 
 .DESCRIPTION
-Delegates to Expand-ZnelcharData (Znelchar.Tools) to expand a
-.znelchar file into {characterWorkDir}/expanded/{name}/.
+Delegates to Expand-ZnelcharData (Znelchar.Tools) using the direct pipeline:
+the .znelchar file is expanded directly into {characterWorkDir}/expanded/{name}/
+without requiring an intermediary extraction step.
+
+The resulting expanded directory is fully self-contained — Compress-TVSCharacterPreset
+can produce a valid .znelchar from it without any external manifest.
 
 .PARAMETER Name
 Character name (matches the .znelchar filename without extension).
@@ -16,6 +20,9 @@ Direct path to the .znelchar file. Overrides -Name lookup.
 .PARAMETER OutputPath
 Directory for expanded output. Defaults to
 {characterWorkDir}/expanded/{name}/ from TVS.Environment.
+
+.PARAMETER Force
+Overwrite the expanded directory if it already exists.
 #>
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param(
@@ -25,7 +32,9 @@ Directory for expanded output. Defaults to
         [Parameter(ParameterSetName = 'ByPath', Mandatory = $true)]
         [string]$SourcePath,
 
-        [string]$OutputPath = ''
+        [string]$OutputPath = '',
+
+        [switch]$Force
     )
 
     $env = Get-TVSEnvironment
@@ -43,8 +52,8 @@ Directory for expanded output. Defaults to
         $OutputPath = Join-Path $env.characterWorkDir 'expanded' $baseName
     }
 
-    Expand-ZnelcharData -InputPath $SourcePath -OutputDir $OutputPath
+    $result = Expand-ZnelcharData -InputPath $SourcePath -OutputPath $OutputPath -Force:$Force
 
-    Write-Verbose "Expanded '$SourcePath' to $OutputPath"
-    return $OutputPath
+    Write-Verbose "Expanded '$SourcePath' to $($result.ExpandedPath)"
+    return $result.ExpandedPath
 }
