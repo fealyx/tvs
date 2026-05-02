@@ -108,11 +108,14 @@ Community Mod Registry (hosted JSON)
 
 ### Character and Save File Tooling (TUI façade over PS modules)
 
+- [ ] `tvsm save list [dir]` — list occupied character slots from SaveFile.es3 via Spectre table
+- [ ] `tvsm save export [--slot N | --all]` — export preset slot file(s) to `.znelchar` in characterWorkDir/presets/
+- [ ] `tvsm save import --name <name> [--slot <n>] --force` — write `.znelchar` back to preset slot file (--force required)
+- [ ] `tvsm save expand [--name <name>]` — expand `.znelchar` to multi-file format in characterWorkDir/expanded/
+- [ ] `tvsm save watch [--expand]` — FSW watcher with live Spectre status; auto-exports on game save; --expand also expands
 - [ ] `tvsm char inspect <file>` — pretty-print znelchar metadata via Spectre
-- [ ] `tvsm save list [dir]` — list save files in configured playerDataDir
-- [ ] `tvsm save unpack <file>` — unpack a save and expand embedded character data into characterWorkDir
-- [ ] `tvsm save watch` — file-system watcher; auto-unpacks and expands on save file change
-- [ ] `tvsm save diff <file1> <file2>` — semantic diff between two saves or character states
+- [ ] `tvsm save diff <file1> <file2>` — semantic diff between two saves or character states (Phase 4+)
+- [ ] `tvsm save snapshot` / `tvsm save restore` — save snapshots separate from mod rollback (Phase 4+)
 
 ### Self-Update
 
@@ -249,15 +252,52 @@ Exit criteria:
 ### Phase 3: TVSSave.Tools Module
 
 Goals:
-- Implement `TVSSave.Tools` PS module.
+- Implement `TVSSave.Tools` PS module with character preset support.
 - Implement `tvsm save` command surface as a façade over it.
+- Establish bi-directional sync between game save files, `.znelchar` files, and expanded character expressions.
+
+Background — save file format:
+- `SaveFile.es3`: Easy Save 3 JSON; a direct serialisation of C# objects. The `SavedPresetNames` key contains a sparse `List<string>` mapping slot index → character name (or `null` for empty slots).
+- `presetSlot{n}.txt.tmp`: Contains a znelchar JSON payload that has been JSON-stringified and placed as a bare key inside `{…}` — an artefact of the Easy Save 3 serialiser. The outer braces must be stripped and the inner string JSON-unescaped to recover valid znelchar JSON. Round-trips must re-apply the wrapper.
 
 Deliverables:
-- `tools/tvs-save` module (module/core distribution).
-- `tvsm save watch` with auto-expand into characterWorkDir.
+- `tools/tvs-save` Rush package with `TVSSave.Tools` PS module, mirroring `tools/znelchar` layout.
+- Private parsers: `Read-TVSSaveIndex`, `Write-TVSSaveIndex`, `ConvertFrom-TVSPresetSlot`, `ConvertTo-TVSPresetSlot`.
+- Public cmdlets:
+  - `Get-TVSSaveCharacterList` — list occupied slots with name and index (reads `SaveFile.es3`).
+  - `Export-TVSCharacterPreset [-Slot <int>]` — convert one slot file to `{characterWorkDir}/presets/{name}.znelchar`.
+  - `Export-TVSAllCharacterPresets` — convenience; iterates all occupied slots.
+  - `Import-TVSCharacterPreset -Name <string> [-Slot <int>] -Force` — convert `.znelchar` back to `presetSlot{n}.txt.tmp`; requires `-Force` as a safety guard against writing to the live player data directory.
+  - `Expand-TVSCharacterPreset [-Name <string>]` — calls `Expand-ZnelcharData` (Znelchar.Tools), outputs to `{characterWorkDir}/expanded/{name}/`.
+  - `Compress-TVSCharacterPreset -Name <string>` — calls `Compress-ZnelcharData`, updates `{characterWorkDir}/presets/{name}.znelchar`.
+  - `Watch-TVSCharacterSync [-Path <string>] [-Expand]` — starts background FSW watcher; exports `.znelchar` on save change; with `-Expand` also calls `Expand-TVSCharacterPreset`; returns watcher ID.
+  - `Stop-TVSCharacterSync [[-Id] <string>]` — stops watcher.
+- `SaveFile.es3` JSON schema under `tools/tvs-save/data/schemas/`.
+- Pester tests under `tools/tvs-save/tests/`:
+  - `ConvertFrom-TVSPresetSlot.Tests.ps1` — parse round-trip.
+  - `Get-TVSSaveCharacterList.Tests.ps1` — slot/name mapping from mock ES3 JSON.
+- `tvsm save` command surface:
+  - `tvsm save list` — Spectre table of occupied slots and character names.
+  - `tvsm save export [--slot N | --all]` — export to `.znelchar`.
+  - `tvsm save import --name <name> [--slot <n>] --force` — import from `.znelchar`.
+  - `tvsm save expand [--name <name>]` — expand to multi-file format.
+  - `tvsm save watch [--expand]` — file-system watcher with live Spectre status.
+
+File watcher design — feedback-loop mitigation:
+- Per-path `$script:OutboundLocks` hashtable (path → expiry datetime, 3 s window).
+- Before writing any file, set its lock. On FSW event, skip if lock still live.
+- Events processed on a single-threaded `ConcurrentQueue` runspace to avoid races.
+- Watcher reacts to: new/modified `presetSlot{n}.txt.tmp` files; changes to `.znelchar` files in `{characterWorkDir}/presets`; changes to `SaveFile.es3` (for rename detection).
+- `.znelchar` → expanded sync is intentionally one-way (expanded output only); the expanded directory is not watched for changes.
+- A 750 ms debounce delay allows the game to finish all writes before reacting.
 
 Exit criteria:
-- A developer can run `tvsm save watch` and have any save change automatically expanded into their working directory.
+- `tvsm save list` correctly displays all characters from `SaveFile.es3`.
+- `tvsm save export --all` converts all occupied slot files to `.znelchar` in `characterWorkDir/presets/`.
+- `tvsm save watch` reacts to game saves and exports updated `.znelchar` files automatically.
+- `tvsm save watch --expand` additionally expands character data into `characterWorkDir/expanded/`.
+- Round-trip test: export → edit `.znelchar` → `import --force` produces a valid `presetSlot{n}.txt.tmp`.
+- All Pester tests pass.
 
 ### Phase 4: Unified Bundle
 
