@@ -71,7 +71,21 @@ Introduce `TVSSave.Tools` as a new PowerShell module following the same structur
 
 ### Dependency on Znelchar.Tools
 
-`TVSSave.Tools` declares `Znelchar.Tools` as a required module. It does not re-implement character file extraction. When expanding character data it calls `Expand-ZnelcharData` and `Compress-ZnelcharData` from `Znelchar.Tools`.
+`TVSSave.Tools` declares `Znelchar.Tools` as a required module. It does not re-implement character file extraction.
+
+Per [ADR-007](./ADR-007-znelchar-direct-pipeline.md), `Znelchar.Tools` supports a **direct pipeline** in which `Expand-ZnelcharData` accepts a `.znelchar` file as input (not just `character.json`) and `Compress-ZnelcharData` produces a `.znelchar` file as output (not just `character.json`). The `.extracted/` intermediary state is an implementation detail that never surfaces to `TVSSave.Tools` or to end-users.
+
+`Expand-TVSCharacterPreset` and `Compress-TVSCharacterPreset` therefore delegate directly to these two commands with no additional orchestration:
+
+```powershell
+# Expand-TVSCharacterPreset — simplified delegation
+Expand-ZnelcharData -InputPath $SourcePath -OutputPath $OutputPath -Force
+
+# Compress-TVSCharacterPreset — simplified delegation
+Compress-ZnelcharData -InputPath $SourcePath -OutputPath $OutputPath -Force
+```
+
+No calls to `Export-ZnelcharContent` or `New-ZnelcharFile` are required inside `TVSSave.Tools`.
 
 ### Cmdlet surface
 
@@ -107,10 +121,10 @@ Export-TVSAllCharacterPresets [-OutputPath <string>]
 # -Force is required; warns that the game should not be running
 Import-TVSCharacterPreset -Name <string> [-Slot <int>] [-SourcePath <string>] -Force
 
-# Expand .znelchar → {characterWorkDir}/expanded/{name}/ via Znelchar.Tools
+# Expand .znelchar → {characterWorkDir}/expanded/{name}/ via Znelchar.Tools direct pipeline (ADR-007)
 Expand-TVSCharacterPreset [-Name <string>] [-SourcePath <string>] [-OutputPath <string>]
 
-# Compress {characterWorkDir}/expanded/{name}/ → {characterWorkDir}/presets/{name}.znelchar
+# Compress {characterWorkDir}/expanded/{name}/ → {characterWorkDir}/presets/{name}.znelchar via Znelchar.Tools direct pipeline (ADR-007)
 Compress-TVSCharacterPreset -Name <string> [-SourcePath <string>] [-OutputPath <string>]
 
 # Start background FSW watcher; returns watcher ID
@@ -188,12 +202,14 @@ Positive:
 - File watcher workflow closes the loop between play sessions and character development.
 - Same distribution pattern means contributors already familiar with one module can work on the other.
 - `-Force` guard on `Import-TVSCharacterPreset` prevents accidental overwrites of live save data.
+- `Expand-TVSCharacterPreset` and `Compress-TVSCharacterPreset` are thin delegations to `Znelchar.Tools`; no orchestration of extraction or repacking logic lives in `TVSSave.Tools`.
 
 Tradeoffs:
 - Users installing both modules independently face a two-step install; mitigated by the unified bundle.
 - Save file format may evolve with game updates, requiring module updates; this is unavoidable. The opaque-passthrough strategy for `SaveFile.es3` minimises breakage surface.
 - Background watcher runspace adds complexity; must be tested for resource leaks.
 - The `{…}` wrapper format of `presetSlot{n}.txt.tmp` is not valid JSON; our parser must handle both with and without the closing brace.
+- `Expand-TVSCharacterPreset` and `Compress-TVSCharacterPreset` correctness depends on the `Znelchar.Tools` direct pipeline being implemented (ADR-007). These cmdlets are non-functional until ADR-007 is shipped.
 
 ## Alternatives Considered
 
@@ -216,7 +232,9 @@ Tradeoffs:
 3. Implement `ConvertFrom-TVSPresetSlot` / `ConvertTo-TVSPresetSlot` with round-trip Pester tests against the observed file format.
 4. Implement `Export-TVSCharacterPreset` and `Export-TVSAllCharacterPresets`.
 5. Implement `Import-TVSCharacterPreset` with `-Force` guard.
-6. Implement `Expand-TVSCharacterPreset` and `Compress-TVSCharacterPreset` delegating to `Znelchar.Tools`.
-7. Implement `Watch-TVSCharacterSync` and `Stop-TVSCharacterSync`; validate resource cleanup.
-8. Wire `tvsm save` commands to the module.
-9. Publish `SaveFile.es3.schema.json` and wire into `collect-schemas.js`.
+6. Implement ADR-007 direct pipeline in `Znelchar.Tools` (prerequisite for steps 7–8).
+7. Fix `Expand-TVSCharacterPreset` — pass `.znelchar` path directly to `Expand-ZnelcharData`; remove stale intermediary logic.
+8. Fix `Compress-TVSCharacterPreset` — pass expanded directory and `.znelchar` output path directly to `Compress-ZnelcharData`; remove stale intermediary logic.
+9. Implement `Watch-TVSCharacterSync` and `Stop-TVSCharacterSync`; validate resource cleanup.
+10. Wire `tvsm save` commands to the module.
+11. Publish `SaveFile.es3.schema.json` and wire into `collect-schemas.js`.

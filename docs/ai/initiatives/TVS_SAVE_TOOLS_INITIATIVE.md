@@ -12,6 +12,10 @@ See [TVSM_MANAGER_INITIATIVE.md Phase 3](./TVSM_MANAGER_INITIATIVE.md#phase-3-tv
 
 Summary: character preset slot support — export/import `presetSlot{n}.txt.tmp` ↔ `.znelchar`, expand/compress, bi-directional file watcher.
 
+### Znelchar.Tools pipeline fix (prerequisite — ADR-007)
+
+`Expand-TVSCharacterPreset` and `Compress-TVSCharacterPreset` are currently non-functional. Both cmdlets pass the wrong input types to `Znelchar.Tools` functions that require the `.extracted/` intermediary state. [ADR-007](../adr/ADR-007-znelchar-direct-pipeline.md) resolves this by extending `Expand-ZnelcharData` to accept `.znelchar` input and `Compress-ZnelcharData` to produce `.znelchar` output directly — eliminating the need for `TVSSave.Tools` to orchestrate `Export-ZnelcharContent` or `New-ZnelcharFile`. Both `TVSSave.Tools` cmdlets become correct thin delegations once ADR-007 is implemented.
+
 ## Future backlog
 
 ### Save snapshots and restore
