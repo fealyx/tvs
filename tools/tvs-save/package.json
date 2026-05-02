@@ -1,0 +1,12 @@
+{
+  "name": "@tvs/tvs-save-tools",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tools and schemas for working with TVS save files (SaveFile.es3 and presetSlot files)",
+  "scripts": {
+    "build": "npm run build:dist",
+    "rebuild": "npm run build:dist",
+    "build:dist": "npm run build:dist:module",
+    "build:dist:module": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./build/package.ps1"
+  }
+}

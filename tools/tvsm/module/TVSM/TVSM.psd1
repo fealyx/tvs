@@ -36,6 +36,10 @@
         'Remove-TVSMDevLink',
         'Get-TVSMDevLinkList',
         # save
+        'Get-TVSSaveList',
+        'Export-TVSSavePreset',
+        'Import-TVSSavePreset',
+        'Expand-TVSSavePreset',
         'Watch-TVSSave',
         # version / self
         'Get-TVSMVersion'
