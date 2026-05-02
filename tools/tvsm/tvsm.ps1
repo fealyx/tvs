@@ -30,6 +30,7 @@ Dispatches tvsm subcommands to the TVSM module. Supports:
   tvsm save export [--slot <n> | --name <name> | --all] [<outputPath>]
   tvsm save import --name <name> [--slot <n>] --force
   tvsm save expand --name <name>
+  tvsm save compress --name <name> [--force]
   tvsm save watch [<path>] [--expand]
   tvsm version [--json]
   tvsm help
@@ -147,6 +148,7 @@ function Invoke-InteractiveMenu {
         'save export    — export character presets to .znelchar',
         'save import    — import .znelchar back to save slot',
         'save expand    — expand .znelchar to multi-file format',
+        'save compress  — compress expanded directory to .znelchar',
         'save watch     — watch saves and auto-sync characters',
         'version        — show component versions',
         'exit'
@@ -180,6 +182,10 @@ function Invoke-InteractiveMenu {
             'save expand*'   {
                 $modName = Read-SpectreText -Message 'Character name:'
                 if ($modName) { Expand-TVSSavePreset -Name $modName }
+            }
+            'save compress*' {
+                $modName = Read-SpectreText -Message 'Character name:'
+                if ($modName) { Compress-TVSSavePreset -Name $modName }
             }
             'save watch*'    { Watch-TVSSave }
             'version*'       { Get-TVSMVersion -Json:$Json }
@@ -349,10 +355,17 @@ switch ($Noun) {
                 }
                 Expand-TVSSavePreset -Name $Arg1
             }
+            'compress' {
+                if (-not $Arg1) {
+                    Write-SpectreHost '[yellow]Usage: tvsm save compress --name <name> [--force][/]'
+                    exit 1
+                }
+                Compress-TVSSavePreset -Name $Arg1 -Force:$Force
+            }
             'watch'  { Watch-TVSSave -Path:$Arg1 -Expand:$Expand @profileArg }
             default {
                 Write-SpectreHost "[yellow]Unknown save command: '$Verb'[/]"
-                Write-SpectreHost 'Available: [cyan]list[/], [cyan]export[/], [cyan]import[/], [cyan]expand[/], [cyan]watch[/]'
+                Write-SpectreHost 'Available: [cyan]list[/], [cyan]export[/], [cyan]import[/], [cyan]expand[/], [cyan]compress[/], [cyan]watch[/]'
                 exit 1
             }
         }

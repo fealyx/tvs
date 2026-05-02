@@ -222,6 +222,57 @@ tvsm save expand --name Snowball
     Write-SpectreHost "[green]✓ Expanded →[/] $result"
 }
 
+function Compress-TVSSavePreset {
+<#
+.SYNOPSIS
+Compresses an expanded character directory back to a .znelchar file.
+
+.DESCRIPTION
+Delegates to Compress-TVSCharacterPreset from TVSSave.Tools.
+
+.PARAMETER Name
+Character name (matches the .znelchar filename without extension).
+
+.PARAMETER SourcePath
+Direct path to the expanded directory.
+
+.PARAMETER Force
+Overwrite the output .znelchar file if it already exists.
+
+.EXAMPLE
+tvsm save compress --name Snowball
+tvsm save compress --name Snowball --force
+#>
+    [CmdletBinding(DefaultParameterSetName = 'ByName')]
+    param(
+        [Parameter(ParameterSetName = 'ByName', Mandatory = $true)]
+        [string]$Name,
+
+        [Parameter(ParameterSetName = 'ByPath', Mandatory = $true)]
+        [string]$SourcePath,
+
+        [switch]$Force
+    )
+
+    if (-not (Get-Module -ListAvailable -Name 'TVSSave.Tools')) {
+        throw "TVSSave.Tools module is not available. Install it from the TVS Tools bundle."
+    }
+    Import-Module 'TVSSave.Tools' -Global -Force
+
+    $compressArgs = @{}
+    if ($PSCmdlet.ParameterSetName -eq 'ByName') {
+        $compressArgs['Name'] = $Name
+    } else {
+        $compressArgs['SourcePath'] = $SourcePath
+    }
+    if ($Force) {
+        $compressArgs['Force'] = $true
+    }
+
+    $result = Compress-TVSCharacterPreset @compressArgs
+    Write-SpectreHost "[green]✓ Compressed →[/] $result"
+}
+
 function Watch-TVSSave {
 <#
 .SYNOPSIS
@@ -279,4 +330,59 @@ tvsm save watch --expand
         Stop-TVSCharacterSync -Id $watcherId
         Write-SpectreHost '[grey]Watcher stopped.[/]'
     }
+}
+
+function Sync-TVSCharacterWorkDir {
+<#
+.SYNOPSIS
+Syncs game save state into the character work directory using direct file
+copies — no base64 encoding/decoding round-trips. Thin orchestrator wrapper
+over TVSSave.Tools.
+
+.DESCRIPTION
+Delegates to Sync-TVSCharacterWorkDir from TVSSave.Tools. See the
+TVSSave.Tools version for full parameter and behaviour documentation.
+
+.PARAMETER PresetSlotPath
+Path to the presetSlot{n}.txt.tmp file in the player data directory.
+
+.PARAMETER TextureDir
+Path to the SkinPresetTextures directory (source of texture image files).
+
+.PARAMETER WorkDir
+Root of the characterWorkDir.
+
+.OUTPUTS
+Hashtable with keys PresetDir, CharacterData, TexturesDir, ExportsDir,
+and CopiedTextures (array of filenames).
+
+.EXAMPLE
+Sync-TVSCharacterWorkDir -PresetSlotPath "$env:playerDataDir/presetSlot0.txt.tmp" `
+    -TextureDir "$env:playerDataDir/SkinPresetTextures" `
+    -WorkDir "$env:characterWorkDir"
+#>
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$PresetSlotPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TextureDir,
+
+        [Parameter(Mandatory = $true)]
+        [string]$WorkDir
+    )
+
+    # TVSSave.Tools is a RequiredModule of TVSM — already loaded at import time.
+    # Lazy import kept as defense-in-depth for any edge case where the module
+    # is unloaded between TVSM load and this function call.
+    if (-not (Get-Module -Name 'TVSSave.Tools')) {
+        if (-not (Get-Module -ListAvailable -Name 'TVSSave.Tools')) {
+            throw "TVSSave.Tools module is not available. Install it from the TVS Tools bundle."
+        }
+        Import-Module 'TVSSave.Tools' -Global -Force
+    }
+
+    # Module-qualified call to avoid shadowing the local wrapper
+    TVSSave.Tools\Sync-TVSCharacterWorkDir @PSBoundParameters
 }

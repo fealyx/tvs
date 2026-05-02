@@ -9,7 +9,9 @@
     PowerShellVersion = '7.0'
     RequiredModules   = @(
         @{ ModuleName = 'TVS.Environment'; ModuleVersion = '0.1.0' },
-        @{ ModuleName = 'PwshSpectreConsole'; ModuleVersion = '0.1.0' }
+        @{ ModuleName = 'PwshSpectreConsole'; ModuleVersion = '0.1.0' },
+        @{ ModuleName = 'TVSSave.Tools'; ModuleVersion = '0.1.0' },
+        @{ ModuleName = 'Znelchar.Tools'; ModuleVersion = '0.2.0' }
     )
     FunctionsToExport = @(
         # config
@@ -35,12 +37,18 @@
         'Add-TVSMDevLink',
         'Remove-TVSMDevLink',
         'Get-TVSMDevLinkList',
-        # save
+        # save — thin orchestrator wrappers over TVSSave.Tools
         'Get-TVSSaveList',
         'Export-TVSSavePreset',
         'Import-TVSSavePreset',
         'Expand-TVSSavePreset',
+        'Compress-TVSSavePreset',
         'Watch-TVSSave',
+        # znelchar compose / expand — thin orchestrator wrappers over Znelchar.Tools
+        'Compose-ZnelcharPreset',
+        'Expand-ZnelcharPreset',
+        # character work dir sync — thin orchestrator wrapper over TVSSave.Tools
+        'Sync-TVSCharacterWorkDir',
         # version / self
         'Get-TVSMVersion'
     )

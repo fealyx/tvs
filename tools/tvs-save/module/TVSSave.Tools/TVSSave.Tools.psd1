@@ -10,6 +10,8 @@
     # RequiredModules removed: dependency resolution is handled in .psm1
     # to support workspace development scenarios where modules are not in PSModulePath
     FunctionsToExport = @(
+        'ConvertFrom-TVSPresetSlot',
+        'ConvertTo-TVSPresetSlot',
         'Get-TVSSaveCharacterList',
         'Export-TVSCharacterPreset',
         'Export-TVSAllCharacterPresets',
@@ -17,7 +19,8 @@
         'Expand-TVSCharacterPreset',
         'Compress-TVSCharacterPreset',
         'Watch-TVSCharacterSync',
-        'Stop-TVSCharacterSync'
+        'Stop-TVSCharacterSync',
+        'Sync-TVSCharacterWorkDir'
     )
     CmdletsToExport   = @()
     AliasesToExport   = @()
