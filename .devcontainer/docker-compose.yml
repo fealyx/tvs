@@ -1,0 +1,19 @@
+services:
+  devcontainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../:/workspaces/tvs:cached
+      - tvs-vscode-userdata:/home/vscode/.vscode-server/data/User
+      - tvs-vscode-extensions:/home/vscode/.vscode-server/extensions
+    # Keep the container alive so the Dev Containers extension can attach to it.
+    command: sleep infinity
+
+volumes:
+  # Explicit names prevent docker-compose from prepending the project name,
+  # so these are the same volumes regardless of how compose is invoked.
+  tvs-vscode-userdata:
+    name: tvs-vscode-userdata
+  tvs-vscode-extensions:
+    name: tvs-vscode-extensions

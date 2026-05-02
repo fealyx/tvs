@@ -2,8 +2,9 @@
 {
     "name": "TVS Monorepo",
 
-    // Ubuntu 24.04 LTS — clean, well-supported base for devcontainer features
-    "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "devcontainer",
+    "workspaceFolder": "/workspaces/tvs",
 
     "features": {
         // Node 22.x — matches rush.json nodeSupportedVersionRange ">=22.20.0 <23.0.0"
@@ -40,7 +41,8 @@
                 "EditorConfig.EditorConfig",
                 "GitHub.vscode-pull-request-github",
                 "ironmansoftware.powershellprotools",
-                "ms-dotnettools.csdevkit"
+                "ms-dotnettools.csdevkit",
+                "RooVeterinaryInc.roo-cline"
             ],
             "settings": {
                 "chat.tools.terminal.terminalProfile.linux": {
@@ -54,18 +56,21 @@
                         "icon": "terminal-bash"
                     },
                     "pwsh": {
+                        "color": "terminal.ansiBlue",
                         "path": "/usr/bin/pwsh",
                         "icon": "terminal-powershell"
                     }
                 },
                 // File associations
                 "files.associations": {
-                    "*.znelchar": "json"
+                    "*.znelchar": "json",
+                    "*.es3": "json"
                 },
                 // Ensure Unix line endings for shell scripts inside the container
                 "[shellscript]": {
                     "files.eol": "\n"
                 },
+                "powershell.powerShellDefaultVersion": "PowerShell 7 (x64)",
                 "powershell.powerShellAdditionalExePaths": {
                   "PowerShell 7 (x64)": "/usr/bin/pwsh"
                 }
