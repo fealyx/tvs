@@ -46,7 +46,13 @@ Hashtable with two keys:
             if ($values -is [array]) {
                 for ($i = 0; $i -lt $values.Count; $i++) {
                     if ($null -ne $values[$i] -and $values[$i] -is [string] -and $values[$i].Length -gt 0) {
-                        $slots += @{ SlotIndex = $i; Name = $values[$i] }
+                        # Strip zero-width and other invisible Unicode characters that
+                        # can leak into game serialization (e.g. U+200B zero-width space).
+                        $cleanName = [string]$values[$i] -replace '[\u200B-\u200D\uFEFF\u00A0]', ''
+                        $cleanName = $cleanName.Trim()
+                        if ($cleanName.Length -gt 0) {
+                            $slots += @{ SlotIndex = $i; Name = $cleanName }
+                        }
                     }
                 }
             }

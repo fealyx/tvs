@@ -95,7 +95,16 @@ lookup.
         New-Item -Path $OutputPath -ItemType Directory -Force | Out-Null
     }
 
-    $outputFile = Join-Path $OutputPath "${Name}.znelchar"
+    # Sanitize name for filesystem use: strip zero-width and invisible Unicode
+    # characters that can leak from game serialization (defense in depth —
+    # Read-TVSSaveIndex also strips these at ingestion).
+    $safeName = $Name -replace '[\u200B-\u200D\uFEFF\u00A0]', ''
+    $safeName = $safeName.Trim()
+    if ([string]::IsNullOrEmpty($safeName)) {
+        $safeName = "Slot$Slot"
+    }
+
+    $outputFile = Join-Path $OutputPath "${safeName}.znelchar"
     Set-Content -Path $outputFile -Value $znelcharJson -Encoding UTF8
 
     Write-Verbose "Exported slot $Slot ('$Name') to $outputFile"
