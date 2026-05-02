@@ -254,50 +254,120 @@ Exit criteria:
 Goals:
 - Implement `TVSSave.Tools` PS module with character preset support.
 - Implement `tvsm save` command surface as a façade over it.
-- Establish bi-directional sync between game save files, `.znelchar` files, and expanded character expressions.
+- Implement character data re-composition (`presetSlot → znelchar`) and decomposition (`znelchar → presetSlot`) pipelines, informed by confirmed znelchar structure and texture storage discoveries (see [ADR-004 Amendment](../adr/ADR-004-tvs-save-tools-module.md#amendment-2026-05-02-znelchar-file-structure-texture-storage-and-character-data-re-compositiondecomposition)).
 
-Background — save file format:
-- `SaveFile.es3`: Easy Save 3 JSON; a direct serialisation of C# objects. The `SavedPresetNames` key contains a sparse `List<string>` mapping slot index → character name (or `null` for empty slots).
-- `presetSlot{n}.txt.tmp`: Contains a znelchar JSON payload that has been JSON-stringified and placed as a bare key inside `{…}` — an artefact of the Easy Save 3 serialiser. The outer braces must be stripped and the inner string JSON-unescaped to recover valid znelchar JSON. Round-trips must re-apply the wrapper.
+#### Znelchar Structure and Texture Storage (confirmed 2026-05-02)
 
-Deliverables:
-- `tools/tvs-save` Rush package with `TVSSave.Tools` PS module, mirroring `tools/znelchar` layout.
-- Private parsers: `Read-TVSSaveIndex`, `Write-TVSSaveIndex`, `ConvertFrom-TVSPresetSlot`, `ConvertTo-TVSPresetSlot`.
-- Public cmdlets:
-  - `Get-TVSSaveCharacterList` — list occupied slots with name and index (reads `SaveFile.es3`).
-  - `Export-TVSCharacterPreset [-Slot <int>]` — convert one slot file to `{characterWorkDir}/presets/{name}.znelchar`.
-  - `Export-TVSAllCharacterPresets` — convenience; iterates all occupied slots.
-  - `Import-TVSCharacterPreset -Name <string> [-Slot <int>] -Force` — convert `.znelchar` back to `presetSlot{n}.txt.tmp`; requires `-Force` as a safety guard against writing to the live player data directory.
-  - `Expand-TVSCharacterPreset [-Name <string>]` — calls `Expand-ZnelcharData` (Znelchar.Tools), outputs to `{characterWorkDir}/expanded/{name}/`.
-  - `Compress-TVSCharacterPreset -Name <string>` — calls `Compress-ZnelcharData`, updates `{characterWorkDir}/presets/{name}.znelchar`.
-  - `Watch-TVSCharacterSync [-Path <string>] [-Expand]` — starts background FSW watcher; exports `.znelchar` on save change; with `-Expand` also calls `Expand-TVSCharacterPreset`; returns watcher ID.
-  - `Stop-TVSCharacterSync [[-Id] <string>]` — stops watcher.
-- `SaveFile.es3` JSON schema under `tools/tvs-save/data/schemas/`.
-- Pester tests under `tools/tvs-save/tests/`:
-  - `ConvertFrom-TVSPresetSlot.Tests.ps1` — parse round-trip.
-  - `Get-TVSSaveCharacterList.Tests.ps1` — slot/name mapping from mock ES3 JSON.
-- `tvsm save` command surface:
-  - `tvsm save list` — Spectre table of occupied slots and character names.
-  - `tvsm save export [--slot N | --all]` — export to `.znelchar`.
-  - `tvsm save import --name <name> [--slot <n>] --force` — import from `.znelchar`.
-  - `tvsm save expand [--name <name>]` — expand to multi-file format.
-  - `tvsm save watch [--expand]` — file-system watcher with live Spectre status.
+A `.znelchar` file is a two-field JSON envelope:
 
-File watcher design — feedback-loop mitigation:
-- Per-path `$script:OutboundLocks` hashtable (path → expiry datetime, 3 s window).
-- Before writing any file, set its lock. On FSW event, skip if lock still live.
-- Events processed on a single-threaded `ConcurrentQueue` runspace to avoid races.
-- Watcher reacts to: new/modified `presetSlot{n}.txt.tmp` files; changes to `.znelchar` files in `{characterWorkDir}/presets`; changes to `SaveFile.es3` (for rename detection).
-- `.znelchar` → expanded sync is intentionally one-way (expanded output only); the expanded directory is not watched for changes.
-- A 750 ms debounce delay allows the game to finish all writes before reacting.
+```json
+{
+  "_characterData": "<escaped JSON string>",
+  "_textureDatas": [
+    { "_textureName": "RitaTorso_D.jpg", "_textureData": "<base64>" },
+    { "_textureName": "RitaArms.jpg",    "_textureData": "<base64>" }
+  ]
+}
+```
 
-Exit criteria:
-- `tvsm save list` correctly displays all characters from `SaveFile.es3`.
-- `tvsm save export --all` converts all occupied slot files to `.znelchar` in `characterWorkDir/presets/`.
-- `tvsm save watch` reacts to game saves and exports updated `.znelchar` files automatically.
-- `tvsm save watch --expand` additionally expands character data into `characterWorkDir/expanded/`.
-- Round-trip test: export → edit `.znelchar` → `import --force` produces a valid `presetSlot{n}.txt.tmp`.
-- All Pester tests pass.
+- `_characterData` is the full content of `presetSlot{n}.tmp.txt` — **not** the other way around.
+- Custom skin textures are persisted by the game as discrete `.jpg` files in `{playerDataDir}/SkinPresetTextures/` (e.g. [`temp/playerdata/SkinPresetTextures`](../../../temp/playerdata/SkinPresetTextures): `RitaArms.jpg`, `RitaHead1_D.jpg`, `RitaLegs.jpg`, `RitaTorso_D.jpg`).
+- Texture filenames are referenced inside `_characterData` at `skinData.skinMaterials[*].diffuse`. Only entries with a file extension (`.jpg`, `.png`) are custom textures; bare names are built-in game assets.
+
+Reference: [`temp/character-work/presets/Reeda.znelchar.pretty-print.json`](../../../temp/character-work/presets/Reeda.znelchar.pretty-print.json) is a pretty-printed example of the `_characterData` payload, not a full znelchar envelope.
+
+#### Re-Composition Workflow: presetSlot → znelchar
+
+```
+presetSlot{n}.tmp.txt  ──┐
+                          ├──► Compose-ZnelcharPreset ──► output.znelchar
+SkinPresetTextures/       ┘
+```
+
+Steps:
+1. Read `presetSlot{n}.tmp.txt` → `_characterData` string.
+2. Parse the JSON to extract `skinData.skinMaterials[*].diffuse` values with file extensions.
+3. Locate each custom texture in `{playerDataDir}/SkinPresetTextures/`.
+4. Base64-encode each texture → populate `_textureDatas` array.
+5. Serialize `{ _characterData, _textureDatas }` → write `.znelchar`.
+
+#### Decomposition Workflow: znelchar → presetSlot
+
+```
+input.znelchar ──► Expand-ZnelcharPreset ──► presetSlot{n}.tmp.txt
+                                         └──► SkinPresetTextures/*.jpg
+```
+
+Steps:
+1. Parse `.znelchar` JSON.
+2. Write `_characterData` raw string → `presetSlot{n}.tmp.txt`.
+3. For each `_textureDatas` entry: base64-decode → write to `{playerDataDir}/SkinPresetTextures/{_textureName}`.
+4. Validate all `diffuse` filenames in `_characterData` are present in `SkinPresetTextures` (warn-only).
+
+#### characterWorkDir Layout
+
+```
+{characterWorkDir}/
+  presets/
+    presetSlot1/
+      characterData.json     ← pretty-printed _characterData
+      textures/
+        RitaTorso_D.jpg      ← copied from SkinPresetTextures
+        RitaArms.jpg
+        RitaLegs.jpg
+        RitaHead1_D.jpg
+  exports/
+    MyCharacter.znelchar     ← composed znelchar for distribution
+```
+
+#### Refactoring Decisions
+
+1. **Remove texture encoding from save-watch pipeline.** The live `Watch-TVSSaveDirectory` flow reads `presetSlot{n}.tmp.txt` and `SkinPresetTextures` directly; no znelchar intermediary is needed. A private `Sync-TVSCharacterWorkDir` function handles this, copying textures as raw files (no base64 round-trip).
+2. **Reserve znelchar composition/decomposition for explicit import/export.** `Compose-ZnelcharPreset` and `Expand-ZnelcharPreset` are the cmdlets for portable file exchange, not for the live dev workflow.
+3. **Adopt the above `characterWorkDir` layout.** `Sync-TVSCharacterWorkDir`, `Compose-ZnelcharPreset`, and `Expand-ZnelcharPreset` all operate against this structure.
+
+#### Module Placement
+
+These cmdlets live in the appropriate tool modules so each module is independently usable outside `tvsm`:
+
+| Cmdlet | Module | Rationale |
+|--------|--------|-----------|
+| `Compose-ZnelcharPreset` | `Znelchar.Tools/Public/` | Znelchar file format operation |
+| `Expand-ZnelcharPreset` | `Znelchar.Tools/Public/` | Znelchar file format operation |
+| `Sync-TVSCharacterWorkDir` | `TVSSave.Tools/Public/` | Save file / work-dir syncing operation |
+| `ConvertFrom-TVSPresetSlot` | `TVSSave.Tools/Public/` | Elevated from Private — needed by `Znelchar.Tools` |
+| `ConvertTo-TVSPresetSlot` | `TVSSave.Tools/Public/` | Elevated from Private — needed by `Znelchar.Tools` |
+
+`TVSM` re-exports these as **thin wrappers** (module-qualified delegation via `Znelchar.Tools\Compose-ZnelcharPreset`, etc.) through [`Znelchar-Commands.ps1`](../../../worktrees/tvs-tvsm-save-tools/tools/tvsm/module/TVSM/Public/Znelchar-Commands.ps1) and updates to [`Save-Commands.ps1`](../../../worktrees/tvs-tvsm-save-tools/tools/tvsm/module/TVSM/Public/Save-Commands.ps1). `TVSM.psd1` declares both `TVSSave.Tools` and `Znelchar.Tools` in `RequiredModules`.
+
+#### New Cmdlets
+
+```powershell
+# In Znelchar.Tools — re-compose a znelchar from a presetSlot file + SkinPresetTextures
+Compose-ZnelcharPreset -PresetSlotPath <string> -TextureDir <string> -OutputPath <string>
+
+# In Znelchar.Tools — decompose a znelchar into a presetSlot file + SkinPresetTextures
+Expand-ZnelcharPreset -InputPath <string> -PresetSlotPath <string> -TextureDir <string> [-NoClobber]
+
+# In TVSSave.Tools — sync game save state into characterWorkDir (live watch helper; no znelchar intermediary)
+Sync-TVSCharacterWorkDir -PresetSlotPath <string> -TextureDir <string> -WorkDir <string>
+```
+
+#### Deliverables
+
+- `tools/tvs-save` module (module/core distribution).
+- `Compose-ZnelcharPreset` and `Expand-ZnelcharPreset` cmdlets with Pester tests.
+- `Sync-TVSCharacterWorkDir` private function used by `Watch-TVSSaveDirectory`.
+- `tvsm save watch` with direct sync into `characterWorkDir` (no znelchar intermediary in hot path).
+- `tvsm char export` / `tvsm char import` façade commands over compose/expand cmdlets.
+- Updated `characterWorkDir` layout documented in `tools/tvs-save/docs/`.
+
+#### Exit criteria
+
+- A developer can run `tvsm save watch` and have any save change automatically expanded into their `characterWorkDir` (split into `characterData.json` + `textures/`).
+- `Compose-ZnelcharPreset` produces a valid znelchar from `presetSlot{n}.tmp.txt` + `SkinPresetTextures`.
+- `Expand-ZnelcharPreset` correctly populates `presetSlot{n}.tmp.txt` and `SkinPresetTextures` from a znelchar.
+- All Pester tests pass in CI.
 
 ### Phase 4: Unified Bundle
 
