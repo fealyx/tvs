@@ -190,27 +190,14 @@ String watcher ID for use with Stop-TVSCharacterSync.
                                     }
                                 }
 
-                                # Convert and write .znelchar
-                                $znelcharJson = ConvertFrom-TVSPresetSlot -Path $changedPath
-                                $outputFile = Join-Path $PresetsPath "${charName}.znelchar"
-
-                                # Set outbound lock
-                                $Locks[$outputFile.Replace('\', '/')] = $now.AddSeconds(3)
-
-                                Set-Content -Path $outputFile -Value $znelcharJson -Encoding UTF8
+                                # Sync to characterWorkDir (populates characterWorkDir/presets/presetSlot{n}/)
+                                $workDir = Split-Path $PresetsPath -Parent  # characterWorkDir
+                                $syncResult = Sync-TVSCharacterWorkDir -PresetSlotPath $changedPath `
+                                    -TextureDir (Join-Path $WatchPath 'SkinPresetTextures') `
+                                    -WorkDir $workDir
 
                                 if (-not $QuietMode) {
-                                    Write-Host "[tvs-save] Exported slot $slotIndex → ${charName}.znelchar"
-                                }
-
-                                # Auto-expand if requested
-                                if ($DoExpand) {
-                                    $expandedDir = Join-Path (Split-Path $PresetsPath -Parent) 'expanded' $charName
-                                    $Locks[$expandedDir.Replace('\', '/')] = $now.AddSeconds(3)
-                                    Expand-ZnelcharData -InputPath $outputFile -OutputDir $expandedDir
-                                    if (-not $QuietMode) {
-                                        Write-Host "[tvs-save] Expanded → $expandedDir"
-                                    }
+                                    Write-Host "[tvs-save] Synced slot $slotIndex → $workDir"
                                 }
                             }
                         }
@@ -239,13 +226,12 @@ String watcher ID for use with Stop-TVSCharacterSync.
                                 }
 
                                 if ($slotIndex -ge 0) {
-                                    $znelcharJson = Get-Content -Path $znelcharPath -Raw -Encoding UTF8
                                     $presetPath = Join-Path $WatchPath "presetSlot${slotIndex}.txt.tmp"
 
                                     # Set outbound lock
                                     $Locks[$presetPath.Replace('\', '/')] = $now.AddSeconds(3)
 
-                                    ConvertTo-TVSPresetSlot -ZnelcharJson $znelcharJson -OutputPath $presetPath
+                                    Import-TVSCharacterPreset -SourcePath $znelcharPath -Slot $slotIndex -Force
 
                                     if (-not $QuietMode) {
                                         Write-Host "[tvs-save] Imported ${charName}.znelchar → slot $slotIndex"
