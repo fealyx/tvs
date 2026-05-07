@@ -1,360 +1,152 @@
-# Script-scoped state for watcher management
-$script:Watchers = @{}
-$script:OutboundLocks = @{}
-$script:WatcherIdCounter = 0
-
 function Watch-TVSCharacterSync {
-<#
-.SYNOPSIS
-Starts a background file-system watcher that syncs character data
-between game save files and the character working directory.
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $false)]
+    [string]$Path = $script:DefaultPlayerDataDir,
 
-.DESCRIPTION
-Starts a background PowerShell runspace with a FileSystemWatcher
-pointed at the player data directory and characterWorkDir/presets/.
-Events are enqueued into a ConcurrentQueue and drained on a single
-processing thread to avoid races.
+    [Parameter(Mandatory = $false)]
+    [string]$OutputPath = $(if ($script:DefaultCharacterWorkDir) { Join-Path $script:DefaultCharacterWorkDir 'presets' } else { '' }),
 
-Reaction rules:
-  - presetSlot{n}.txt.tmp created/modified → export .znelchar
-  - presets/{name}.znelchar created/modified → import to presetSlot
-  - SaveFile.es3 modified → detect slot renames
+    [Parameter(Mandatory = $false)]
+    [switch]$Expand,
 
-Feedback-loop mitigation:
-  - Per-path outbound locks (3 s expiry) prevent reacting to our own writes.
-  - 750 ms debounce delay before processing events.
-  - expanded/ directory is NOT watched (one-way sync only).
+    [Parameter(Mandatory = $false)]
+    [switch]$Quiet
+  )
 
-.PARAMETER Path
-Path to the player data directory. Defaults to playerDataDir from
-TVS.Environment.
+  if ($script:TVSEnvironmentAvailable) {
+    Write-Verbose "TVS.Environment detected, using defaults: playerDataDir=$script:DefaultPlayerDataDir, characterWorkDir=$script:DefaultCharacterWorkDir"
+  }
 
-.PARAMETER OutputPath
-Directory for .znelchar output. Defaults to
-{characterWorkDir}/presets/ from TVS.Environment.
+  # If Path is a directory, append SaveFile.es3
+  if ($Path -and (Test-Path $Path -PathType Container)) {
+    $saveFilePath = Join-Path $Path 'SaveFile.es3'
+  } elseif ($Path) {
+    $saveFilePath = $Path
+  } else {
+    throw "Path is required. Either provide -Path or ensure TVS.Environment is available."
+  }
 
-.PARAMETER Expand
-When present, also calls Expand-TVSCharacterPreset after each export.
+  if (-not (Test-Path $saveFilePath -PathType Leaf)) {
+    throw "SaveFile.es3 not found at: $saveFilePath"
+  }
 
-.PARAMETER Quiet
-Suppress informational output.
+  if ($OutputPath) {
+    $characterWorkDir = $OutputPath
+  } else {
+    $characterWorkDir = Join-Path (Split-Path $saveFilePath -Parent) "TVSCharacterPresets"
+  }
 
-.OUTPUTS
-String watcher ID for use with Stop-TVSCharacterSync.
-#>
-    [CmdletBinding()]
-    param(
-        [string]$Path = '',
-        [string]$OutputPath = '',
-        [switch]$Expand,
-        [switch]$Quiet
-    )
+  if (-not (Test-Path $characterWorkDir)) {
+    New-Item -Path $characterWorkDir -ItemType Directory -Force | Out-Null
+  }
 
-    $env = Get-TVSEnvironment
+  $logPath = Join-Path $characterWorkDir "tvs-character-sync.log"
 
-    if (-not $Path) {
-        $Path = $env.playerDataDir
-    }
-    if (-not $OutputPath) {
-        $OutputPath = Join-Path $env.characterWorkDir 'presets'
-    }
+  if (-not $Quiet) {
+    Write-Host "Starting TVS Character Sync watcher..."
+    Write-Host "  Save file: $saveFilePath"
+    Write-Host "  Work dir: $characterWorkDir"
+    Write-Host "  Log file: $logPath"
+  }
 
-    if (-not (Test-Path $Path -PathType Container)) {
-        throw "Player data directory not found at: $Path"
-    }
+  $iss = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
+  $iss.ImportPSModule(@(
+    "$PSScriptRoot/../TVSSave.Tools.psd1"
+  ))
 
-    if (-not (Test-Path $OutputPath -PathType Container)) {
-        New-Item -Path $OutputPath -ItemType Directory -Force | Out-Null
-    }
+  $runspacePool = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspacePool(1, 1, $iss, $Host)
+  $runspacePool.Open()
 
-    $script:WatcherIdCounter++
-    $watcherId = "tvs-sync-$($script:WatcherIdCounter)"
+  $eventQueue = [System.Collections.Concurrent.ConcurrentQueue[object]]::new()
+  $outboundLocks = @{}
+  $cancellationTokenSource = [System.Threading.CancellationTokenSource]::new()
 
-    # Create the event queue
-    $queue = [System.Collections.Concurrent.ConcurrentQueue[string]]::new()
+  $sharedState = @{
+    EventQueue = $eventQueue
+    SaveFilePath = $saveFilePath
+    CharacterWorkDir = $characterWorkDir
+    LogPath = $logPath
+    OutboundLocks = $outboundLocks
+    CancellationTokenSource = $cancellationTokenSource
+  }
 
-    # Create cancellation token source
-    $cts = [System.Threading.CancellationTokenSource]::new()
+  $runspaceScript = {
+    param($SharedState)
 
-    # Store watcher state
-    $script:Watchers[$watcherId] = @{
-        Id        = $watcherId
-        Queue     = $queue
-        CTS       = $cts
-        Runspace  = $null
-        Power     = $null
-        Path      = $Path
-        OutputPath = $OutputPath
-        Expand    = $Expand.IsPresent
-    }
+    $EventQueue = $SharedState.EventQueue
+    $SaveFilePath = $SharedState.SaveFilePath
+    $CharacterWorkDir = $SharedState.CharacterWorkDir
+    $LogPath = $SharedState.LogPath
+    $OutboundLocks = $SharedState.OutboundLocks
+    $CancellationTokenSource = $SharedState.CancellationTokenSource
 
-    # Build the watcher script block
-    $watcherScript = {
-        param(
-            [string]$WatchPath,
-            [string]$PresetsPath,
-            [System.Collections.Concurrent.ConcurrentQueue[string]]$EventQueue,
-            [System.Threading.CancellationToken]$Token,
-            [hashtable]$Locks,
-            [bool]$DoExpand,
-            [bool]$QuietMode
-        )
+    $watcherInfo = New-TVSCharacterWatcher -Path (Split-Path $SaveFilePath -Parent) -EventQueue $EventQueue -LogPath $LogPath
 
-        $ErrorActionPreference = 'Stop'
+    Invoke-TVSCharacterInitialSync -SaveFilePath $SaveFilePath -CharacterWorkDir $CharacterWorkDir -LogPath $LogPath -OutboundLocks $OutboundLocks
 
-        # Create FileSystemWatcher for player data dir
-        $fsw = [System.IO.FileSystemWatcher]::new($WatchPath)
-        $fsw.IncludeSubdirectories = $false
-        $fsw.EnableRaisingEvents = $false
-        $fsw.NotifyFilter = [System.IO.NotifyFilters]::FileName -bor
-                            [System.IO.NotifyFilters]::LastWrite -bor
-                            [System.IO.NotifyFilters]::Size
+    $watcherInfo.Watcher.EnableRaisingEvents = $true
+    Write-TVSCharacterSyncLog -Severity "INFO" -Message "FileSystemWatcher enabled, watching for changes..." -LogPath $LogPath
 
-        # Create FileSystemWatcher for presets dir
-        $fswPresets = [System.IO.FileSystemWatcher]::new($PresetsPath)
-        $fswPresets.IncludeSubdirectories = $false
-        $fswPresets.EnableRaisingEvents = $false
-        $fswPresets.NotifyFilter = [System.IO.NotifyFilters]::FileName -bor
-                                   [System.IO.NotifyFilters]::LastWrite
+    Start-TVSCharacterProcessingLoop -EventQueue $EventQueue -SaveFilePath $SaveFilePath -CharacterWorkDir $CharacterWorkDir -LogPath $LogPath -OutboundLocks $OutboundLocks -CancellationTokenSource $CancellationTokenSource
 
-        # Event handler: enqueue the full path
-        $onChanged = {
-            $fullPath = $Event.SourceEventArgs.FullPath
-            $Event.MessageData.TryAdd($fullPath)
-        }
-
-        $onRenamed = {
-            $fullPath = $Event.SourceEventArgs.FullPath
-            $Event.MessageData.TryAdd($fullPath)
-        }
-
-        # Register events
-        $evtChanged = Register-ObjectEvent -InputObject $fsw -EventName 'Changed' -Action $onChanged -MessageData $EventQueue
-        $evtCreated = Register-ObjectEvent -InputObject $fsw -EventName 'Created' -Action $onChanged -MessageData $EventQueue
-        $evtRenamed = Register-ObjectEvent -InputObject $fsw -EventName 'Renamed' -Action $onRenamed -MessageData $EventQueue
-
-        $evtPresetsChanged = Register-ObjectEvent -InputObject $fswPresets -EventName 'Changed' -Action $onChanged -MessageData $EventQueue
-        $evtPresetsCreated = Register-ObjectEvent -InputObject $fswPresets -EventName 'Created' -Action $onChanged -MessageData $EventQueue
-
-        try {
-            $fsw.EnableRaisingEvents = $true
-            $fswPresets.EnableRaisingEvents = $true
-
-            if (-not $QuietMode) {
-                Write-Host "[tvs-save] Watching: $WatchPath"
-                Write-Host "[tvs-save] Presets:  $PresetsPath"
-                if ($DoExpand) {
-                    Write-Host "[tvs-save] Auto-expand: enabled"
-                }
-            }
-
-            # Processing loop
-            while (-not $Token.IsCancellationRequested) {
-                # Debounce: collect events over 750 ms
-                Start-Sleep -Milliseconds 750
-
-                $paths = [System.Collections.Generic.HashSet[string]]::new()
-                $item = $null
-                while ($EventQueue.TryDequeue([ref]$item)) {
-                    [void]$paths.Add($item)
-                }
-
-                foreach ($changedPath in $paths) {
-                    if ($Token.IsCancellationRequested) { break }
-
-                    $fileName = Split-Path $changedPath -Leaf
-
-                    # Skip if outbound lock is active
-                    $now = [datetime]::UtcNow
-                    $lockKey = $changedPath.Replace('\', '/')
-                    if ($Locks.ContainsKey($lockKey) -and $Locks[$lockKey] -gt $now) {
-                        continue
-                    }
-
-                    try {
-                        # Case 1: presetSlot{n}.txt.tmp changed
-                        if ($fileName -match '^presetSlot(\d+)\.txt\.tmp$') {
-                            $slotIndex = [int]$Matches[1]
-
-                            # Read the save index to get the character name
-                            $savePath = Join-Path $WatchPath 'SaveFile.es3'
-                            if (Test-Path $savePath) {
-                                $saveData = Get-Content -Path $savePath -Raw -Encoding UTF8 | ConvertFrom-Json -AsHashtable
-                                $charName = "Slot$slotIndex"
-                                if ($saveData.ContainsKey('SavedPresetNames') -and
-                                    $saveData['SavedPresetNames'] -is [hashtable] -and
-                                    $saveData['SavedPresetNames'].ContainsKey('value')) {
-                                    $values = $saveData['SavedPresetNames']['value']
-                                    if ($values -is [array] -and $slotIndex -lt $values.Count -and $null -ne $values[$slotIndex]) {
-                                        $charName = $values[$slotIndex]
-                                    }
-                                }
-
-                                # Sync to characterWorkDir (populates characterWorkDir/presets/presetSlot{n}/)
-                                $workDir = Split-Path $PresetsPath -Parent  # characterWorkDir
-                                $syncResult = Sync-TVSCharacterWorkDir -PresetSlotPath $changedPath `
-                                    -TextureDir (Join-Path $WatchPath 'SkinPresetTextures') `
-                                    -WorkDir $workDir
-
-                                if (-not $QuietMode) {
-                                    Write-Host "[tvs-save] Synced slot $slotIndex → $workDir"
-                                }
-                            }
-                        }
-                        # Case 2: .znelchar file changed in presets dir
-                        elseif ($fileName -match '\.znelchar$') {
-                            $charName = [System.IO.Path]::GetFileNameWithoutExtension($fileName)
-                            $znelcharPath = $changedPath
-
-                            # Find the slot index for this character
-                            $savePath = Join-Path $WatchPath 'SaveFile.es3'
-                            if (Test-Path $savePath) {
-                                $saveData = Get-Content -Path $savePath -Raw -Encoding UTF8 | ConvertFrom-Json -AsHashtable
-                                $slotIndex = -1
-                                if ($saveData.ContainsKey('SavedPresetNames') -and
-                                    $saveData['SavedPresetNames'] -is [hashtable] -and
-                                    $saveData['SavedPresetNames'].ContainsKey('value')) {
-                                    $values = $saveData['SavedPresetNames']['value']
-                                    if ($values -is [array]) {
-                                        for ($i = 0; $i -lt $values.Count; $i++) {
-                                            if ($values[$i] -eq $charName) {
-                                                $slotIndex = $i
-                                                break
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if ($slotIndex -ge 0) {
-                                    $presetPath = Join-Path $WatchPath "presetSlot${slotIndex}.txt.tmp"
-
-                                    # Set outbound lock
-                                    $Locks[$presetPath.Replace('\', '/')] = $now.AddSeconds(3)
-
-                                    Import-TVSCharacterPreset -SourcePath $znelcharPath -Slot $slotIndex -Force
-
-                                    if (-not $QuietMode) {
-                                        Write-Host "[tvs-save] Imported ${charName}.znelchar → slot $slotIndex"
-                                    }
-                                }
-                            }
-                        }
-                        # Case 3: SaveFile.es3 changed — detect renames
-                        elseif ($fileName -eq 'SaveFile.es3') {
-                            if (-not $QuietMode) {
-                                Write-Host "[tvs-save] SaveFile.es3 changed (rename detection not yet implemented)"
-                            }
-                        }
-                    }
-                    catch {
-                        if (-not $QuietMode) {
-                            Write-Warning "[tvs-save] Error processing '$changedPath': $_"
-                        }
-                    }
-                }
-            }
-        }
-        finally {
-            $fsw.EnableRaisingEvents = $false
-            $fswPresets.EnableRaisingEvents = $false
-
-            $evtChanged, $evtCreated, $evtRenamed, $evtPresetsChanged, $evtPresetsCreated |
-                Where-Object { $_ } |
-                ForEach-Object {
-                    try { Unregister-Event -SourceIdentifier $_.Name -ErrorAction SilentlyContinue } catch { }
-                }
-
-            $fsw.Dispose()
-            $fswPresets.Dispose()
-        }
+    $watcherInfo.Watcher.EnableRaisingEvents = $false
+    $watcherInfo.Watcher.Dispose()
+    foreach ($event in $watcherInfo.Events) {
+      Unregister-Event -SubscriptionId $event.SubscriptionId -ErrorAction SilentlyContinue
     }
 
-    # Start the watcher in a background runspace
-    $ps = [PowerShell]::Create()
-    $ps.AddScript($watcherScript) | Out-Null
-    $ps.AddParameter('WatchPath', $Path) | Out-Null
-    $ps.AddParameter('PresetsPath', $OutputPath) | Out-Null
-    $ps.AddParameter('EventQueue', $queue) | Out-Null
-    $ps.AddParameter('Token', $cts.Token) | Out-Null
-    $ps.AddParameter('Locks', $script:OutboundLocks) | Out-Null
-    $ps.AddParameter('DoExpand', $Expand.IsPresent) | Out-Null
-    $ps.AddParameter('QuietMode', $Quiet.IsPresent) | Out-Null
+    Write-TVSCharacterSyncLog -Severity "INFO" -Message "Watcher stopped" -LogPath $LogPath
+  }
 
-    $runspace = [RunspaceFactory]::CreateRunspace()
-    $runspace.ApartmentState = 'STA'
-    $runspace.Open()
-    $ps.Runspace = $runspace
+  $powershell = [System.Management.Automation.PowerShell]::Create($iss)
+  $powershell.RunspacePool = $runspacePool
+  $null = $powershell.AddScript($runspaceScript).AddArgument($sharedState)
+  $asyncResult = $powershell.BeginInvoke()
 
-    $asyncResult = $ps.BeginInvoke()
+  $watcherId = [guid]::NewGuid().ToString()
+  $script:TVSSyncWatchers = @{}
+  $script:TVSSyncWatchers[$watcherId] = @{
+    PowerShell = $powershell
+    AsyncResult = $asyncResult
+    RunspacePool = $runspacePool
+    CancellationTokenSource = $cancellationTokenSource
+    LogPath = $logPath
+  }
 
-    $script:Watchers[$watcherId].Runspace = $runspace
-    $script:Watchers[$watcherId].Power = $ps
-    $script:Watchers[$watcherId].AsyncResult = $asyncResult
+  if (-not $Quiet) {
+    Write-Host "Watcher started with ID: $watcherId"
+  }
 
-    if (-not $Quiet) {
-        Write-Host "[tvs-save] Watcher started (ID: $watcherId)"
-    }
-
-    return $watcherId
+  return $watcherId
 }
 
 function Stop-TVSCharacterSync {
-<#
-.SYNOPSIS
-Stops one or all background character sync watchers.
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$WatcherId
+  )
 
-.DESCRIPTION
-Stops the watcher identified by -Id, or all active watchers if
-no ID is specified. Cleans up runspace and event subscriptions.
+  if (-not $script:TVSSyncWatchers -or -not $script:TVSSyncWatchers.ContainsKey($WatcherId)) {
+    Write-Warning "Watcher ID '$WatcherId' not found"
+    return
+  }
 
-.PARAMETER Id
-Watcher ID returned by Watch-TVSCharacterSync. If omitted, stops
-all active watchers.
-#>
-    [CmdletBinding()]
-    param(
-        [string]$Id = ''
-    )
+  $watcher = $script:TVSSyncWatchers[$WatcherId]
+  $watcher.CancellationTokenSource.Cancel()
 
-    $idsToStop = if ($Id) { @($Id) } else { $script:Watchers.Keys }
+  try {
+    $watcher.PowerShell.EndInvoke($watcher.AsyncResult)
+  } catch {
+    Write-Warning "Error stopping watcher: $_"
+  } finally {
+    $watcher.PowerShell.Dispose()
+    $watcher.RunspacePool.Close()
+    $watcher.RunspacePool.Dispose()
+    $watcher.CancellationTokenSource.Dispose()
+    $script:TVSSyncWatchers.Remove($WatcherId)
+  }
 
-    foreach ($watcherId in $idsToStop) {
-        if (-not $script:Watchers.ContainsKey($watcherId)) {
-            Write-Warning "No watcher found with ID: $watcherId"
-            continue
-        }
-
-        $watcher = $script:Watchers[$watcherId]
-
-        # Signal cancellation
-        try { $watcher.CTS.Cancel() } catch { }
-
-        # Wait briefly for the runspace to finish
-        Start-Sleep -Milliseconds 500
-
-        # Clean up
-        try {
-            if ($watcher.Power -and $watcher.AsyncResult) {
-                $watcher.Power.EndInvoke($watcher.AsyncResult)
-            }
-        }
-        catch {
-            # Expected — the runspace may throw on cancellation
-        }
-        finally {
-            try { $watcher.Power?.Dispose() } catch { }
-            try { $watcher.Runspace?.Dispose() } catch { }
-            try { $watcher.CTS?.Dispose() } catch { }
-        }
-
-        $script:Watchers.Remove($watcherId)
-        Write-Host "[tvs-save] Watcher stopped (ID: $watcherId)"
-    }
-
-    # Clean up expired outbound locks
-    $now = [datetime]::UtcNow
-    $expired = $script:OutboundLocks.Keys | Where-Object { $script:OutboundLocks[$_] -le $now }
-    foreach ($key in $expired) {
-        $script:OutboundLocks.Remove($key)
-    }
+  Write-Host "Watcher '$WatcherId' stopped"
 }

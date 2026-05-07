@@ -10,7 +10,6 @@
     RequiredModules   = @(
         @{ ModuleName = 'TVS.Environment'; ModuleVersion = '0.1.0' },
         @{ ModuleName = 'PwshSpectreConsole'; ModuleVersion = '0.1.0' },
-        @{ ModuleName = 'TVSSave.Tools'; ModuleVersion = '0.1.0' },
         @{ ModuleName = 'Znelchar.Tools'; ModuleVersion = '0.2.0' }
     )
     FunctionsToExport = @(

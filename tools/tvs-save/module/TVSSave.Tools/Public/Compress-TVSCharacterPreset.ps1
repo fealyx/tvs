@@ -22,41 +22,51 @@ Direct path to the expanded directory. Overrides -Name lookup.
 
 .PARAMETER OutputPath
 Path for the output .znelchar file. Defaults to
-{characterWorkDir}/presets/{name}.znelchar.
+{characterWorkDir}/presets/{name}.znelchar if TVS.Environment is available.
 
 .PARAMETER Force
 Overwrite the output .znelchar file if it already exists.
 #>
-    [CmdletBinding(DefaultParameterSetName = 'ByName')]
-    param(
-        [Parameter(ParameterSetName = 'ByName', Mandatory = $true)]
-        [string]$Name,
+  [CmdletBinding(DefaultParameterSetName = 'ByName')]
+  param(
+    [Parameter(ParameterSetName = 'ByName', Mandatory = $true)]
+    [string]$Name,
 
-        [Parameter(ParameterSetName = 'ByPath', Mandatory = $true)]
-        [string]$SourcePath,
+    [Parameter(ParameterSetName = 'ByPath', Mandatory = $true)]
+    [string]$SourcePath,
 
-        [string]$OutputPath = '',
+    [string]$OutputPath = '',
 
-        [switch]$Force
-    )
+    [switch]$Force
+  )
 
-    $env = Get-TVSEnvironment
+  if ($script:TVSEnvironmentAvailable) {
+    Write-Verbose "TVS.Environment detected, using defaults: playerDataDir=$script:DefaultPlayerDataDir, characterWorkDir=$script:DefaultCharacterWorkDir"
+  }
 
-    if ($PSCmdlet.ParameterSetName -eq 'ByName') {
-        $SourcePath = Join-Path $env.characterWorkDir 'expanded' $Name
+  $characterWorkDir = $script:DefaultCharacterWorkDir
+
+  if ($PSCmdlet.ParameterSetName -eq 'ByName') {
+    if (-not $characterWorkDir) {
+      throw "characterWorkDir not available. Either set TVS.Environment or provide -SourcePath explicitly."
     }
+    $SourcePath = Join-Path $characterWorkDir 'expanded' $Name
+  }
 
-    if (-not (Test-Path $SourcePath -PathType Container)) {
-        throw "Expanded directory not found at: $SourcePath"
+  if (-not (Test-Path $SourcePath -PathType Container)) {
+    throw "Expanded directory not found at: $SourcePath"
+  }
+
+  if (-not $OutputPath) {
+    if (-not $characterWorkDir) {
+      throw "OutputPath is required. Either set TVS.Environment or provide -OutputPath explicitly."
     }
+    $baseName = Split-Path $SourcePath -Leaf
+    $OutputPath = Join-Path $characterWorkDir 'presets' "${baseName}.znelchar"
+  }
 
-    if (-not $OutputPath) {
-        $baseName = Split-Path $SourcePath -Leaf
-        $OutputPath = Join-Path $env.characterWorkDir 'presets' "${baseName}.znelchar"
-    }
+  $result = Compress-ZnelcharData -InputPath $SourcePath -OutputPath $OutputPath -Force:$Force
 
-    $result = Compress-ZnelcharData -InputPath $SourcePath -OutputPath $OutputPath -Force:$Force
-
-    Write-Verbose "Compressed '$SourcePath' to $($result.OutputPath)"
-    return $result.OutputPath
+  Write-Verbose "Compressed '$SourcePath' to $($result.OutputPath)"
+  return $result.OutputPath
 }

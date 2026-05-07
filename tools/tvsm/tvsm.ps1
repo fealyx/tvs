@@ -36,6 +36,10 @@ Dispatches tvsm subcommands to the TVSM module. Supports:
   tvsm help
 
 Run tvsm with no arguments for an interactive menu.
+
+.PARAMETER Experimental
+    Enables experimental features, including Save Tools (tvsm save * commands).
+    Without this flag, save tools are hidden from the command surface.
 #>
 [CmdletBinding()]
 param(
@@ -52,7 +56,8 @@ param(
     [string]$Src    = '',
     [string]$Layout = 'plugins-dll',
     [string]$Note   = '',
-    [switch]$Help
+    [switch]$Help,
+    [switch]$Experimental
 )
 
 Set-StrictMode -Version Latest
@@ -79,9 +84,12 @@ if (Test-Path -LiteralPath $devTVSEPath) {
 
 # Dev-repo layout: tvs-save module sits at ../tvs-save/module
 # relative to this script (tools/tvsm/ -> tools/tvs-save/module/).
-$devTVSSavePath = Join-Path $PSScriptRoot '..' 'tvs-save' 'module'
-if (Test-Path -LiteralPath $devTVSSavePath) {
-    $env:PSModulePath = (Resolve-Path $devTVSSavePath).Path + [IO.Path]::PathSeparator + $env:PSModulePath
+# Only add to PSModulePath when -Experimental is set.
+if ($Experimental) {
+    $devTVSSavePath = Join-Path $PSScriptRoot '..' 'tvs-save' 'module'
+    if (Test-Path -LiteralPath $devTVSSavePath) {
+        $env:PSModulePath = (Resolve-Path $devTVSSavePath).Path + [IO.Path]::PathSeparator + $env:PSModulePath
+    }
 }
 
 # Dev-repo layout: znelchar module sits at ../znelchar/module
@@ -126,6 +134,16 @@ if (-not (Test-Path -LiteralPath $tvsmModulePath)) {
 }
 Import-Module $tvsmModulePath -Force -ErrorAction Stop
 
+# Conditionally import TVSSave.Tools when -Experimental is set
+if ($Experimental) {
+    $tvssaveModulePath = Join-Path $PSScriptRoot '..' 'tvs-save' 'module' 'TVSSave.Tools' 'TVSSave.Tools.psd1'
+    if (Test-Path -LiteralPath $tvssaveModulePath) {
+        Import-Module $tvssaveModulePath -Force -ErrorAction Stop
+    } else {
+        Write-Warning "TVSSave.Tools module not found at: $tvssaveModulePath"
+    }
+}
+
 # --no-ansi: tell PwshSpectreConsole to suppress ANSI codes
 if ($NoAnsi) {
     $env:NO_COLOR = '1'
@@ -144,15 +162,23 @@ function Invoke-InteractiveMenu {
         'mod update     — update installed mods to latest versions',
         'mod rollback   — revert profile to previous snapshot',
         'mod verify     — check BepInEx integrity and junction health',
-        'save list      — list occupied character slots',
-        'save export    — export character presets to .znelchar',
-        'save import    — import .znelchar back to save slot',
-        'save expand    — expand .znelchar to multi-file format',
-        'save compress  — compress expanded directory to .znelchar',
-        'save watch     — watch saves and auto-sync characters',
         'version        — show component versions',
         'exit'
     )
+
+    # Only show save tools in interactive menu when -Experimental is set
+    if ($Experimental) {
+        $choices = $choices[0..($choices.Count - 2)]  # Remove 'exit' temporarily
+        $choices += @(
+            'save list      — list occupied character slots',
+            'save export    — export character presets to .znelchar',
+            'save import    — import .znelchar back to save slot',
+            'save expand    — expand .znelchar to multi-file format',
+            'save compress  — compress expanded directory to .znelchar',
+            'save watch     — watch saves and auto-sync characters'
+        )
+        $choices += 'exit'
+    }
 
     while ($true) {
         $selection = Read-SpectreSelection -Title '[cyan bold]TVS Manager[/]' -Choices $choices -Color Blue
@@ -323,6 +349,10 @@ switch ($Noun) {
     }
 
     'save' {
+        if (-not $Experimental) {
+            Write-Host "Save tools are experimental. Use -Experimental flag to enable." -ForegroundColor Yellow
+            exit 1
+        }
         switch ($Verb) {
             'list'   { Get-TVSSaveList -Path:$Arg1 -Json:$Json }
             'export' {
