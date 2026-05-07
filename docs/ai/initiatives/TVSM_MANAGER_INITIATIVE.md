@@ -394,13 +394,31 @@ The Save Tools integration work outlined in Phase 3 is being **deferred** until 
 ### Phase 4: Unified Bundle
 
 Goals:
-- Single `tvs-tools-<version>.zip` artifact replacing per-tool portable bundles.
-- tvsm as the entry point for all end-user interaction.
+- Two unified distribution artifacts replacing per-tool portable bundles: a runtime-included `-full` variant (Windows, bundles `pwsh`) and a runtime-free `-core` variant (cross-platform, requires system `pwsh`).
+- `tvsm` as the entry point for all end-user interaction.
+- `tvsm update check` / `tvsm update apply` for atomic self-update of TVSM and all bundled modules.
 
 Deliverables:
-- Unified build script under `tools/tvsm/build/`.
-- Updated distribution docs.
-- Deprecation notice in znelchar-tools portable.
+- `tools/tvsm/build/package-unified.ps1` — builds both `tvs-tools-full-<version>.zip` and `tvs-tools-core-<version>.zip` from a shared staging directory.
+- `VERSION.json` with `variant` field and per-component version tracking.
+- `SHA256SUMS.txt` emitted for each artifact.
+- `tvsm update check` — reports available bundle version and per-component version changes.
+- `tvsm update apply` — downloads correct variant, validates SHA256, swaps files atomically.
+- `.cmd` launchers in `-full` (Windows); `.sh` launchers in `-core` (Linux/macOS).
+- Deprecation notice in `znelchar-tools` portable release notes pointing to unified bundle.
+- Updated distribution docs (`tools/znelchar/docs/DISTRIBUTION.md`).
+- CI release workflow producing both unified bundle artifacts after individual module builds.
+
+Scope decisions:
+- **Linux support**: via `-core` only. No Linux runtime bundle. Linux users (contributors, CI) provide their own `pwsh`.
+- **Self-update is atomic**: all components updated together until v1.0. Per-component independent updates deferred.
+- **Mod registry updates** (`tvsm mod update`) are independent from tooling updates (`tvsm update apply`).
+- **No migration tooling** for existing znelchar-portable users — user base is small, breaking changes expected.
+- **No additional distribution channels** (Winget, MSIX) in this phase.
 
 Exit criteria:
-- End-user can download one zip, run `tvsm.exe`, and access all tool capabilities.
+- A Windows end-user can download `tvs-tools-full-<version>.zip`, run `tvsm.ps1`, and access all tool capabilities with no prerequisites.
+- A Linux/CI user can download `tvs-tools-core-<version>.zip`, invoke `tvsm.ps1` with a system `pwsh`, and access all tool capabilities.
+- `tvsm update apply` successfully updates all components atomically and validates SHA256 before swapping.
+- `tvsm update apply` does NOT trigger mod or mod registry updates.
+- CI produces both artifacts on every release tag.
