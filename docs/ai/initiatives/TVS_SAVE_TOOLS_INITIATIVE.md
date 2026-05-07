@@ -2,13 +2,25 @@
 
 Long-term planning and backlog for the `TVSSave.Tools` PowerShell module.
 
+## Status (2026-05-07)
+
+**Deferred** — Save Tools development is being delayed until after the TVSM Manager Initiative is complete.
+
+The current implementation is architecturally sufficient as a binding between Znelchar Tools and TVSM. Full Save Tools re-engineering will be handled in a dedicated Save Tools initiative later. The `-Experimental` flag in `tvsm` hides Save Tools from the default surface, allowing the current lightweight binding to exist without exposing incomplete functionality to end-users.
+
+**Current scope:** Limited to basic TVSM binding. The `TVSSave.Tools` module provides the minimal integration needed to unblock TVSM mod-management utility for other users.
+
+**Next steps:** A dedicated Save Tools initiative will be created after TVSM Manager Initiative completion to handle full re-engineering, including character preset workflows, file watcher improvements, and deeper save file tooling.
+
 ## Purpose
 
 Track features and improvements to `TVSSave.Tools` beyond the Phase 3 scope defined in the TVSM Manager Initiative. This document is a living backlog stub; items here are candidates for future phases or standalone releases.
 
-## Phase 3 scope (current)
+## Phase 3 scope (current — deferred)
 
 See [TVSM_MANAGER_INITIATIVE.md Phase 3](./TVSM_MANAGER_INITIATIVE.md#phase-3-tvssavetools-module) and [ADR-004](../adr/ADR-004-tvs-save-tools-module.md) for the full Phase 3 deliverable set.
+
+**Note (2026-05-07):** Phase 3 deliverables are deferred until after the TVSM Manager Initiative completes. The current implementation provides basic TVSM binding that is architecturally sufficient. Full Save Tools re-engineering will be handled in a dedicated Save Tools initiative.
 
 Summary: character preset slot support — export/import `presetSlot{n}.txt.tmp` ↔ `.znelchar`, expand/compress, bi-directional file watcher.
 

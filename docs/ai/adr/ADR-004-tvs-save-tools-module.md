@@ -369,3 +369,34 @@ Given that textures are stored separately from `_characterData`, the `characterW
 This layout makes it unambiguous which files are the editable source-of-truth (`characterData.json`, `textures/`) vs. distribution artifacts (`exports/`). It avoids any confusion between raw `presetSlot{n}.tmp.txt` content and a full znelchar envelope.
 
 **Decision:** Adopt the above `characterWorkDir` layout as the standard for Phase 3 implementation. The `Sync-TVSCharacterWorkDir` function should write to this structure. `Compose-ZnelcharPreset` and `Expand-ZnelcharPreset` cmdlets should accept paths conforming to this layout as their working directory parameter.
+
+---
+
+## Addendum (2026-05-07): Deferral of Full Save Tools Implementation
+
+### Decision
+
+The full implementation of `TVSSave.Tools` as originally scoped in Phase 3 of the TVSM Manager Initiative is being **deferred** until after the TVSM Manager Initiative is complete.
+
+### Rationale
+
+1. **Architectural sufficiency:** The current implementation is architecturally sufficient as a binding between Znelchar Tools and TVSM. It provides the minimal integration needed without blocking other work.
+
+2. **Unblock TVSM progress:** Save Tools scope and size do not justify blocking TVSM Manager progress. Deferring allows the TVSM mod-management utility to ship for other users who do not need Save Tools functionality.
+
+3. **Experimental flag approach:** Save Tools are hidden behind the `-Experimental` flag in `tvsm`, allowing the current binding to exist without exposing incomplete functionality to end-users.
+
+### Current State
+
+- The `TVSSave.Tools` module remains in its current state as a lightweight binding layer.
+- The `-Experimental` flag in `tvsm` hides Save Tools from the default surface.
+- Phase 3 deliverables related to `tvsm save` command surface are deferred.
+
+### Future Work
+
+Full Save Tools re-engineering (including character preset workflows, file watcher improvements, and deeper save file tooling) will be handled in a **dedicated Save Tools initiative** to be created after TVSM Manager Initiative completion.
+
+### References
+
+- [TVSM_MANAGER_INITIATIVE.md - Save Tools Deferral Decision](../initiatives/TVSM_MANAGER_INITIATIVE.md#save-tools-deferral-decision-2026-05-07)
+- [TVS_SAVE_TOOLS_INITIATIVE.md - Updated Status](../initiatives/TVS_SAVE_TOOLS_INITIATIVE.md#status-2026-05-07)

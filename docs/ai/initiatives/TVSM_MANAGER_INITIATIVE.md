@@ -369,6 +369,28 @@ Sync-TVSCharacterWorkDir -PresetSlotPath <string> -TextureDir <string> -WorkDir 
 - `Expand-ZnelcharPreset` correctly populates `presetSlot{n}.tmp.txt` and `SkinPresetTextures` from a znelchar.
 - All Pester tests pass in CI.
 
+### Save Tools Deferral Decision (2026-05-07)
+
+The Save Tools integration work outlined in Phase 3 is being **deferred** until after the TVSM Manager Initiative is complete.
+
+**Decision:** "Kick the can down the road" — full Save Tools development will be delayed to a dedicated Save Tools initiative later.
+
+**Rationale:**
+- The current implementation is architecturally sufficient as a binding between Znelchar Tools and TVSM.
+- This unblocks the TVSM mod-management utility for other users who do not need Save Tools functionality.
+- Save Tools scope and size do not justify blocking TVSM progress.
+- The `-Experimental` flag in `tvsm` hides Save Tools from the default surface, allowing the current binding to exist without exposing incomplete functionality to end-users.
+
+**Current state:**
+- Save Tools are hidden behind the `-Experimental` flag in `tvsm`.
+- The existing `TVSSave.Tools` module provides basic TVSM binding that is architecturally sound.
+- Full Save Tools re-engineering (including character preset workflows, file watcher improvements, and deeper save file tooling) will be handled in a dedicated Save Tools initiative.
+
+**Impact on phases:**
+- Phase 3 deliverables related to `tvsm save` command surface are deferred.
+- The `TVSSave.Tools` module remains in its current state as a lightweight binding layer.
+- TVSM Manager Initiative can proceed to Phase 4 (Unified Bundle) without waiting for Save Tools completion.
+
 ### Phase 4: Unified Bundle
 
 Goals:
