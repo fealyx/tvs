@@ -1,16 +1,19 @@
 <#
 .SYNOPSIS
-Expands a character.json file into a structured folder hierarchy for collaborative Git development.
+Expands a .znelchar file or a character.json file into a structured folder hierarchy for collaborative Git development.
 
 .DESCRIPTION
-Decomposes a character.json file (from Export-ZnelcharContent) into atomic YAML/JSON files
-organized in folders. This enables:
+Decomposes character data into atomic YAML/JSON files organized in folders. This enables:
 - Better Git diffs (changes are granular)
 - Parallel editing of different character sections
 - Easier merge conflict resolution (different people edit different files)
 
+Accepts either:
+- A .znelchar file directly (direct pipeline — no intermediary extraction step needed)
+- A character.json file produced by Export-ZnelcharContent (explicit pipeline)
+
 The expanded structure includes:
-- _metadata.yaml: Schema version and source info
+- _metadata.yaml: Schema version, source info, and texture name map (when input is .znelchar)
 - base.yaml: Top-level metadata
 - blendshapes.yaml: Blendshape definitions
 - skeleton/: Bone and offset data
@@ -21,10 +24,10 @@ The expanded structure includes:
 - behavior/: Opinions and traits
 - ui/: UI color data
 - customIcon.<ext>: Custom icon image (decoded from character data, if present)
-- textures/: Texture files copied from the adjacent textures/ folder (if found or specified)
+- textures/: Texture files (from .znelchar payload or adjacent textures/ folder)
 
 .PARAMETER InputPath
-Path to character.json (extracted form from Export-ZnelcharContent).
+Path to a .znelchar file (direct pipeline) or character.json (explicit pipeline).
 
 .PARAMETER OutputPath
 Target folder for the expanded structure. Created if it doesn't exist.
@@ -33,28 +36,28 @@ Target folder for the expanded structure. Created if it doesn't exist.
 Output format: 'yaml' (default, recommended) or 'json'.
 
 .PARAMETER TexturesPath
-Path to the textures folder to absorb into the expanded structure. If not specified,
-Expand-ZnelcharData auto-discovers a 'textures' sibling folder next to the input
-character.json (i.e. the textures/ folder produced by Export-ZnelcharContent).
+Path to the textures folder to absorb into the expanded structure. Only relevant when
+InputPath is a character.json. When InputPath is a .znelchar, textures are extracted
+from the file payload directly; this parameter is ignored.
 
 .PARAMETER Force
 Overwrite existing expanded structure if present.
 
 .EXAMPLE
-# Expand a character for collaborative development
-Expand-ZnelcharData -InputPath extracted/character.json -OutputPath character-expanded
+# Direct pipeline: expand a .znelchar file directly
+Expand-ZnelcharData -InputPath character.znelchar -OutputPath character-expanded
 
-# Export znelchar, then expand
-Export-ZnelcharContent -InputPath character.znelchar -OutputPath extracted
+# Explicit pipeline: expand from a previously extracted character.json
 Expand-ZnelcharData -InputPath extracted/character.json -OutputPath character-expanded -Format yaml
 
 .NOTES
-The expanded structure is designed for Git workflow:
-1. Export znelchar → extracted format
-2. Expand extracted → character-expanded (folder with atomicfiles)
-3. Edit files in character-expanded
-4. Compress → back to character.json
-5. Repack with New-ZnelcharFile
+Direct pipeline (.znelchar input):
+  The expanded directory is fully self-contained. Compress-ZnelcharData can reproduce a
+  .znelchar from the expanded directory alone — no manifest.json needed.
+
+Explicit pipeline (character.json input):
+  Use Export-ZnelcharContent first to produce extracted/character.json, then call
+  Compress-ZnelcharData → New-ZnelcharFile for the roundtrip.
 
 See also: Compress-ZnelcharData, Export-ZnelcharContent, New-ZnelcharFile
 #>
@@ -68,8 +71,8 @@ function Expand-ZnelcharData {
                 throw "Input file not found: $_"
             }
             $ext = [System.IO.Path]::GetExtension($_).ToLower()
-            if ($ext -ne '.json') {
-                throw "Input file must be a .json file (character.json)"
+            if ($ext -notin @('.json', '.znelchar')) {
+                throw "Input file must be a .znelchar file or a .json file (character.json)"
             }
             $true
         })]
@@ -87,14 +90,22 @@ function Expand-ZnelcharData {
     )
 
     process {
+        $resolvedInputPath = (Resolve-Path -LiteralPath $InputPath).ProviderPath
+        $inputExt = [System.IO.Path]::GetExtension($resolvedInputPath).ToLower()
+        $isZnelchar = ($inputExt -eq '.znelchar')
+
         # Resolve OutputPath: optional — fall back to TVS.Environment characterWorkDir if not supplied
         if (-not $OutputPath) {
             try {
                 $workDir = Get-TVSEnvironment -Key characterWorkDir
                 if ($workDir) {
-                    $inputBaseName = [System.IO.Path]::GetFileNameWithoutExtension(
-                        (Split-Path -Leaf (Split-Path -Parent (Resolve-Path $InputPath).Path))
-                    ) -replace '\.extracted$', ''
+                    if ($isZnelchar) {
+                        $inputBaseName = [System.IO.Path]::GetFileNameWithoutExtension($resolvedInputPath)
+                    } else {
+                        $inputBaseName = [System.IO.Path]::GetFileNameWithoutExtension(
+                            (Split-Path -Leaf (Split-Path -Parent $resolvedInputPath))
+                        ) -replace '\.extracted$', ''
+                    }
                     $OutputPath = Join-Path $workDir ($inputBaseName + '.expanded')
                 }
             } catch { }
@@ -105,16 +116,58 @@ function Expand-ZnelcharData {
 
         # Check if output exists
         if ((Test-Path -LiteralPath $OutputPath) -and -not $Force) {
-
             throw "Output path already exists: $OutputPath. Use -Force to overwrite."
         }
 
-        # Load input JSON
-        Write-Verbose "Loading character data from: $InputPath"
-        try {
-            $characterData = Read-JsonFile -Path $InputPath
-        } catch {
-            throw "Failed to load JSON file: $_"
+        # --- Input resolution: .znelchar vs character.json ---
+        $characterData = $null
+        $textureMap = @()   # array of [ordered]@{ textureName; file } — populated from .znelchar only
+        $inlineTextures = @{}  # filename -> byte[] — for writing textures/ when input is .znelchar
+
+        if ($isZnelchar) {
+            Write-Verbose "Direct pipeline: extracting character data from .znelchar: $resolvedInputPath"
+            $outer = Read-JsonFile -Path $resolvedInputPath
+            if (-not $outer.ContainsKey('_characterData')) {
+                throw "Input .znelchar file does not contain required key: _characterData"
+            }
+            $characterData = ($outer['_characterData'] | ConvertFrom-Json -AsHashtable -Depth 100)
+            $characterData = Expand-NestedCharacterData -Character $characterData -WarnOnFailure
+
+            # Build texture map and cache texture bytes from _textureDatas
+            if ($outer.ContainsKey('_textureDatas') -and $null -ne $outer['_textureDatas']) {
+                foreach ($t in @($outer['_textureDatas'])) {
+                    $textureName = if ($t.ContainsKey('_textureName')) { [string]$t['_textureName'] } else { '' }
+                    $base64 = if ($t.ContainsKey('_textureData') -and $null -ne $t['_textureData']) { [string]$t['_textureData'] } else { '' }
+                    $safeName = if ([string]::IsNullOrWhiteSpace([System.IO.Path]::GetFileName($textureName))) { 'unnamed.bin' } else { [System.IO.Path]::GetFileName($textureName) }
+
+                    # Deduplicate filename
+                    $candidate = $safeName
+                    $counter = 1
+                    while ($inlineTextures.ContainsKey($candidate)) {
+                        $nameNoExt = [System.IO.Path]::GetFileNameWithoutExtension($safeName)
+                        $ext2 = [System.IO.Path]::GetExtension($safeName)
+                        $candidate = '{0}_{1}{2}' -f $nameNoExt, $counter, $ext2
+                        $counter++
+                    }
+
+                    if ($base64.Length -gt 0) {
+                        $normalized = ($base64 -replace '\s', '')
+                        $inlineTextures[$candidate] = [System.Convert]::FromBase64String($normalized)
+                    } else {
+                        $inlineTextures[$candidate] = [byte[]]@()
+                    }
+
+                    $textureMap += [ordered]@{ textureName = $textureName; file = $candidate }
+                }
+            }
+        } else {
+            # Explicit pipeline: character.json input
+            Write-Verbose "Explicit pipeline: loading character data from: $resolvedInputPath"
+            try {
+                $characterData = Read-JsonFile -Path $resolvedInputPath
+            } catch {
+                throw "Failed to load JSON file: $_"
+            }
         }
 
         # Create output directory
@@ -125,7 +178,7 @@ function Expand-ZnelcharData {
         Write-Verbose "Created output directory: $OutputPath"
 
         # Calculate source hash
-        $sourceHash = (Get-FileHash -Path $InputPath -Algorithm SHA256).Hash
+        $sourceHash = (Get-FileHash -Path $resolvedInputPath -Algorithm SHA256).Hash
 
         # Extract base fields early for metadata
         $baseFields = [ordered]@{
@@ -154,44 +207,77 @@ function Expand-ZnelcharData {
             }
         }
 
-        # Discover textures: use explicit path or auto-discover sibling textures/ folder
-        $effectiveTexturesPath = $null
-        if ($PSBoundParameters.ContainsKey('TexturesPath')) {
-            if (Test-Path -LiteralPath $TexturesPath -PathType Container) {
-                $effectiveTexturesPath = (Resolve-Path -LiteralPath $TexturesPath).ProviderPath
-            } else {
-                Write-Warning "Specified -TexturesPath not found: $TexturesPath"
+        # Resolve textures:
+        #   - .znelchar input: write inline bytes from $inlineTextures
+        #   - character.json input: copy from explicit -TexturesPath or auto-discovered sibling textures/
+        $texturesOutDir = Join-Path $OutputPath 'textures'
+        $writtenTextureCount = 0
+
+        if ($isZnelchar) {
+            # Write texture bytes extracted from the .znelchar payload
+            if ($inlineTextures.Count -gt 0) {
+                New-Item -ItemType Directory -Path $texturesOutDir -Force | Out-Null
+                foreach ($entry in $inlineTextures.GetEnumerator()) {
+                    if ($entry.Value.Length -gt 0) {
+                        [System.IO.File]::WriteAllBytes((Join-Path $texturesOutDir $entry.Key), $entry.Value)
+                    }
+                }
+                $writtenTextureCount = $inlineTextures.Count
+                Write-Verbose "Wrote $writtenTextureCount texture(s) from .znelchar payload to textures/"
             }
         } else {
-            $characterDir    = [System.IO.Path]::GetDirectoryName((Resolve-Path -LiteralPath $InputPath).ProviderPath)
-            $siblingTextures = Join-Path $characterDir 'textures'
-            if (Test-Path -LiteralPath $siblingTextures -PathType Container) {
-                $effectiveTexturesPath = $siblingTextures
-                Write-Verbose "Auto-discovered textures at: $effectiveTexturesPath"
+            # Explicit pipeline: discover textures from filesystem
+            $effectiveTexturesPath = $null
+            if ($PSBoundParameters.ContainsKey('TexturesPath')) {
+                if (Test-Path -LiteralPath $TexturesPath -PathType Container) {
+                    $effectiveTexturesPath = (Resolve-Path -LiteralPath $TexturesPath).ProviderPath
+                } else {
+                    Write-Warning "Specified -TexturesPath not found: $TexturesPath"
+                }
+            } else {
+                $characterDir    = [System.IO.Path]::GetDirectoryName($resolvedInputPath)
+                $siblingTextures = Join-Path $characterDir 'textures'
+                if (Test-Path -LiteralPath $siblingTextures -PathType Container) {
+                    $effectiveTexturesPath = $siblingTextures
+                    Write-Verbose "Auto-discovered textures at: $effectiveTexturesPath"
+                }
+            }
+            if ($effectiveTexturesPath) {
+                $textureFiles = @(Get-ChildItem -LiteralPath $effectiveTexturesPath -File)
+                if ($textureFiles.Count -gt 0) {
+                    New-Item -ItemType Directory -Path $texturesOutDir -Force | Out-Null
+                    foreach ($tf in $textureFiles) {
+                        Copy-Item -LiteralPath $tf.FullName -Destination (Join-Path $texturesOutDir $tf.Name) -Force
+                    }
+                    $writtenTextureCount = $textureFiles.Count
+                    Write-Verbose "Copied $writtenTextureCount texture(s) to textures/"
+                }
             }
         }
-        $textureFiles = if ($effectiveTexturesPath) {
-            @(Get-ChildItem -LiteralPath $effectiveTexturesPath -File)
-        } else { @() }
 
-        # Write metadata
-        $metadata = @{
-            schemaVersion    = 1
+        # Write metadata (schema v2)
+        $metadata = [ordered]@{
+            schemaVersion    = 2
             expandedAtUtc    = (Get-Date -AsUTC -Format 'o')
             dataFormat       = $Format
-            sourceFile       = (Resolve-Path -LiteralPath $InputPath).ProviderPath
+            sourceFile       = $resolvedInputPath
             sourceHashSha256 = $sourceHash
             characterName    = $baseFields['characterName'] ?? ""
             notes            = ""
             hasCustomIcon    = ($null -ne $customIconFileName)
             customIconFile   = $customIconFileName ?? ""
-            textureCount     = $textureFiles.Count
+            textureCount     = $writtenTextureCount
         }
+        # Embed texture map only when expanded from .znelchar (direct pipeline)
+        if ($isZnelchar -and $textureMap.Count -gt 0) {
+            $metadata['textures'] = $textureMap
+        }
+
         Write-DataFile -InputObject $metadata `
             -OutputPath (Join-Path $OutputPath '_metadata.yaml') `
             -Format 'yaml' `
             -Force
-        Write-Verbose "Wrote metadata"
+        Write-Verbose "Wrote _metadata.yaml (schema v2)"
 
         # Write base fields to file (customIconData not included; icon is stored as a separate file)
         Write-DataFile -InputObject $baseFields `
@@ -205,16 +291,6 @@ function Expand-ZnelcharData {
             $customIconOutPath = Join-Path $OutputPath $customIconFileName
             [System.IO.File]::WriteAllBytes($customIconOutPath, $customIconBytes)
             Write-Verbose "Wrote $customIconFileName"
-        }
-
-        # Copy textures into textures/ subdirectory
-        if ($textureFiles.Count -gt 0) {
-            $texturesOutDir = Join-Path $OutputPath 'textures'
-            New-Item -ItemType Directory -Path $texturesOutDir -Force | Out-Null
-            foreach ($tf in $textureFiles) {
-                Copy-Item -LiteralPath $tf.FullName -Destination (Join-Path $texturesOutDir $tf.Name) -Force
-            }
-            Write-Verbose "Copied $($textureFiles.Count) texture(s) to textures/"
         }
 
         # Extract blendshapes as a key/value map for cleaner diffs
@@ -418,12 +494,13 @@ function Expand-ZnelcharData {
         }
 
         return @{
-            ExpandedPath  = (Resolve-Path -LiteralPath $OutputPath).ProviderPath
-            FileCount     = @(Get-ChildItem -LiteralPath $OutputPath -Recurse -File).Count
-            SchemaVersion = 1
-            Format        = $Format
-            TextureCount  = $textureFiles.Count
-            HasCustomIcon = ($null -ne $customIconFileName)
+            ExpandedPath    = (Resolve-Path -LiteralPath $OutputPath).ProviderPath
+            FileCount       = @(Get-ChildItem -LiteralPath $OutputPath -Recurse -File).Count
+            SchemaVersion   = 2
+            Format          = $Format
+            TextureCount    = $writtenTextureCount
+            HasCustomIcon   = ($null -ne $customIconFileName)
+            DirectPipeline  = $isZnelchar
         }
     }
 }

@@ -18,11 +18,13 @@ tvsm version --json
     $tvsmVersion = (Import-PowerShellDataFile (Join-Path $script:TVSMModuleRoot 'TVSM.psd1')).ModuleVersion
 
     $tvsEnvModule = Get-Module -ListAvailable -Name 'TVS.Environment' | Sort-Object Version -Descending | Select-Object -First 1
+    $tvsSaveModule = Get-Module -ListAvailable -Name 'TVSSave.Tools' | Sort-Object Version -Descending | Select-Object -First 1
     $spectreModule = Get-Module -ListAvailable -Name 'PwshSpectreConsole' | Sort-Object Version -Descending | Select-Object -First 1
 
     $info = [ordered]@{
         tvsm                 = $tvsmVersion
         'TVS.Environment'    = if ($tvsEnvModule) { [string]$tvsEnvModule.Version } else { '(not found)' }
+        'TVSSave.Tools'      = if ($tvsSaveModule) { [string]$tvsSaveModule.Version } else { '(not found)' }
         PwshSpectreConsole   = if ($spectreModule) { [string]$spectreModule.Version } else { '(not found)' }
     }
 

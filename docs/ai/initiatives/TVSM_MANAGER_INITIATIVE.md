@@ -108,11 +108,14 @@ Community Mod Registry (hosted JSON)
 
 ### Character and Save File Tooling (TUI façade over PS modules)
 
+- [ ] `tvsm save list [dir]` — list occupied character slots from SaveFile.es3 via Spectre table
+- [ ] `tvsm save export [--slot N | --all]` — export preset slot file(s) to `.znelchar` in characterWorkDir/presets/
+- [ ] `tvsm save import --name <name> [--slot <n>] --force` — write `.znelchar` back to preset slot file (--force required)
+- [ ] `tvsm save expand [--name <name>]` — expand `.znelchar` to multi-file format in characterWorkDir/expanded/
+- [ ] `tvsm save watch [--expand]` — FSW watcher with live Spectre status; auto-exports on game save; --expand also expands
 - [ ] `tvsm char inspect <file>` — pretty-print znelchar metadata via Spectre
-- [ ] `tvsm save list [dir]` — list save files in configured playerDataDir
-- [ ] `tvsm save unpack <file>` — unpack a save and expand embedded character data into characterWorkDir
-- [ ] `tvsm save watch` — file-system watcher; auto-unpacks and expands on save file change
-- [ ] `tvsm save diff <file1> <file2>` — semantic diff between two saves or character states
+- [ ] `tvsm save diff <file1> <file2>` — semantic diff between two saves or character states (Phase 4+)
+- [ ] `tvsm save snapshot` / `tvsm save restore` — save snapshots separate from mod rollback (Phase 4+)
 
 ### Self-Update
 
@@ -249,7 +252,7 @@ Exit criteria:
 ### Phase 3: TVSSave.Tools Module
 
 Goals:
-- Implement `TVSSave.Tools` PS module.
+- Implement `TVSSave.Tools` PS module with character preset support.
 - Implement `tvsm save` command surface as a façade over it.
 - Implement character data re-composition (`presetSlot → znelchar`) and decomposition (`znelchar → presetSlot`) pipelines, informed by confirmed znelchar structure and texture storage discoveries (see [ADR-004 Amendment](../adr/ADR-004-tvs-save-tools-module.md#amendment-2026-05-02-znelchar-file-structure-texture-storage-and-character-data-re-compositiondecomposition)).
 
@@ -365,6 +368,28 @@ Sync-TVSCharacterWorkDir -PresetSlotPath <string> -TextureDir <string> -WorkDir 
 - `Compose-ZnelcharPreset` produces a valid znelchar from `presetSlot{n}.tmp.txt` + `SkinPresetTextures`.
 - `Expand-ZnelcharPreset` correctly populates `presetSlot{n}.tmp.txt` and `SkinPresetTextures` from a znelchar.
 - All Pester tests pass in CI.
+
+### Save Tools Deferral Decision (2026-05-07)
+
+The Save Tools integration work outlined in Phase 3 is being **deferred** until after the TVSM Manager Initiative is complete.
+
+**Decision:** "Kick the can down the road" — full Save Tools development will be delayed to a dedicated Save Tools initiative later.
+
+**Rationale:**
+- The current implementation is architecturally sufficient as a binding between Znelchar Tools and TVSM.
+- This unblocks the TVSM mod-management utility for other users who do not need Save Tools functionality.
+- Save Tools scope and size do not justify blocking TVSM progress.
+- The `-Experimental` flag in `tvsm` hides Save Tools from the default surface, allowing the current binding to exist without exposing incomplete functionality to end-users.
+
+**Current state:**
+- Save Tools are hidden behind the `-Experimental` flag in `tvsm`.
+- The existing `TVSSave.Tools` module provides basic TVSM binding that is architecturally sound.
+- Full Save Tools re-engineering (including character preset workflows, file watcher improvements, and deeper save file tooling) will be handled in a dedicated Save Tools initiative.
+
+**Impact on phases:**
+- Phase 3 deliverables related to `tvsm save` command surface are deferred.
+- The `TVSSave.Tools` module remains in its current state as a lightweight binding layer.
+- TVSM Manager Initiative can proceed to Phase 4 (Unified Bundle) without waiting for Save Tools completion.
 
 ### Phase 4: Unified Bundle
 

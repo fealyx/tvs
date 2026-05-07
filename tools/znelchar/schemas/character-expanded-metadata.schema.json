@@ -11,15 +11,15 @@
   "properties": {
     "schemaVersion": {
       "type": "integer",
-      "description": "Version of the expanded data format. Used for migration detection.",
+      "description": "Version of the expanded data format. Used for migration detection. v2 adds the 'textures' array for direct-pipeline roundtrip support.",
       "minimum": 1,
-      "examples": [1]
+      "examples": [2]
     },
     "expandedAtUtc": {
       "type": "string",
       "format": "date-time",
       "description": "ISO 8601 timestamp when the data was expanded.",
-      "examples": ["2025-04-26T12:34:56.789Z"]
+      "examples": ["2026-05-02T12:34:56.789Z"]
     },
     "dataFormat": {
       "type": "string",
@@ -29,12 +29,12 @@
     },
     "sourceFile": {
       "type": ["string", "null"],
-      "description": "Path to the original character.json file (if known).",
-      "examples": ["Rita-Collab-b48-v1-5.extracted/character.json", null]
+      "description": "Path to the original source file (.znelchar or character.json) if known.",
+      "examples": ["Rita.znelchar", "Rita-Collab-b48-v1-5.extracted/character.json", null]
     },
     "sourceHashSha256": {
       "type": ["string", "null"],
-      "description": "SHA256 hash of the source character.json for change detection. 64 hex characters.",
+      "description": "SHA256 hash of the source file for change detection. 64 hex characters.",
       "pattern": "^[a-f0-9]{64}$|^$",
       "examples": ["abcd1234...", null]
     },
@@ -47,6 +47,31 @@
       "type": ["string", "null"],
       "description": "Optional user notes about this expansion.",
       "examples": ["Collaborative development branch", null]
+    },
+    "textures": {
+      "type": "array",
+      "description": "Ordered texture name map for direct-pipeline roundtrip. Present only when expanded from a .znelchar file (schema v2+). Each entry maps the original _textureName from _textureDatas to the filename written into textures/.",
+      "items": {
+        "type": "object",
+        "required": ["textureName", "file"],
+        "properties": {
+          "textureName": {
+            "type": "string",
+            "description": "Original _textureName value from the .znelchar _textureDatas array."
+          },
+          "file": {
+            "type": "string",
+            "description": "Filename of the texture file written into textures/ during expansion."
+          }
+        },
+        "additionalProperties": false
+      },
+      "examples": [
+        [
+          { "textureName": "Snowball_Body_D", "file": "Snowball_Body_D.png" },
+          { "textureName": "Snowball_Face_D", "file": "Snowball_Face_D.png" }
+        ]
+      ]
     }
   },
   "additionalProperties": false

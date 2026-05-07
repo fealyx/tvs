@@ -26,11 +26,20 @@ Dispatches tvsm subcommands to the TVSM module. Supports:
   tvsm mod dev link <name> --src <path> [--layout <value>] [--note <text>]
   tvsm mod dev unlink <name>
   tvsm mod dev list [--json]
-  tvsm save watch [<path>]
+  tvsm save list [<path>] [--json]
+  tvsm save export [--slot <n> | --name <name> | --all] [<outputPath>]
+  tvsm save import --name <name> [--slot <n>] --force
+  tvsm save expand --name <name>
+  tvsm save compress --name <name> [--force]
+  tvsm save watch [<path>] [--expand]
   tvsm version [--json]
   tvsm help
 
 Run tvsm with no arguments for an interactive menu.
+
+.PARAMETER Experimental
+    Enables experimental features, including Save Tools (tvsm save * commands).
+    Without this flag, save tools are hidden from the command surface.
 #>
 [CmdletBinding()]
 param(
@@ -47,7 +56,8 @@ param(
     [string]$Src    = '',
     [string]$Layout = 'plugins-dll',
     [string]$Note   = '',
-    [switch]$Help
+    [switch]$Help,
+    [switch]$Experimental
 )
 
 Set-StrictMode -Version Latest
@@ -70,6 +80,23 @@ if (Test-Path -LiteralPath $bundleModulesPath) {
 $devTVSEPath = Join-Path $PSScriptRoot '..' 'tvs-environment' 'module'
 if (Test-Path -LiteralPath $devTVSEPath) {
     $env:PSModulePath = (Resolve-Path $devTVSEPath).Path + [IO.Path]::PathSeparator + $env:PSModulePath
+}
+
+# Dev-repo layout: tvs-save module sits at ../tvs-save/module
+# relative to this script (tools/tvsm/ -> tools/tvs-save/module/).
+# Only add to PSModulePath when -Experimental is set.
+if ($Experimental) {
+    $devTVSSavePath = Join-Path $PSScriptRoot '..' 'tvs-save' 'module'
+    if (Test-Path -LiteralPath $devTVSSavePath) {
+        $env:PSModulePath = (Resolve-Path $devTVSSavePath).Path + [IO.Path]::PathSeparator + $env:PSModulePath
+    }
+}
+
+# Dev-repo layout: znelchar module sits at ../znelchar/module
+# relative to this script (tools/tvsm/ -> tools/znelchar/module/).
+$devZnelcharPath = Join-Path $PSScriptRoot '..' 'znelchar' 'module'
+if (Test-Path -LiteralPath $devZnelcharPath) {
+    $env:PSModulePath = (Resolve-Path $devZnelcharPath).Path + [IO.Path]::PathSeparator + $env:PSModulePath
 }
 
 # ---------------------------------------------------------------------------
@@ -107,6 +134,16 @@ if (-not (Test-Path -LiteralPath $tvsmModulePath)) {
 }
 Import-Module $tvsmModulePath -Force -ErrorAction Stop
 
+# Conditionally import TVSSave.Tools when -Experimental is set
+if ($Experimental) {
+    $tvssaveModulePath = Join-Path $PSScriptRoot '..' 'tvs-save' 'module' 'TVSSave.Tools' 'TVSSave.Tools.psd1'
+    if (Test-Path -LiteralPath $tvssaveModulePath) {
+        Import-Module $tvssaveModulePath -Force -ErrorAction Stop
+    } else {
+        Write-Warning "TVSSave.Tools module not found at: $tvssaveModulePath"
+    }
+}
+
 # --no-ansi: tell PwshSpectreConsole to suppress ANSI codes
 if ($NoAnsi) {
     $env:NO_COLOR = '1'
@@ -125,10 +162,23 @@ function Invoke-InteractiveMenu {
         'mod update     — update installed mods to latest versions',
         'mod rollback   — revert profile to previous snapshot',
         'mod verify     — check BepInEx integrity and junction health',
-        'save watch     — watch saves and auto-expand [[Phase 3]]',
         'version        — show component versions',
         'exit'
     )
+
+    # Only show save tools in interactive menu when -Experimental is set
+    if ($Experimental) {
+        $choices = $choices[0..($choices.Count - 2)]  # Remove 'exit' temporarily
+        $choices += @(
+            'save list      — list occupied character slots',
+            'save export    — export character presets to .znelchar',
+            'save import    — import .znelchar back to save slot',
+            'save expand    — expand .znelchar to multi-file format',
+            'save compress  — compress expanded directory to .znelchar',
+            'save watch     — watch saves and auto-sync characters'
+        )
+        $choices += 'exit'
+    }
 
     while ($true) {
         $selection = Read-SpectreSelection -Title '[cyan bold]TVS Manager[/]' -Choices $choices -Color Blue
@@ -149,6 +199,20 @@ function Invoke-InteractiveMenu {
             'mod update*'    { Update-TVSMMod }
             'mod rollback*'  { Invoke-TVSMModRollback @profileArg }
             'mod verify*'    { Test-TVSMModEnvironment -Json:$Json @profileArg }
+            'save list*'     { Get-TVSSaveList }
+            'save export*'   { Export-TVSSavePreset -All }
+            'save import*'   {
+                $modName = Read-SpectreText -Message 'Character name:'
+                if ($modName) { Import-TVSSavePreset -Name $modName -Force }
+            }
+            'save expand*'   {
+                $modName = Read-SpectreText -Message 'Character name:'
+                if ($modName) { Expand-TVSSavePreset -Name $modName }
+            }
+            'save compress*' {
+                $modName = Read-SpectreText -Message 'Character name:'
+                if ($modName) { Compress-TVSSavePreset -Name $modName }
+            }
             'save watch*'    { Watch-TVSSave }
             'version*'       { Get-TVSMVersion -Json:$Json }
             'exit'           { return }
@@ -285,11 +349,53 @@ switch ($Noun) {
     }
 
     'save' {
+        if (-not $Experimental) {
+            Write-Host "Save tools are experimental. Use -Experimental flag to enable." -ForegroundColor Yellow
+            exit 1
+        }
         switch ($Verb) {
-            'watch' { Watch-TVSSave -Path:$Arg1 @profileArg }
+            'list'   { Get-TVSSaveList -Path:$Arg1 -Json:$Json }
+            'export' {
+                $exportArgs = @{}
+                if ($Arg1 -eq '--all' -or $All) {
+                    $exportArgs['All'] = $true
+                } elseif ($Arg1 -match '^\d+$') {
+                    $exportArgs['Slot'] = [int]$Arg1
+                } elseif ($Arg1) {
+                    $exportArgs['Name'] = $Arg1
+                } else {
+                    $exportArgs['All'] = $true
+                }
+                if ($Arg2) { $exportArgs['OutputPath'] = $Arg2 }
+                Export-TVSSavePreset @exportArgs
+            }
+            'import' {
+                if (-not $Arg1) {
+                    Write-SpectreHost '[yellow]Usage: tvsm save import --name <name> [--slot <n>] --force[/]'
+                    exit 1
+                }
+                $importArgs = @{ Name = $Arg1; Force = $true }
+                if ($Arg2 -match '^\d+$') { $importArgs['Slot'] = [int]$Arg2 }
+                Import-TVSSavePreset @importArgs
+            }
+            'expand' {
+                if (-not $Arg1) {
+                    Write-SpectreHost '[yellow]Usage: tvsm save expand --name <name>[/]'
+                    exit 1
+                }
+                Expand-TVSSavePreset -Name $Arg1
+            }
+            'compress' {
+                if (-not $Arg1) {
+                    Write-SpectreHost '[yellow]Usage: tvsm save compress --name <name> [--force][/]'
+                    exit 1
+                }
+                Compress-TVSSavePreset -Name $Arg1 -Force:$Force
+            }
+            'watch'  { Watch-TVSSave -Path:$Arg1 -Expand:$Expand @profileArg }
             default {
                 Write-SpectreHost "[yellow]Unknown save command: '$Verb'[/]"
-                Write-SpectreHost 'Available: [cyan]watch[/]'
+                Write-SpectreHost 'Available: [cyan]list[/], [cyan]export[/], [cyan]import[/], [cyan]expand[/], [cyan]compress[/], [cyan]watch[/]'
                 exit 1
             }
         }

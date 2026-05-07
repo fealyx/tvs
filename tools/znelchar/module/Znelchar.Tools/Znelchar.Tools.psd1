@@ -17,7 +17,9 @@
         'Test-ZnelcharRoundtrip',
         'Update-ZnelcharTools',
         'Expand-ZnelcharData',
-        'Compress-ZnelcharData'
+        'Compress-ZnelcharData',
+        'Compose-ZnelcharPreset',
+        'Expand-ZnelcharPreset'
     )
     CmdletsToExport = @()
     AliasesToExport = @()

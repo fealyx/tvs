@@ -42,7 +42,7 @@ function Update-ExpandedDataStructure {
         [Parameter(Mandatory = $true)]
         [int]$FromVersion,
 
-        [int]$ToVersion = 1,  # Latest version
+        [int]$ToVersion = 2,  # Latest version
 
         [string]$OutputPath,
 
@@ -121,9 +121,18 @@ function InvokeSchemaMigration {
     # Define migration logic for each version transition
     switch ("$FromVersion-$ToVersion") {
         "1-2" {
-            # Example: v1->v2 migration logic would go here
-            # For now, no changes needed (future-proofing)
-            Write-Verbose "No changes defined for v1->v2 migration yet."
+            # v1 → v2: add empty 'textures' array to _metadata.yaml
+            # This is a safe no-op migration; Compress-ZnelcharData falls back to sorted
+            # filenames when textures is empty, so no data is lost.
+            $metadataPath = Join-Path $InputPath '_metadata.yaml'
+            if (Test-Path -LiteralPath $metadataPath) {
+                $metadata = Read-DataFile -Path $metadataPath
+                if (-not $metadata.ContainsKey('textures')) {
+                    $metadata['textures'] = @()
+                    Write-DataFile -InputObject $metadata -OutputPath $metadataPath -Force
+                    $changes += "Added empty 'textures' array to _metadata.yaml"
+                }
+            }
             break
         }
         default {

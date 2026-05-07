@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://fealyx.github.io/tvs/schemas/SaveFile.es3.schema.json",
+  "title": "SaveFile.es3",
+  "description": "Easy Save 3 serialisation of the TVS game save file. Each top-level key is a save key; each value is an ES3-typed wrapper object. Only keys relevant to TVSSave.Tools are explicitly typed here; all others are treated as opaque passthrough.",
+  "type": "object",
+  "properties": {
+    "SavedPresetNames": {
+      "description": "Sparse list of player-created character names indexed by in-game slot number. Null entries indicate empty slots.",
+      "type": "object",
+      "properties": {
+        "__type": {
+          "type": "string",
+          "description": "C# fully-qualified type name as written by Easy Save 3."
+        },
+        "value": {
+          "type": "array",
+          "description": "Slot-indexed array of character names. Index N corresponds to presetSlotN.txt.tmp.",
+          "items": {
+            "oneOf": [
+              { "type": "string", "minLength": 1 },
+              { "type": "null" }
+            ]
+          }
+        }
+      },
+      "required": ["__type", "value"]
+    }
+  },
+  "additionalProperties": {
+    "description": "All other save keys are opaque ES3-typed wrapper objects and must pass through unmodified.",
+    "type": "object",
+    "properties": {
+      "__type": { "type": "string" },
+      "value": {}
+    },
+    "required": ["__type", "value"]
+  }
+}

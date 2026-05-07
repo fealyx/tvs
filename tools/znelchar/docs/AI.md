@@ -13,6 +13,8 @@ This document provides context for AI coding agents working in this project. For
 - **Repack** (`New-ZnelcharFile`) — build a `.znelchar` from extracted artifacts
 - **Verify** (`Test-ZnelcharFile`, `Test-ZnelcharRoundtrip`) — semantic comparison and roundtrip validation
 - **Update** (`Update-ZnelcharTools`) — in-place updater for distributed installs
+- **Compose from game save** (`Compose-ZnelcharPreset`) — assemble a portable `.znelchar` from a game-persisted `presetSlot{n}.tmp.txt` file and the matching skin textures in `{playerDataDir}/SkinPresetTextures/`
+- **Decompose to game save** (`Expand-ZnelcharPreset`) — extract `_characterData` and `_textureDatas` from a `.znelchar` back into `presetSlot{n}.tmp.txt` and `SkinPresetTextures/` so the game can load the character
 
 ## Module Architecture
 
@@ -27,6 +29,22 @@ module/Znelchar.Tools/
 Public commands map 1:1 to `.ps1` files in `Public/`. Adding a new public command means adding a file there and updating `Znelchar.Tools.psd1`.
 
 Schemas for validation and documentation live in `schemas/`.
+
+## Game-Save Integration
+
+Two cmdlets bridge `Znelchar.Tools` with the TVS game's live character save state:
+
+| Cmdlet | Direction | Source / Target |
+|--------|-----------|-----------------|
+| `Compose-ZnelcharPreset` | game save → `.znelchar` | Reads `presetSlot{n}.tmp.txt` + `SkinPresetTextures/*.jpg` |
+| `Expand-ZnelcharPreset` | `.znelchar` → game save | Writes `presetSlot{n}.tmp.txt` + `SkinPresetTextures/*.jpg` |
+
+**Key facts about game save character data:**
+
+- `presetSlot{n}.tmp.txt` contains the raw `_characterData` JSON string (the escaped-JSON field of a `.znelchar`), not a full znelchar envelope.
+- Skin textures are stored by the game as discrete `.jpg` files in `{playerDataDir}/SkinPresetTextures/`.
+- Custom texture filenames appear in `_characterData` at `skinData.skinMaterials[*].diffuse` with a file extension (e.g. `RitaTorso_D.jpg`). Built-in game textures use bare names (no extension) and are **not** present in `SkinPresetTextures`.
+- These cmdlets are for explicit import/export. The live save-watch hot path in `TVSSave.Tools` uses `Sync-TVSCharacterWorkDir` to copy files directly without znelchar encoding.
 
 ## Key Schemas
 

@@ -160,3 +160,22 @@ Tradeoffs:
 3. Add deprecation notice to `znelchar-tools` portable release notes.
 4. Implement `tvsm update check` and `tvsm update apply` commands.
 5. Update `tools/znelchar/docs/DISTRIBUTION.md` to reference the unified bundle.
+
+---
+
+## Addendum (2026-05-07): Save Tools Deferral Impact
+
+### Context
+
+The full implementation of `TVSSave.Tools` has been deferred until after the TVSM Manager Initiative is complete (see [ADR-004 Addendum](../adr/ADR-004-tvs-save-tools-module.md#addendum-2026-05-07-deferral-of-full-save-tools-implementation)).
+
+### Impact on Unified Bundle
+
+- The unified bundle design remains valid; `TVSSave.Tools` will be included in its current form (architecturally sufficient as a binding layer between Znelchar Tools and TVSM).
+- The `-Experimental` flag in `tvsm` hides Save Tools from the default surface, so the current minimal implementation does not affect end-user experience.
+- Full `TVSSave.Tools` feature integration (character preset workflows, enhanced file watcher, deeper save file tooling) will be incorporated into the unified bundle as part of a **dedicated Save Tools initiative** after TVSM Manager completion.
+- The bundle's version manifest will continue to track `TVSSave.Tools` version independently, allowing it to be updated when the dedicated initiative delivers new functionality.
+
+### No Changes Required
+
+The unified bundle architecture, build pipeline, and distribution strategy described in this ADR remain unchanged. The deferral affects only the timeline for full Save Tools feature availability, not the bundle's design or structure.
