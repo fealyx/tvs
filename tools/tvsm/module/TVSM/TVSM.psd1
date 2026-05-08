@@ -49,7 +49,10 @@
         # character work dir sync — thin orchestrator wrapper over TVSSave.Tools
         'Sync-TVSCharacterWorkDir',
         # version / self
-        'Get-TVSMVersion'
+        'Get-TVSMVersion',
+        # update
+        'Invoke-TVSMUpdateCheck',
+        'Invoke-TVSMUpdateApply'
     )
     CmdletsToExport   = @()
     AliasesToExport   = @()

@@ -1,0 +1,251 @@
+name: Release Unified TVS Tools Bundle
+
+on:
+  push:
+    tags:
+      - 'tvs-tools/v*'  # Matches tvs-tools/v1.0.0, tvs-tools/v2.3.1, etc.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., tvs-tools/v1.0.0). Required for manual dispatch.'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release-unified-bundle:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0  # Full history for version extraction
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: '22.20.0'
+
+      - name: Setup PowerShell
+        shell: bash
+        run: |
+          # Install PowerShell on Ubuntu
+          wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+          sudo dpkg -i packages-microsoft-prod.deb
+          rm packages-microsoft-prod.deb
+          sudo apt-get update
+          sudo apt-get install -y powershell
+
+      - name: Cache Rush and pnpm state
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: |
+            common/temp/pnpm-store
+            common/temp/pnpm-local
+            common/temp/install-run
+            common/temp/build-cache
+          key: release-unified-${{ runner.os }}-${{ hashFiles('rush.json', 'common/config/rush/pnpm-lock.yaml', 'common/config/rush/build-cache.json') }}
+          restore-keys: |
+            release-unified-${{ runner.os }}-
+            rush-${{ runner.os }}-
+
+      - name: Rush Install
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Extract version from tag
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/}"
+          fi
+          # Remove 'v' prefix if present
+          VERSION_NO_V="${VERSION#v}"
+          echo "version_tag=${VERSION}" >> $GITHUB_OUTPUT
+          echo "version_no_v=${VERSION_NO_V}" >> $GITHUB_OUTPUT
+          echo "Extracted version: ${VERSION_NO_V}"
+
+      - name: Update TVSM version in package.json
+        shell: pwsh
+        run: |
+          $version = '${{ steps.version.outputs.version_no_v }}'
+          $packageJsonPath = './tools/tvsm/package.json'
+          $pkg = Get-Content -Raw -Path $packageJsonPath | ConvertFrom-Json
+          $pkg.version = $version
+          $pkg | ConvertTo-Json -Depth 10 | Set-Content -Path $packageJsonPath -Encoding UTF8
+          Write-Host "Updated tools/tvsm/package.json version to $version"
+
+      - name: Build unified bundle
+        shell: pwsh
+        run: |
+          pwsh -NoProfile -ExecutionPolicy Bypass -File ./tools/tvsm/build/package-unified.ps1 `
+            -OutputRoot './tools/tvsm/dist' `
+            -DownloadPortableRuntime `
+            -Clean
+
+      - name: Verify build outputs
+        shell: pwsh
+        run: |
+          $outputRoot = './tools/tvsm/dist'
+          $version = '${{ steps.version.outputs.version_no_v }}'
+
+          $expectedFiles = @(
+            "tvs-tools-full-$version.zip",
+            "tvs-tools-core-$version.zip",
+            "SHA256SUMS.txt"
+          )
+
+          foreach ($file in $expectedFiles) {
+            $path = Join-Path $outputRoot $file
+            if (-not (Test-Path -LiteralPath $path)) {
+              throw "Expected build output not found: $path"
+            }
+            Write-Host "Found: $file"
+          }
+
+          Get-ChildItem -LiteralPath $outputRoot | Format-Table -AutoSize | Out-String | Write-Host
+
+      - name: Generate tvs-tools-release-manifest.json
+        id: manifest
+        shell: pwsh
+        run: |
+          $outputRoot = './tools/tvsm/dist'
+          $version = '${{ steps.version.outputs.version_no_v }}'
+          $owner = '${{ github.repository_owner }}'
+          $repo = '${{ github.event.repository.name }}'
+          $tag = '${{ steps.version.outputs.version_tag }}'
+          $publishedAt = (Get-Date -AsUTC).ToString('yyyy-MM-ddTHH:mm:ssZ')
+
+          # Read SHA256SUMS.txt
+          $sha256File = Join-Path $outputRoot 'SHA256SUMS.txt'
+          $sha256Lines = Get-Content -LiteralPath $sha256File
+          $sha256Map = @{}
+          foreach ($line in $sha256Lines) {
+            if ($line -match '^([0-9a-fA-F]{64})\s+(.+)$') {
+              $sha256Map[$Matches[2]] = $Matches[1]
+            }
+          }
+
+          # Read VERSION.json from each variant to get component versions
+          function Get-ComponentVersions($zipPath) {
+            # Extract VERSION.json from zip to temp dir
+            $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString('N'))
+            New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+            try {
+              Expand-Archive -LiteralPath $zipPath -DestinationPath $tempDir -Force
+              $versionJsonPath = Join-Path $tempDir 'VERSION.json'
+              if (Test-Path -LiteralPath $versionJsonPath) {
+                $versionJson = Get-Content -Raw -LiteralPath $versionJsonPath | ConvertFrom-Json -AsHashtable
+                return $versionJson.components
+              }
+            } finally {
+              Remove-Item -LiteralPath $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+            }
+            return @{}
+          }
+
+          $fullZipPath = Join-Path $outputRoot "tvs-tools-full-$version.zip"
+          $coreZipPath = Join-Path $outputRoot "tvs-tools-core-$version.zip"
+
+          $fullComponents = Get-ComponentVersions -zipPath $fullZipPath
+          $coreComponents = Get-ComponentVersions -zipPath $coreZipPath
+
+          # Build manifest
+          $manifest = [ordered]@{
+            latestVersion = $version
+            publishedAt = $publishedAt
+            variants = [ordered]@{
+              full = [ordered]@{
+                url = "https://github.com/$owner/$repo/releases/download/$tag/tvs-tools-full-$version.zip"
+                sha256 = if ($sha256Map.ContainsKey("tvs-tools-full-$version.zip")) { $sha256Map["tvs-tools-full-$version.zip"] } else { "" }
+                bundleVersion = $version
+                components = $fullComponents
+              }
+              core = [ordered]@{
+                url = "https://github.com/$owner/$repo/releases/download/$tag/tvs-tools-core-$version.zip"
+                sha256 = if ($sha256Map.ContainsKey("tvs-tools-core-$version.zip")) { $sha256Map["tvs-tools-core-$version.zip"] } else { "" }
+                bundleVersion = $version
+                components = $coreComponents
+              }
+            }
+          }
+
+          $manifestPath = Join-Path $outputRoot 'tvs-tools-release-manifest.json'
+          $manifestJson = $manifest | ConvertTo-Json -Depth 20
+          [System.IO.File]::WriteAllText($manifestPath, $manifestJson, [System.Text.UTF8Encoding]::new($false))
+
+          Write-Host "Generated release manifest:"
+          Write-Host $manifestJson
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
+        with:
+          tag_name: ${{ steps.version.outputs.version_tag }}
+          name: "TVS Tools Bundle v${{ steps.version.outputs.version_no_v }}"
+          body: |
+            ## TVS Tools Unified Bundle v${{ steps.version.outputs.version_no_v }}
+
+            This release contains the unified TVS Tools bundle with all components integrated.
+
+            ### Downloads
+
+            - **tvs-tools-full-${{ steps.version.outputs.version_no_v }}.zip** — Windows end-user bundle with bundled PowerShell runtime (~70-120 MB)
+            - **tvs-tools-core-${{ steps.version.outputs.version_no_v }}.zip** — Cross-platform bundle (requires `pwsh` on PATH)
+
+            ### Components Included
+
+            - TVSM (TVS Manager) — Unified CLI and mod management
+            - Znelchar.Tools — Character data tools
+            - TVSSave.Tools — Save file tools
+            - TVS.Environment — Shared environment profiles
+
+            ### Installation
+
+            #### Windows (Full Bundle)
+            1. Download `tvs-tools-full-${{ steps.version.outputs.version_no_v }}.zip`
+            2. Extract to a folder
+            3. Run `tvsm.ps1` or use the `.cmd` launchers in the `launchers/` folder
+
+            #### Linux/macOS or CI (Core Bundle)
+            1. Ensure PowerShell 7+ is installed (`pwsh` on PATH)
+            2. Download `tvs-tools-core-${{ steps.version.outputs.version_no_v }}.zip`
+            3. Extract to a folder
+            4. Run `./tvsm.ps1` or use the `.sh` launchers in the `launchers/` folder
+
+            ### Self-Update
+
+            If you have a previous version installed:
+            ```powershell
+            ./tvsm.ps1 update check
+            ./tvsm.ps1 update apply
+            ```
+
+            ### Checksums
+
+            See `SHA256SUMS.txt` for file integrity verification.
+          files: |
+            tools/tvsm/dist/tvs-tools-full-*.zip
+            tools/tvsm/dist/tvs-tools-core-*.zip
+            tools/tvsm/dist/SHA256SUMS.txt
+            tools/tvsm/dist/tvs-tools-release-manifest.json
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.version_no_v, '-') }}
+
+      - name: Upload workflow artifacts (for debugging)
+        if: always()
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6cef30e12da # v4.6.1
+        with:
+          name: release-artifacts-${{ steps.version.outputs.version_no_v }}
+          path: |
+            tools/tvsm/dist/tvs-tools-full-*.zip
+            tools/tvsm/dist/tvs-tools-core-*.zip
+            tools/tvsm/dist/SHA256SUMS.txt
+            tools/tvsm/dist/tvs-tools-release-manifest.json
+          retention-days: 90

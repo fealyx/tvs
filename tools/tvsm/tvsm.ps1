@@ -32,6 +32,8 @@ Dispatches tvsm subcommands to the TVSM module. Supports:
   tvsm save expand --name <name>
   tvsm save compress --name <name> [--force]
   tvsm save watch [<path>] [--expand]
+  tvsm update check [--json] [--pre-release]
+  tvsm update apply [--force] [--no-verify] [--pre-release]
   tvsm version [--json]
   tvsm help
 
@@ -57,7 +59,9 @@ param(
     [string]$Layout = 'plugins-dll',
     [string]$Note   = '',
     [switch]$Help,
-    [switch]$Experimental
+    [switch]$Experimental,
+    [switch]$NoVerify,
+    [switch]$PreRelease
 )
 
 Set-StrictMode -Version Latest
@@ -162,6 +166,8 @@ function Invoke-InteractiveMenu {
         'mod update     — update installed mods to latest versions',
         'mod rollback   — revert profile to previous snapshot',
         'mod verify     — check BepInEx integrity and junction health',
+        'update check   — check for TVSM updates',
+        'update apply   — apply TVSM updates',
         'version        — show component versions',
         'exit'
     )
@@ -199,6 +205,8 @@ function Invoke-InteractiveMenu {
             'mod update*'    { Update-TVSMMod }
             'mod rollback*'  { Invoke-TVSMModRollback @profileArg }
             'mod verify*'    { Test-TVSMModEnvironment -Json:$Json @profileArg }
+            'update check*'  { Invoke-TVSMUpdateCheck }
+            'update apply*' { Invoke-TVSMUpdateApply }
             'save list*'     { Get-TVSSaveList }
             'save export*'   { Export-TVSSavePreset -All }
             'save import*'   {
@@ -396,6 +404,22 @@ switch ($Noun) {
             default {
                 Write-SpectreHost "[yellow]Unknown save command: '$Verb'[/]"
                 Write-SpectreHost 'Available: [cyan]list[/], [cyan]export[/], [cyan]import[/], [cyan]expand[/], [cyan]compress[/], [cyan]watch[/]'
+                exit 1
+            }
+        }
+    }
+
+    'update' {
+        switch ($Verb) {
+            'check' {
+                Invoke-TVSMUpdateCheck -Json:$Json -PreRelease:$PreRelease
+            }
+            'apply' {
+                Invoke-TVSMUpdateApply -Force:$Force -NoVerify:$NoVerify -PreRelease:$PreRelease
+            }
+            default {
+                Write-SpectreHost "[yellow]Unknown update command: '$Verb'[/]"
+                Write-SpectreHost 'Available: [cyan]check[/], [cyan]apply[/]'
                 exit 1
             }
         }

@@ -139,17 +139,22 @@ The CI release workflow runs this script after the individual module builds.
 
 `tvsm update apply` updates TVSM and all bundled modules atomically (no per-component partial updates prior to v1.0):
 
-1. Downloads the latest `tvs-tools-release-manifest.json` from the release repository.
-2. Compares the current bundle version against the latest.
-3. Downloads the appropriate full or core zip (matching the currently installed variant).
-4. Validates SHA256.
-5. Swaps files with a safe overwrite pattern (rename-on-Windows compatible).
+1. Queries the GitHub API (`api.github.com/repos/fealyx/tvs/releases?per_page=100`) for releases matching the `tvs-tools/v*` tag pattern.
+2. Filters to the latest release (optionally including pre-releases when `-PreRelease` is specified).
+3. Compares the current bundle version against the latest release's tag version.
+4. Downloads the appropriate full or core zip (matching the currently installed variant) from the release assets.
+5. Validates SHA256 against the release's `SHA256SUMS.txt`.
+6. Swaps files with a safe overwrite pattern (rename-on-Windows compatible).
 
 **Note:** Module-level independent updates are deferred until after v1.0. Before v1.0, the bundle version is the only version that matters; all components are updated together.
 
 **Note:** Mod and mod registry updates are entirely separate from tooling updates. `tvsm mod update` operates independently and is not triggered by `tvsm update apply`.
 
 `tvsm update check` reports whether a newer bundle version is available and lists per-component version changes included in that update.
+
+#### `-PreRelease` flag
+
+Both `tvsm update check` and `tvsm update apply` accept an optional `-PreRelease` switch. When specified, pre-release tagged releases (e.g., `tvs-tools/v0.2.0-beta.1`) are included in the latest-version discovery. This allows early adopters to opt into pre-release update channels. Without `-PreRelease`, only stable releases are considered. The TUI interactive mode always presents `update check` and `update apply` options; the `-PreRelease` flag can be toggled in the interactive session or passed directly on the command line.
 
 ### Version manifest
 
@@ -206,13 +211,22 @@ Tradeoffs:
 6. **Linux runtime bundle.**
    - Not warranted. The game is Windows-only; Linux users are contributors and CI environments who provide their own `pwsh`. Revisit if a significant Linux end-user base emerges.
 
-## Follow-Up Tasks
+## Follow-Up Tasks (Completed — Phase 4)
 
-1. Draft `tools/tvsm/build/package-unified.ps1` scaffolding (produces both `-full` and `-core`).
-2. Define the unified bundle release workflow in CI.
-3. Add deprecation notice to `znelchar-tools` portable release notes.
-4. Implement `tvsm update check` and `tvsm update apply` commands.
-5. Update `tools/znelchar/docs/DISTRIBUTION.md` to reference the unified bundle.
+All Phase 4 follow-up tasks have been implemented:
+
+1. ~~Draft `tools/tvsm/build/package-unified.ps1` scaffolding (produces both `-full` and `-core`).~~ ✅ Completed.
+2. ~~Define the unified bundle release workflow in CI.~~ ✅ Completed — `.github/workflows/release-unified-bundle.yml` triggered by `tvs-tools/v*` tags.
+3. ~~Add deprecation notice to `znelchar-tools` portable release notes.~~ ✅ Completed — `tools/znelchar/DEPRECATION_NOTICE.md` and updated `DISTRIBUTION.md`.
+4. ~~Implement `tvsm update check` and `tvsm update apply` commands.~~ ✅ Completed — uses GitHub API with `tvs-tools/v*` tag filter; supports `-PreRelease` flag.
+5. ~~Update `tools/znelchar/docs/DISTRIBUTION.md` to reference the unified bundle.~~ ✅ Completed.
+
+### Implementation Notes
+
+- **Release tag format**: Bundle releases use `tvs-tools/v*` tags (e.g., `tvs-tools/v0.1.0`) to disambiguate from other tool releases in the monorepo.
+- **Update discovery**: `tvsm update check` and `tvsm update apply` use the GitHub API (`api.github.com/repos/fealyx/tvs/releases`) filtered by `tvs-tools/v*` tag pattern, replacing the originally planned static manifest URL approach.
+- **Pre-release support**: The `-PreRelease` flag allows early adopters to opt into pre-release update channels before v1.0.
+- **TUI integration**: `update check` and `update apply` are surfaced in `tvsm`'s interactive mode.
 
 ---
 
