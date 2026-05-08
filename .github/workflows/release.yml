@@ -125,7 +125,7 @@ jobs:
             release-artifacts/mods/**
 
   release-noop:
-    if: ${{ !startsWith(github.event.release.tag_name, 'znelchar/') && !startsWith(github.event.release.tag_name, 'mods/') }}
+    if: ${{ !startsWith(github.event.release.tag_name, 'znelchar/') && !startsWith(github.event.release.tag_name, 'mods/') && !startsWith(github.event.release.tag_name, 'v') }}
     runs-on: ubuntu-latest
     steps:
       - name: No automated assets for this tag namespace

@@ -402,12 +402,13 @@ Deliverables:
 - `tools/tvsm/build/package-unified.ps1` — builds both `tvs-tools-full-<version>.zip` and `tvs-tools-core-<version>.zip` from a shared staging directory.
 - `VERSION.json` with `variant` field and per-component version tracking.
 - `SHA256SUMS.txt` emitted for each artifact.
-- `tvsm update check` — reports available bundle version and per-component version changes.
-- `tvsm update apply` — downloads correct variant, validates SHA256, swaps files atomically.
+- `tvsm update check [-PreRelease] [-Json]` — reports available bundle version and per-component version changes; `-PreRelease` includes pre-release tagged versions in discovery.
+- `tvsm update apply [-PreRelease] [-Force] [-NoVerify]` — downloads correct variant, validates SHA256, swaps files atomically; `-PreRelease` allows applying pre-release updates.
 - `.cmd` launchers in `-full` (Windows); `.sh` launchers in `-core` (Linux/macOS).
 - Deprecation notice in `znelchar-tools` portable release notes pointing to unified bundle.
 - Updated distribution docs (`tools/znelchar/docs/DISTRIBUTION.md`).
-- CI release workflow producing both unified bundle artifacts after individual module builds.
+- CI release workflow producing both unified bundle artifacts on `tvs-tools/v*` tags.
+- TUI interactive mode surfaces `update check` and `update apply` options.
 
 Scope decisions:
 - **Linux support**: via `-core` only. No Linux runtime bundle. Linux users (contributors, CI) provide their own `pwsh`.
@@ -415,10 +416,14 @@ Scope decisions:
 - **Mod registry updates** (`tvsm mod update`) are independent from tooling updates (`tvsm update apply`).
 - **No migration tooling** for existing znelchar-portable users — user base is small, breaking changes expected.
 - **No additional distribution channels** (Winget, MSIX) in this phase.
+- **Release tag format**: Bundle releases use `tvs-tools/v*` tags (e.g., `tvs-tools/v0.1.0`) to disambiguate from other tool releases in the monorepo. The update commands use the GitHub API filtered by this tag pattern instead of a static manifest URL.
+- **Pre-release channel**: Before v1.0, all releases are pre-releases. The `-PreRelease` flag on `tvsm update check` and `tvsm update apply` allows early adopters to opt into pre-release updates; without it, only stable releases are considered.
 
 Exit criteria:
 - A Windows end-user can download `tvs-tools-full-<version>.zip`, run `tvsm.ps1`, and access all tool capabilities with no prerequisites.
 - A Linux/CI user can download `tvs-tools-core-<version>.zip`, invoke `tvsm.ps1` with a system `pwsh`, and access all tool capabilities.
 - `tvsm update apply` successfully updates all components atomically and validates SHA256 before swapping.
 - `tvsm update apply` does NOT trigger mod or mod registry updates.
-- CI produces both artifacts on every release tag.
+- `tvsm update check -PreRelease` surfaces the latest pre-release (e.g., `tvs-tools/v0.2.0-beta.1`) even after stable releases are available.
+- CI produces both artifacts on every `tvs-tools/v*` release tag.
+- TUI interactive mode presents `update check` and `update apply` options to the user.
